@@ -1,0 +1,55 @@
+CC=riscv64-unknown-elf-gcc
+OBJCOPY=riscv64-unknown-elf-objcopy
+OBJDUMP=riscv64-unknown-elf-objdump
+
+CFLAGS=-march=rv64imafdc_zicsr_zifencei -mabi=lp64d -Os -ffreestanding -nostdlib \
+       -fno-builtin -fno-stack-protector -fno-pic -fno-plt -Wall -Wextra
+
+LDFLAGS=-T link.ld -nostdlib
+
+ACT_ELF?=~/riscv-arch-test/single-test/work-vf2/visionfive2-rv64gc/elfs/rv64i/I/I-nop-00.elf
+ACT_LIST?=
+PACK_SCRIPT=./build_act_pack.py
+EXTERNAL_ONLY?=0
+
+ifeq ($(strip $(EXTERNAL_ONLY)),1)
+  ACT_OBJ=
+else ifeq ($(strip $(ACT_LIST)),)
+  ACT_OBJ=act_elf_act.o
+else
+  ACT_OBJ=act_pack_act.o
+endif
+
+all: firmware_act.elf firmware_act.bin firmware_act.dis
+
+RUNNER_SRCS=start.S main_act.c act_core.c act_runtime.c
+
+firmware_act.elf: $(RUNNER_SRCS) $(ACT_OBJ) link.ld
+	$(CC) $(CFLAGS) $(RUNNER_SRCS) $(ACT_OBJ) -o $@ $(LDFLAGS)
+
+firmware_act.bin: firmware_act.elf
+	$(OBJCOPY) -O binary $< $@
+
+firmware_act.dis: firmware_act.elf
+	$(OBJDUMP) -d $< > $@
+
+# Embed one ACT ELF as a byte blob in .act_elf.
+act_elf_act.o: $(ACT_ELF)
+	$(OBJCOPY) \
+		-I binary -O elf64-littleriscv -B riscv \
+		--rename-section .data=.act_elf,alloc,load,readonly,data,contents \
+		$(ACT_ELF) $@
+
+# Embed a packed list of ACT ELFs in .act_pack.
+act_pack.bin: $(ACT_LIST) $(PACK_SCRIPT)
+	python3 $(PACK_SCRIPT) --list $(ACT_LIST) --out $@
+
+act_pack_act.o: act_pack.bin
+	$(OBJCOPY) \
+		-I binary -O elf64-littleriscv -B riscv \
+		--rename-section .data=.act_pack,alloc,load,readonly,data,contents \
+		$< $@
+
+clean:
+	rm -f firmware_act.elf firmware_act.bin firmware_act.dis \
+	      act_elf_act.o act_pack.bin act_pack_act.o uboot_part2_new.bin

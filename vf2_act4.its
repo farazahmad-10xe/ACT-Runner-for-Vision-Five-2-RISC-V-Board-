@@ -1,0 +1,27 @@
+/dts-v1/;
+
+/ {
+  description = "U-boot-spl FIT image for JH7110 VisionFive2 (ACT4 runner)";
+  #address-cells = <1>;
+
+  images {
+    firmware {
+      description = "act4-runner";
+      data = /incbin/("firmware_act.bin");
+      type = "firmware";
+      arch = "riscv";
+      os = "u-boot";
+      compression = "none";
+      load = <0x40000000>;
+      entry = <0x40000000>;
+    };
+  };
+
+  configurations {
+    default = "config-1";
+    config-1 {
+      description = "ACT4 runner config";
+      firmware = "firmware";
+    };
+  };
+};

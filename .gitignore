@@ -1,0 +1,32 @@
+# Build artifacts
+*.o
+*.elf
+*.bin
+*.dis
+act_pack.bin
+uboot_part2_new.bin
+part2_full.bin
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Generated lists, logs, and reports
+ext_lists/*.list
+logs/
+reports/
+tmp/
+docs/logs/
+
+# Local test selection files
+pmp_tests.list
+prepare_pmp_external_pack.sh
+
+# Local device and environment-specific data
+devices.json
+snapshot.json
+tuya-raw.json
+tinytuya.json
+
+# Local editor / tool state
+.codex

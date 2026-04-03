@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <style>
+      .bg { fill: #f7f3f1; }
+      .title { font: 700 50px "DejaVu Sans", sans-serif; fill: #2d2020; }
+      .subtitle { font: 400 24px "DejaVu Sans", sans-serif; fill: #6e5858; }
+      .centerTitle { font: 700 42px "DejaVu Sans", sans-serif; fill: #2d2020; }
+      .centerBody { font: 400 22px "DejaVu Sans", sans-serif; fill: #5f4f4f; }
+      .slice { font: 700 26px "DejaVu Sans", sans-serif; fill: #ffffff; }
+      .boxTitle { font: 700 26px "DejaVu Sans", sans-serif; fill: #3b2a2a; }
+      .boxText { font: 400 22px "DejaVu Sans", sans-serif; fill: #5f4f4f; }
+      .footer { font: 400 20px "DejaVu Sans", sans-serif; fill: #6b5d5d; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1600" height="900"/>
+
+  <text x="800" y="70" text-anchor="middle" class="title">VisionFive2 ACT Validation Framework</text>
+  <text x="800" y="112" text-anchor="middle" class="subtitle">Board-side execution, dual-hart supervision, and golden signature checking</text>
+
+  <!-- Left callout boxes -->
+  <rect x="70" y="165" width="360" height="170" rx="20" fill="#ffffff" stroke="#e2c1bc" stroke-width="4"/>
+  <text x="100" y="210" class="boxTitle">ACT Test Inputs</text>
+  <text x="100" y="252" class="boxText">ACT ELFs are built from</text>
+  <text x="100" y="284" class="boxText">`riscv-arch-test` and used as:</text>
+  <text x="100" y="316" class="boxText">`act_pack.bin` or embedded ELF.</text>
+
+  <rect x="70" y="545" width="360" height="170" rx="20" fill="#ffffff" stroke="#e2c1bc" stroke-width="4"/>
+  <text x="100" y="590" class="boxTitle">Host Reporting</text>
+  <text x="100" y="632" class="boxText">UART logs are parsed into</text>
+  <text x="100" y="664" class="boxText">per-case reports, attempts,</text>
+  <text x="100" y="696" class="boxText">and mismatch summaries.</text>
+
+  <!-- Right callout boxes -->
+  <rect x="1170" y="165" width="360" height="170" rx="20" fill="#ffffff" stroke="#e2c1bc" stroke-width="4"/>
+  <text x="1200" y="210" class="boxTitle">Runner Boot and Load</text>
+  <text x="1200" y="252" class="boxText">Runner boots at `0x40000000`.</text>
+  <text x="1200" y="284" class="boxText">It loads the ELF and locates</text>
+  <text x="1200" y="316" class="boxText">`.tohost` and signature bounds.</text>
+
+  <rect x="1170" y="545" width="360" height="170" rx="20" fill="#ffffff" stroke="#e2c1bc" stroke-width="4"/>
+  <text x="1200" y="590" class="boxTitle">Golden Comparison</text>
+  <text x="1200" y="632" class="boxText">Board-produced signature is</text>
+  <text x="1200" y="664" class="boxText">compared against golden `.sig`</text>
+  <text x="1200" y="696" class="boxText">to confirm ACT-valid PASS.</text>
+
+  <!-- Center wheel -->
+  <circle cx="800" cy="450" r="305" fill="none" stroke="#e8b6b0" stroke-width="44"/>
+
+  <path d="M 800 450 L 800 190 A 260 260 0 0 1 1025 320 Z" fill="#8d0012" stroke="#f7f3f1" stroke-width="10"/>
+  <path d="M 800 450 L 1025 320 A 260 260 0 0 1 1025 580 Z" fill="#b00017" stroke="#f7f3f1" stroke-width="10"/>
+  <path d="M 800 450 L 1025 580 A 260 260 0 0 1 800 710 Z" fill="#d0001a" stroke="#f7f3f1" stroke-width="10"/>
+  <path d="M 800 450 L 800 710 A 260 260 0 0 1 575 580 Z" fill="#df1c1c" stroke="#f7f3f1" stroke-width="10"/>
+  <path d="M 800 450 L 575 580 A 260 260 0 0 1 575 320 Z" fill="#c40018" stroke="#f7f3f1" stroke-width="10"/>
+  <path d="M 800 450 L 575 320 A 260 260 0 0 1 800 190 Z" fill="#a30015" stroke="#f7f3f1" stroke-width="10"/>
+
+  <circle cx="800" cy="450" r="118" fill="#efbbb5" stroke="#f7f3f1" stroke-width="12"/>
+  <text x="800" y="438" text-anchor="middle" class="centerTitle">VF2 ACT</text>
+  <text x="800" y="474" text-anchor="middle" class="centerBody">Runner + Validation</text>
+
+  <!-- Slice labels -->
+  <text x="800" y="255" text-anchor="middle" class="slice">Runner Firmware</text>
+  <text x="985" y="395" text-anchor="middle" class="slice" transform="rotate(60 985 395)">Dual-Hart Control</text>
+  <text x="955" y="610" text-anchor="middle" class="slice" transform="rotate(28 955 610)">Signature Check</text>
+  <text x="800" y="655" text-anchor="middle" class="slice">Final PASS / FAIL</text>
+  <text x="645" y="610" text-anchor="middle" class="slice" transform="rotate(-28 645 610)">UART + Host Parser</text>
+  <text x="615" y="392" text-anchor="middle" class="slice" transform="rotate(-60 615 392)">ACT ELFs + SD Pack</text>
+
+  <!-- Side annotations -->
+  <text x="1110" y="405" class="boxText">Hart 1 runs the test.</text>
+  <text x="1110" y="440" class="boxText">Hart 2 monitors completion</text>
+  <text x="1110" y="475" class="boxText">and coordinates reset flow.</text>
+
+  <!-- Footer -->
+  <text x="430" y="820" text-anchor="middle" class="footer">Suite mode persists `next_index` and `in_progress_index` in the SD footer.</text>
+  <text x="1170" y="820" text-anchor="middle" class="footer">Final verdict = PASS only if runner status is PASS and signature is MATCH.</text>
+</svg>
