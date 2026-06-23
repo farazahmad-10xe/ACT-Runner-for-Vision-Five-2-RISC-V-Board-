@@ -1,0 +1,4 @@
+[submodule "external/riscv-arch-test"]
+	path = external/riscv-arch-test
+	url = https://github.com/Arshia2564/riscv-arch-test.git
+	branch = sifive_u74
