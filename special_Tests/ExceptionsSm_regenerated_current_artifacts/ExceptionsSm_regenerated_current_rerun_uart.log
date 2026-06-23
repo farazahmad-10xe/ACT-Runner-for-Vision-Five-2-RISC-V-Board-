@@ -1,0 +1,359 @@
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125826543 blocks=528
+[SD] next_index=0
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SD] mark in_progress_index=0 next_index=0 retry_count=1 rc=0x0000000000000000
+[CASE] START name=ExceptionsSm-00
+[PAYLOAD] kind=ACT entry=0x0000000080000000 tohost=0x000000008002d900 load_segments=0x0000000000000002
+[ACT] sig_begin=0x000000008000fe10
+[ACT] sig_end=0x000000008002d900
+[ACTSETUP] medeleg=0x0000000000000000
+[ACTSETUP] mideleg=0x0000000000000000
+
+RVCP-SUMMARY: TEST FAILED - Test File "ExceptionsSm-00.S"
+RVCP: DEBUG INFORMATION FOLLOWS
+RVCP: Test Info: "Mismatch in mcause value! Trap was being handled in M-Mode."
+RVCP: ===== TRAP FAILURE DIAGNOSTICS =====
+RVCP: Failure: "Mismatch in mcause value! Trap was being handled in M-Mode."
+RVCP: Trap handler mode: M-mode
+RVCP: Mismatching field: XCAUSE (trap signature word 1)
+RVCP: Expected value: 0x0000000000000004
+RVCP: Actual value:   0x0000000000000005
+RVCP: Expected cause: Load address misaligned
+RVCP: Actual cause:   Load access fault
+RVCP: MEPC:    0x00000000800005a4
+RVCP: MCAUSE:  0x0000000000000005
+RVCP: MTVAL:   0x0000000000000001
+RVCP: MSTATUS: 0x8000000a00007800
+RVCP: MEDELEG: 0x0000000000000000
+RVCP: MIDELEG: 0x0000000000000000
+RVCP: HINT: XCAUSE mismatch means a different exception or interrupt type was
+RVCP:       observed. Check: instruction encoding correctness, CSR accessibility
+RVCP:       at current privilege, PMP/page table configuration, extension support.
+RVCP: END OF DEBUG INFORMATION
+
+Ã========================================================================
+[MON] tohost addr=0x000000008002d900 value=0x0000000000000003
+========================================================================
+[MON] sig_begin=0x000000008000fe10
+      sig_end=0x000000008002d900
+      sig_bytes=0x000000000001daf0
+[CASE] REPORT name=ExceptionsSm-00
+              exec_mode=M status=FAIL
+              rc=0x0000000000000000
+              tohost_addr=0x000000008002d900
+              tohost_value=0x0000000000000003
+              sig_begin=0x000000008000fe10
+              sig_end=0x000000008002d900
+              sig_bytes=0x000000000001daf0
+              exit_pc=0x0000000000000000
+[CTX] reason=FAIL exec_mode=M uflow_marker=0x0000000000000000 trap_valid=0 exit_trap_mode=none exit_mcause=0x0000000000000000 exit_reason=no_trap exit_mepc=0x0000000000000000 exit_insn=0x0000000000000000 exit_insn_valid=0 exit_mtval=0x0000000000000000 exit_mstatus=0x0000000000000000 exit_symbol=unknown exit_symbol_addr=0x0000000000000000
+[REG] unavailable=no_trap_frame
+[HART1CSR] unavailable=no_hart1_snapshot
+[FAILSCR] begin=0x000000008000e000 end=0x000000008000e1c0 bytes=0x00000000000001c0
+[FAILQ] 0x000000008000e000 : 0xbaaaaaad00000003
+[FAILQ] 0x000000008000e008 : 0x0000000080000270
+[FAILQ] 0x000000008000e010 : 0x0000000080008110
+[FAILQ] 0x000000008000e018 : 0x00000000800087c0
+[FAILQ] 0x000000008000e020 : 0x0000000000000001
+[FAILQ] 0x000000008000e028 : 0xeedbeadfeedbeadf
+[FAILQ] 0x000000008000e030 : 0x0000000080010578
+[FAILQ] 0x000000008000e038 : 0x0000000080004ba8
+[FAILQ] 0x000000008000e040 : 0x0000000000000005
+[FAILQ] 0x000000008000e048 : 0x000000008000e180
+[FAILQ] 0x000000008000e050 : 0x0000000000000005
+[FAILQ] 0x000000008000e058 : 0x0000000000000000
+[FAILQ] 0x000000008000e060 : 0x0000000000000000
+[FAILQ] 0x000000008000e068 : 0x0000000000000000
+[FAILQ] 0x000000008000e070 : 0x0000000000000000
+[FAILQ] 0x000000008000e078 : 0x0000000000000001
+[FAILQ] 0x000000008000e080 : 0x7d5bfddb7d5bfddb
+[FAILQ] 0x000000008000e088 : 0xb6fab7fbb6fab7fb
+[FAILQ] 0x000000008000e090 : 0xf76df56ff76df56f
+[FAILQ] 0x000000008000e098 : 0xdfeedbeadfeedbea
+[FAILQ] 0x000000008000e0a0 : 0xd5bfddb7d5bfddb7
+[FAILQ] 0x000000008000e0a8 : 0x6fab7fbb6fab7fbb
+[FAILQ] 0x000000008000e0b0 : 0x76df56ff76df56ff
+[FAILQ] 0x000000008000e0b8 : 0xfeedbeadfeedbead
+[FAILQ] 0x000000008000e0c0 : 0x5bfddb7d5bfddb7d
+[FAILQ] 0x000000008000e0c8 : 0xfab7fbb6fab7fbb6
+[FAILQ] 0x000000008000e0d0 : 0x6df56ff76df56ff7
+[FAILQ] 0x000000008000e0d8 : 0xeedbeadfeedbeadf
+[FAILQ] 0x000000008000e0e0 : 0xbfddb7d5bfddb7d5
+[FAILQ] 0x000000008000e0e8 : 0xab7fbb6fab7fbb6f
+[FAILQ] 0x000000008000e0f0 : 0xdf56ff76df56ff76
+[FAILQ] 0x000000008000e0f8 : 0xedbeadfeedbeadfe
+[FAILQ] 0x000000008000e100 : 0xbaaaaaad00050413
+[FAILQ] 0x000000008000e108 : 0x0000000080004b98
+[FAILQ] 0x000000008000e110 : 0x0000000000000005
+[FAILQ] 0x000000008000e118 : 0x0000000000000004
+[FAILQ] 0x000000008000e120 : 0x000000008000ead6
+[FAILQ] 0x000000008000e128 : 0x0000000000000000
+[FAILQ] 0x000000008000e130 : 0x0000000000000002
+[FAILQ] 0x000000008000e138 : 0x0000000000000005
+[FAILQ] 0x000000008000e140 : 0x0000000000000004
+[FAILQ] 0x000000008000e148 : 0x0000000000000000
+[FAILQ] 0x000000008000e150 : 0x0000000000000000
+[FAILQ] 0x000000008000e158 : 0x000000008000ead6
+[FAILQ] 0x000000008000e160 : 0x00000000800073a4
+[FAILQ] 0x000000008000e168 : 0x00000000800005a4
+[FAILQ] 0x000000008000e170 : 0x0000000000000005
+[FAILQ] 0x000000008000e178 : 0x0000000000000001
+[FAILQ] 0x000000008000e180 : 0x8000000a00007800
+[FAILQ] 0x000000008000e188 : 0x0000000000000000
+[FAILQ] 0x000000008000e190 : 0x0000000000000000
+[FAILQ] 0x000000008000e198 : 0x3030303030307830
+[FAILQ] 0x000000008000e1a0 : 0x3030303030303030
+[FAILQ] 0x000000008000e1a8 : 0x00000000000a3030
+[FAILQ] 0x000000008000e1b0 : 0x0000000000000000
+[FAILQ] 0x000000008000e1b8 : 0x0000000000000000
+[ACTDBG] decoded_failure_scratch begin=0x000000008000e000 end=0x000000008000e1c0
+[ACTDBG] failure_type=0x00000003 note=x0_slot_reused_by_ACT
+[ACTREG] x0=0x0000000000000000 x1=0x0000000080000270 x2=0x0000000080008110 x3=0x00000000800087c0
+[ACTREG] x4=0x0000000000000001 x5=0xeedbeadfeedbeadf x6=0x0000000080010578 x7=0x0000000080004ba8
+[ACTREG] x8=0x0000000000000005 x9=0x000000008000e180 x10=0x0000000000000005 x11=0x0000000000000000
+[ACTREG] x12=0x0000000000000000 x13=0x0000000000000000 x14=0x0000000000000000 x15=0x0000000000000001
+[ACTREG] x16=0x7d5bfddb7d5bfddb x17=0xb6fab7fbb6fab7fb x18=0xf76df56ff76df56f x19=0xdfeedbeadfeedbea
+[ACTREG] x20=0xd5bfddb7d5bfddb7 x21=0x6fab7fbb6fab7fbb x22=0x76df56ff76df56ff x23=0xfeedbeadfeedbead
+[ACTREG] x24=0x5bfddb7d5bfddb7d x25=0xfab7fbb6fab7fbb6 x26=0x6df56ff76df56ff7 x27=0xeedbeadfeedbeadf
+[ACTREG] x28=0xbfddb7d5bfddb7d5 x29=0xab7fbb6fab7fbb6f x30=0xdf56ff76df56ff76 x31=0xedbeadfeedbeadfe
+[ACTFAIL] failing_instruction_addr=0x000000008000e100 value=0xbaaaaaad00050413
+[ACTFAIL] failing_addr_addr=0x000000008000e108 value=0x0000000080004b98
+[ACTFAIL] failing_value_addr=0x000000008000e110 value=0x0000000000000005
+[ACTFAIL] expected_value_addr=0x000000008000e118 value=0x0000000000000004
+[ACTFAIL] failure_string_ptr_addr=0x000000008000e120 value=0x000000008000ead6
+[ACTTRAP] trap_diag_actual_value_addr=0x000000008000e138 value=0x0000000000000005
+[ACTTRAP] trap_diag_expected_value_addr=0x000000008000e140 value=0x0000000000000004
+[ACTTSIG] trap_sigptr=0x0000000080010438 current_ptr=0x0000000080010578 current_off=0x0000000000000140 window_begin=0x0000000080010538 window_end=0x0000000080010598
+[ACTTSIGQ] 0x0000000080010538 off=0x0000000000000100 : 0x000000000f000663
+[ACTTSIGQ] 0x0000000080010540 off=0x0000000000000108 : 0x0000000000000005
+[ACTTSIGQ] 0x0000000080010548 off=0x0000000000000110 : 0x0000000000000504
+[ACTTSIGQ] 0x0000000080010550 off=0x0000000000000118 : 0x0000000000000001
+[ACTTSIGQ] 0x0000000080010558 off=0x0000000000000120 : 0x000000000f000663
+[ACTTSIGQ] 0x0000000080010560 off=0x0000000000000128 : 0x0000000000000005
+[ACTTSIGQ] 0x0000000080010568 off=0x0000000000000130 : 0x0000000000000564
+[ACTTSIGQ] 0x0000000080010570 off=0x0000000000000138 : 0x0000000000000001
+[ACTTSIGQ] 0x0000000080010578 off=0x0000000000000140 : 0x000000000f000663
+[ACTTSIGQ] 0x0000000080010580 off=0x0000000000000148 : 0x0000000000000004
+[ACTTSIGQ] 0x0000000080010588 off=0x0000000000000150 : 0x00000000000005c4
+[ACTTSIGQ] 0x0000000080010590 off=0x0000000000000158 : 0x0000000000000001
+[ACTHTRACE] Mtramptbl_sv=0x0000000080008110 rvmodel_sv=0x0000000080008428
+[ACTHTRACEQ] slot0_addr=0x0000000080008428 value=0x00000000deadbeef
+[ACTHTRACEQ] slot1_addr=0x0000000080008430 value=0x00000000deadbeef
+[ACTHTRACEQ] slot2_addr=0x0000000080008438 value=0x00000000deadbeef
+[ACTHTRACEQ] slot3_addr=0x0000000080008440 value=0x00000000deadbeef
+[ACTHTRACEQ] slot4_addr=0x0000000080008448 value=0x00000000deadbeef
+[ACTHTRACEQ] slot5_addr=0x0000000080008450 value=0x00000000deadbeef
+[ACTHTRACEQ] slot6_addr=0x0000000080008458 value=0x00000000deadbeef
+[ACTHTRACEQ] slot7_addr=0x0000000080008460 value=0x00000000deadbeef
+[ACTMTVEC] Mtramptbl_sv=0x0000000080008110 act_mmode_mtvec=0x00000000800046c0 base=0x00000000800046c0 mode=0x0000000000000000 symbol=Mtrampoline+0x0000000000000000 saved_runner_mtvec=0x0000000040003a14
+[ACTHARTCSR] saved_mhartid=unavailable
+[ACTHARTCSR] saved_mie=unavailable
+[ACTHARTCSR] saved_mip=unavailable
+[ACTHARTCSR] saved_mtvec=unavailable
+[ACTHARTCSR] saved_medeleg_addr=0x000000008000e188 value=0x0000000000000000
+[ACTHARTCSR] saved_mideleg_addr=0x000000008000e190 value=0x0000000000000000
+[ACTHARTCSR] saved_sstatus=unavailable
+[ACTHARTCSR] saved_stvec=unavailable
+[ACTHARTCSR] saved_scause=unavailable
+[ACTHARTCSR] saved_sepc=unavailable
+[ACTHARTCSR] saved_stval=unavailable
+[ACTHARTCSR] saved_satp=unavailable
+[ACTHARTCSR] saved_pmpcfg0=unavailable
+[ACTHARTCSR] saved_pmpaddr0=unavailable
+[ACTHARTCSR] saved_pmpaddr1=unavailable
+[ACTHARTCSR] saved_pmpaddr2=unavailable
+[ACTHARTCSR] saved_pmpaddr3=unavailable
+[ACTHARTCSR] saved_pmpaddr4=unavailable
+[ACTHARTCSR] saved_pmpaddr5=unavailable
+[ACTHARTCSR] saved_pmpaddr6=unavailable
+[ACTHARTCSR] saved_pmpaddr7=unavailable
+[ACTCSR] monitor_current_hartid=0x0000000000000002 saved_mepc=0x00000000800005a4 saved_mcause=0x0000000000000005 saved_mtval=0x0000000000000001 saved_mstatus=0x8000000a00007800 saved_mstatus_mpp=0x0000000000000003 monitor_current_mtvec=0x0000000008000330 monitor_current_stvec=0xffffffec0e302201 monitor_current_medeleg=0x000000000000b005 monitor_current_mideleg=0x0000000000000220 monitor_current_satp=0x00000000008e0081 monitor_current_pmpcfg0=0x0704050504020303 monitor_current_pmpaddr0=0x000000001f506000 monitor_current_pmpaddr1=0x000000007b602000 monitor_medeleg_saved_mcause_bit=0x0000000000000000
+[ACTDBG] instructions_around_saved_mepc
+[MEMDUMP] around 0x00000000800005a4
+   0x000000008000057c : 0x00000013  addi x0, x0, 0x00000000
+   0x0000000080000580 : 0x0000079b  unknown
+   0x0000000080000584 : 0x00000013  addi x0, x0, 0x00000000
+   0x0000000080000588 : 0x00000013  addi x0, x0, 0x00000000
+   0x000000008000058c : 0x00000013  addi x0, x0, 0x00000000
+   0x0000000080000590 : 0x00000013  addi x0, x0, 0x00000000
+   0x0000000080000594 : 0x00000013  addi x0, x0, 0x00000000
+   0x0000000080000598 : 0x00000013  addi x0, x0, 0x00000000
+   0x000000008000059c : 0x00000013  addi x0, x0, 0x00000000
+   0x00000000800005a0 : 0x00178793  addi x15, x15, 0x00000001
+=> 0x00000000800005a4 : 0x0007c583  lbu x11, 0x00000000(x15)
+   0x00000000800005a8 : 0x00000013  addi x0, x0, 0x00000000
+   0x00000000800005ac : 0x00013203  ld x4, 0x00000000(x2)
+   0x00000000800005b0 : 0x00b20c63  beq x4, x11, 0x00000000800005c8
+   0x00000000800005b4 : 0x72c052ef  jal x5, 0x0000000080005ce0
+   0x00000000800005b8 : 0x800005a4  c.addi4spn
+   0x00000000800005bc : 0x00000000  c.addi4spn
+[MEMH] around 0x00000000800005a4
+   0x0000000080000590 : 0x00000013
+   0x0000000080000592 : 0x00000000
+   0x0000000080000594 : 0x00000013
+   0x0000000080000596 : 0x00000000
+   0x0000000080000598 : 0x00000013
+   0x000000008000059a : 0x00000000
+   0x000000008000059c : 0x00000013
+   0x000000008000059e : 0x00000000
+   0x00000000800005a0 : 0x00008793
+   0x00000000800005a2 : 0x00000017
+=> 0x00000000800005a4 : 0x0000c583
+   0x00000000800005a6 : 0x00000007
+   0x00000000800005a8 : 0x00000013
+   0x00000000800005aa : 0x00000000
+   0x00000000800005ac : 0x00003203
+   0x00000000800005ae : 0x00000001
+   0x00000000800005b0 : 0x00000c63
+   0x00000000800005b2 : 0x000000b2
+   0x00000000800005b4 : 0x000052ef
+   0x00000000800005b6 : 0x000072c0
+   0x00000000800005b8 : 0x000005a4
+[SIG] begin=0x000000008000fe10 end=0x000000008002d900 bytes=0x000000000001daf0
+[SD] monitor persist next_index=1 clear_in_progress rc=0x0000000000000000
+[SD] quiesce busy_rc=0x0000000000000000 idle_rc=0x0000000000000000 clk_rc=0x0000000000000000
+[RST] trigger watchdog reset
+[HOST] hard cycle reason=watchdog_reset
+{'protocol': 4, 't': 1782135835, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1782135847, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+[RST] watchdog armed
+dwmci_s: Response Timeout.
+[HOST] hard cycle reason=boot_media_failure retry=1/10
+{'protocol': 4, 't': 1782135848, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1782135860, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+dwmci_s: Response Timeout.
+[HOST] hard cycle reason=boot_media_failure retry=2/10
+{'protocol': 4, 't': 1782135861, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1782135873, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+BOOT fail,Error is 0xffffffff
+[HOST] hard cycle reason=boot_media_failure retry=3/10
+{'protocol': 4, 't': 1782135873, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1782135885, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125826543 blocks=528
+[SD] next_index=1
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SUITE] all external tests already dispatched
+[SUITE] SUMMARY total=0 pass=0 fail=0
+PASS

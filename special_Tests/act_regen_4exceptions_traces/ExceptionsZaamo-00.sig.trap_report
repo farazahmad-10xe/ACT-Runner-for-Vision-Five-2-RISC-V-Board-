@@ -1,0 +1,11 @@
+Trap Report: ExceptionsZaamo-00 (RV64)
+======================================
+Total traps recorded in signature: 1
+
+Trap #0: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0xdeadbef05eadbf2f  (_end)
+  XTVAL:   0xdeadbeefdeadbeef
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0

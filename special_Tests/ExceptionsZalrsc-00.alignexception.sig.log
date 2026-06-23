@@ -1,0 +1,12 @@
+using /home/lpt-10xe/riscv-arch-test/work-vf2-exceptionszalrsc-loadstore-alignexception/visionfive2-rv64gc/build/priv/ExceptionsZalrsc/ExceptionsZalrsc-00.sig for test-signature output.
+setting signature-granularity to 8 bytes
+using /home/lpt-10xe/riscv-arch-test/work-vf2-exceptionszalrsc-loadstore-alignexception/visionfive2-rv64gc/build/priv/ExceptionsZalrsc/ExceptionsZalrsc-00.sig.trace for trace output.
+HTIF located at 0x8002a800
+begin_signature: 0x8000ce10
+end_signature: 0x8002a720
+Entry point: 0x80000000
+[ACTSETUP] medeleg=0x0000000000000000
+[ACTSETUP] mideleg=0x0000000000000000
+
+RVCP-SUMMARY: TEST SIGRUN - Test File "ExceptionsZalrsc-00.S"
+

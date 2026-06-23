@@ -3,6 +3,7 @@
 *.elf
 *.bin
 *.dis
+*.zip
 act_pack.bin
 uboot_part2_new.bin
 part2_full.bin
@@ -15,6 +16,8 @@ __pycache__/
 ext_lists/*.list
 logs/
 reports/
+runs_uart/
+runs_uart_inputs/
 tmp/
 docs/logs/
 
@@ -30,3 +33,5 @@ tinytuya.json
 
 # Local editor / tool state
 .codex
+.vscode/
+tinytuya/

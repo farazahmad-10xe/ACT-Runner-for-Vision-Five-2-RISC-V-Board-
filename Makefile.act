@@ -5,44 +5,147 @@ OBJDUMP=riscv64-unknown-elf-objdump
 CFLAGS=-march=rv64imafdc_zicsr_zifencei -mabi=lp64d -Os -ffreestanding -nostdlib \
        -fno-builtin -fno-stack-protector -fno-pic -fno-plt -Wall -Wextra
 
-LDFLAGS=-T link.ld -nostdlib
+LINKER_SCRIPT?=link.ld
+LDFLAGS=-T $(LINKER_SCRIPT) -nostdlib
+BOARD_CFLAGS?=
+BOARD_LDFLAGS?=
 
 ACT_ELF?=~/riscv-arch-test/single-test/work-vf2/visionfive2-rv64gc/elfs/rv64i/I/I-nop-00.elf
 ACT_LIST?=
+RIESCUE_ELF?=special_Tests/tp_zicsr_1_updated_mmp
+RIESCUE_LIST?=
+PAYLOAD_PROFILE?=ACT
 PACK_SCRIPT=./build_act_pack.py
 EXTERNAL_ONLY?=0
+RUN_PRIV?=M
+RUNNER_TOUCH_MENVCFG?=0
+RUNNER_DELEG_POLICY?=DELEGATION_POLICY_NONE
+RUNNER_ASSUME_RVA23_PRIV_FEATURES?=1
+RUNNER_SMODE_CSR_POLICY?=RUNNER_SMODE_CSR_POLICY_STRICT
+RUNNER_FAST_FAIL_RESET?=0
+RUNNER_TIMEOUT_FAST_RESET?=0
+RUNNER_TEST_TIMEOUT_TICKS?=50000000ULL
+RUNNER_RESET_DELAY_TICKS?=20000000ULL
+RUNNER_MAX_TEST_RETRIES?=3u
+RUNNER_VERBOSE_FLOW?=0
+ifeq ($(origin RUNNER_RIESCUE_COUNTER_POLICY),undefined)
+  ifeq ($(strip $(PAYLOAD_PROFILE)),RIESCUE)
+    RUNNER_RIESCUE_COUNTER_POLICY=RUNNER_RIESCUE_COUNTER_POLICY_ALL
+  else
+    RUNNER_RIESCUE_COUNTER_POLICY=RUNNER_RIESCUE_COUNTER_POLICY_NONE
+  endif
+endif
+ifeq ($(origin RUNNER_ENABLE_LOWER_MODES),undefined)
+  ifeq ($(strip $(PAYLOAD_PROFILE)),RIESCUE)
+    RUNNER_ENABLE_LOWER_MODES=0
+  else ifeq ($(strip $(RUN_PRIV)),M)
+    RUNNER_ENABLE_LOWER_MODES=0
+  else
+    RUNNER_ENABLE_LOWER_MODES=1
+  endif
+endif
+RUNNER_USE_SV39?=$(RUNNER_ENABLE_LOWER_MODES)
+RUNNER_ENABLE_PRIVATE_SBI?=1
+RUNNER_ENABLE_TSBI?=1
+FW_PREFIX?=$(if $(filter RIESCUE,$(strip $(PAYLOAD_PROFILE))),firmware_riescue,firmware_act)
 
-ifeq ($(strip $(EXTERNAL_ONLY)),1)
-  ACT_OBJ=
-else ifeq ($(strip $(ACT_LIST)),)
-  ACT_OBJ=act_elf_act.o
+CFLAGS += -DRUNNER_TOUCH_MENVCFG=$(RUNNER_TOUCH_MENVCFG)
+CFLAGS += -DRUNNER_DELEG_POLICY=$(RUNNER_DELEG_POLICY)
+CFLAGS += -DRUNNER_ASSUME_RVA23_PRIV_FEATURES=$(RUNNER_ASSUME_RVA23_PRIV_FEATURES)
+CFLAGS += -DRUNNER_SMODE_CSR_POLICY=$(RUNNER_SMODE_CSR_POLICY)
+CFLAGS += -DRUNNER_USE_SV39=$(RUNNER_USE_SV39)
+CFLAGS += -DRUNNER_FAST_FAIL_RESET=$(RUNNER_FAST_FAIL_RESET)
+CFLAGS += -DRUNNER_TIMEOUT_FAST_RESET=$(RUNNER_TIMEOUT_FAST_RESET)
+CFLAGS += -DRUNNER_TEST_TIMEOUT_TICKS=$(RUNNER_TEST_TIMEOUT_TICKS)
+CFLAGS += -DRUNNER_RESET_DELAY_TICKS=$(RUNNER_RESET_DELAY_TICKS)
+CFLAGS += -DRUNNER_MAX_TEST_RETRIES=$(RUNNER_MAX_TEST_RETRIES)
+CFLAGS += -DRUNNER_VERBOSE_FLOW=$(RUNNER_VERBOSE_FLOW)
+CFLAGS += -DRUNNER_RIESCUE_COUNTER_POLICY=$(RUNNER_RIESCUE_COUNTER_POLICY)
+CFLAGS += -DRUNNER_ENABLE_LOWER_MODES=$(RUNNER_ENABLE_LOWER_MODES)
+CFLAGS += -DRUNNER_ENABLE_PRIVATE_SBI=$(RUNNER_ENABLE_PRIVATE_SBI)
+CFLAGS += -DRUNNER_ENABLE_TSBI=$(RUNNER_ENABLE_TSBI)
+CFLAGS += $(BOARD_CFLAGS)
+LDFLAGS += $(BOARD_LDFLAGS)
+
+ifeq ($(strip $(PAYLOAD_PROFILE)),ACT)
+  CFLAGS += -DRUNNER_PAYLOAD_KIND=PAYLOAD_KIND_ACT
+else ifeq ($(strip $(PAYLOAD_PROFILE)),RIESCUE)
+  CFLAGS += -DRUNNER_PAYLOAD_KIND=PAYLOAD_KIND_RIESCUE
 else
-  ACT_OBJ=act_pack_act.o
+  $(error PAYLOAD_PROFILE must be ACT or RIESCUE)
 endif
 
-all: firmware_act.elf firmware_act.bin firmware_act.dis
+ifeq ($(strip $(PAYLOAD_PROFILE)),RIESCUE)
+  ifneq ($(strip $(RUN_PRIV)),M)
+    $(error PAYLOAD_PROFILE=RIESCUE currently supports RUN_PRIV=M only. Riescue is an M-mode runtime that manages M-mode CSRs.)
+  endif
+  CFLAGS += -DRUNNER_EXEC_MODE=EXEC_MODE_M
+  ifeq ($(strip $(EXTERNAL_ONLY)),1)
+    PAYLOAD_OBJ=
+  else ifeq ($(strip $(RIESCUE_LIST)),)
+    PAYLOAD_OBJ=riescue_elf.o
+  else
+    PAYLOAD_OBJ=act_pack_act.o
+  endif
+else
+  ifeq ($(strip $(RUN_PRIV)),M)
+    CFLAGS += -DRUNNER_EXEC_MODE=EXEC_MODE_M
+  else ifeq ($(strip $(RUN_PRIV)),S)
+    CFLAGS += -DRUNNER_EXEC_MODE=EXEC_MODE_S
+  else ifeq ($(strip $(RUN_PRIV)),U)
+    CFLAGS += -DRUNNER_EXEC_MODE=EXEC_MODE_U
+  else
+    $(error RUN_PRIV must be one of M, S, or U)
+  endif
 
-RUNNER_SRCS=start.S main_act.c act_core.c act_runtime.c
+  ifeq ($(strip $(EXTERNAL_ONLY)),1)
+    PAYLOAD_OBJ=
+  else ifeq ($(strip $(ACT_LIST)),)
+    PAYLOAD_OBJ=act_elf_act.o
+  else
+    PAYLOAD_OBJ=act_pack_act.o
+  endif
+endif
 
-firmware_act.elf: $(RUNNER_SRCS) $(ACT_OBJ) link.ld
-	$(CC) $(CFLAGS) $(RUNNER_SRCS) $(ACT_OBJ) -o $@ $(LDFLAGS)
+PACK_LIST=$(if $(strip $(RIESCUE_LIST)),$(RIESCUE_LIST),$(ACT_LIST))
 
-firmware_act.bin: firmware_act.elf
+all: $(FW_PREFIX).elf $(FW_PREFIX).bin $(FW_PREFIX).dis
+
+RUNNER_SRCS=start.S main_act.c act_core.c runner_lower_env.c runner_sbi.c runner_umode.c \
+	            runner_machine_trap.c runner_monitor.c runner_sd.c act_runtime.c
+ifeq ($(strip $(RUNNER_ENABLE_LOWER_MODES)),1)
+  RUNNER_SRCS += runner_smode.c
+endif
+
+$(FW_PREFIX).elf: $(RUNNER_SRCS) $(PAYLOAD_OBJ) $(LINKER_SCRIPT)
+	$(CC) $(CFLAGS) $(RUNNER_SRCS) $(PAYLOAD_OBJ) -o $@ $(LDFLAGS)
+
+$(FW_PREFIX).bin: $(FW_PREFIX).elf
 	$(OBJCOPY) -O binary $< $@
 
-firmware_act.dis: firmware_act.elf
+$(FW_PREFIX).dis: $(FW_PREFIX).elf
 	$(OBJDUMP) -d $< > $@
 
-# Embed one ACT ELF as a byte blob in .act_elf.
-act_elf_act.o: $(ACT_ELF)
+# Embed one ACT ELF as a byte blob in .act_elf. These ELF paths may have no
+# extension, so do not make them prerequisites or GNU make may rebuild from .S.
+act_elf_act.o:
+	test -f $(ACT_ELF)
 	$(OBJCOPY) \
 		-I binary -O elf64-littleriscv -B riscv \
 		--rename-section .data=.act_elf,alloc,load,readonly,data,contents \
 		$(ACT_ELF) $@
 
-# Embed a packed list of ACT ELFs in .act_pack.
-act_pack.bin: $(ACT_LIST) $(PACK_SCRIPT)
-	python3 $(PACK_SCRIPT) --list $(ACT_LIST) --out $@
+# Embed one Riescue framework ELF as a byte blob in .act_elf.
+riescue_elf.o:
+	test -f $(RIESCUE_ELF)
+	$(OBJCOPY) \
+		-I binary -O elf64-littleriscv -B riscv \
+		--rename-section .data=.act_elf,alloc,load,readonly,data,contents \
+		$(RIESCUE_ELF) $@
+
+# Embed a packed list of payload ELFs in .act_pack.
+act_pack.bin: $(PACK_LIST) $(PACK_SCRIPT)
+	python3 $(PACK_SCRIPT) --list $(PACK_LIST) --out $@
 
 act_pack_act.o: act_pack.bin
 	$(OBJCOPY) \
@@ -52,4 +155,5 @@ act_pack_act.o: act_pack.bin
 
 clean:
 	rm -f firmware_act.elf firmware_act.bin firmware_act.dis \
-	      act_elf_act.o act_pack.bin act_pack_act.o uboot_part2_new.bin
+	      firmware_riescue.elf firmware_riescue.bin firmware_riescue.dis \
+	      act_elf_act.o riescue_elf.o act_pack.bin act_pack_act.o uboot_part2_new.bin

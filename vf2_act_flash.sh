@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Defaults (can be overridden by args)
-WORKDIR="$HOME/vf2_mmode_fw"
+WORKDIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 SD_DEV="/dev/sda"
 OFFSET_BLOCKS=$((0x2000))      # SPL reads from here
 COUNT_BLOCKS=$((0x2000))       # 0x2000 blocks = 4 MiB

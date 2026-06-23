@@ -32,7 +32,13 @@ def read_list(list_path: Path) -> list[Path]:
 
 
 def encode_name(path: Path) -> bytes:
-    b = path.stem.encode("ascii", errors="ignore")
+    parent_name = path.parent.name
+    if parent_name.endswith(("_machine", "_super", "_user")):
+        display_name = parent_name
+    else:
+        display_name = path.stem
+
+    b = display_name.encode("ascii", errors="ignore")
     if not b:
         b = path.name.encode("ascii", errors="ignore") or b"unnamed"
     return b[: NAME_SIZE - 1].ljust(NAME_SIZE, b"\0")

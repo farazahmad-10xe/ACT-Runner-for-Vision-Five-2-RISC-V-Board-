@@ -28,6 +28,24 @@ def parse_args():
     p.add_argument("--ver", type=float, default=float(os.getenv("TUYA_VERSION", "3.3")))
     p.add_argument("--retries", type=int, default=3, help="Retries per action on Tuya errors")
     p.add_argument("--retry-delay", type=float, default=2.0, help="Delay between retries in seconds")
+    p.add_argument(
+        "--socket-timeout",
+        type=float,
+        default=float(os.getenv("TUYA_SOCKET_TIMEOUT", "3.0")),
+        help="Per-attempt Tuya socket timeout in seconds",
+    )
+    p.add_argument(
+        "--socket-retries",
+        type=int,
+        default=int(os.getenv("TUYA_SOCKET_RETRIES", "1")),
+        help="tinytuya internal socket connect retries per action",
+    )
+    p.add_argument(
+        "--socket-retry-delay",
+        type=float,
+        default=float(os.getenv("TUYA_SOCKET_RETRY_DELAY", "0.5")),
+        help="Delay between tinytuya internal socket retries in seconds",
+    )
     return p.parse_args()
 
 
@@ -39,7 +57,12 @@ def perform_with_retry(action_name, fn, retries, retry_delay):
     last_resp = None
     attempts = retries if retries > 0 else 1
     for attempt in range(1, attempts + 1):
-        resp = fn()
+        try:
+            resp = fn()
+        except KeyboardInterrupt:
+            raise
+        except Exception as exc:
+            resp = {"Error": f"{type(exc).__name__}: {exc}", "Err": "EXC", "Payload": None}
         last_resp = resp
         print(resp)
         if response_ok(resp):
@@ -68,6 +91,9 @@ def main():
 
     d = tinytuya.OutletDevice(args.device_id, args.device_ip, args.local_key)
     d.set_version(args.ver)
+    d.set_socketTimeout(args.socket_timeout)
+    d.set_socketRetryLimit(max(1, args.socket_retries))
+    d.set_socketRetryDelay(max(0.0, args.socket_retry_delay))
 
     if args.cmd == "on":
         perform_with_retry("on", d.turn_on, args.retries, args.retry_delay)

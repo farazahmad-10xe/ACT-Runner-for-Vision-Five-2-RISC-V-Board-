@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+# Copy to cert_harness/board_adapters/<board>.sh and implement the board's
+# lab control and boot transport. Function signatures are fixed by run_profile.sh.
+
+board_flash_image() {
+  local repo_root="$1"
+  local image="$2"
+  local sd_dev="$3"
+
+  : "$repo_root"
+  : "$sd_dev"
+  echo "TODO: flash or load image for this board: $image" >&2
+  return 2
+}
+
+board_write_pack() {
+  local repo_root="$1"
+  local pack="$2"
+  local sd_dev="$3"
+
+  : "$repo_root"
+  : "$pack"
+  : "$sd_dev"
+  echo "This board adapter does not implement external pack writing." >&2
+  return 2
+}
+
+board_capture_uart() {
+  local repo_root="$1"
+  local serial_dev="$2"
+  local log_path="$3"
+  local cooldown_sec="$4"
+  local boot_cooldown_sec="$5"
+  local boot_retries="$6"
+  local boot_backoff_sec="$7"
+  local cycle_delay="$8"
+  local start_cycle="$9"
+
+  : "$repo_root"
+  : "$cooldown_sec"
+  : "$boot_cooldown_sec"
+  : "$boot_retries"
+  : "$boot_backoff_sec"
+  : "$cycle_delay"
+  : "$start_cycle"
+
+  mkdir -p "$(dirname "$log_path")"
+  stty -F "$serial_dev" 115200 cs8 -cstopb -parenb -ixon -ixoff -icanon -echo raw
+  cat "$serial_dev" | tee -a "$log_path"
+}

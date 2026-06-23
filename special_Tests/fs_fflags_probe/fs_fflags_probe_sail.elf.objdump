@@ -1,0 +1,480 @@
+
+special_Tests/fs_fflags_probe/fs_fflags_probe_sail.elf:     file format elf64-littleriscv
+
+Sections:
+Idx Name          Size      VMA               LMA               File off  Algn
+  0 .text         000002b8  0000000080000000  0000000080000000  00001000  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rodata       00000115  00000000800002b8  00000000800002b8  000012b8  2**3
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .tohost       00000010  00000000800003d0  00000000800003d0  000013d0  2**3
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .runner_fail_scratch 00000040  00000000800003e0  00000000800003e0  000013e0  2**3
+                  CONTENTS, ALLOC, LOAD, DATA
+  4 .signature    000000b0  0000000080000420  0000000080000420  00001420  2**3
+                  CONTENTS, ALLOC, LOAD, DATA
+  5 .bss          00001000  0000000080001000  0000000080001000  000014d0  2**12
+                  ALLOC
+  6 .riscv.attributes 00000076  0000000000000000  0000000000000000  000014d0  2**0
+                  CONTENTS, READONLY
+SYMBOL TABLE:
+0000000080000000 l    d  .text	0000000000000000 .text
+00000000800002b8 l    d  .rodata	0000000000000000 .rodata
+00000000800003d0 l    d  .tohost	0000000000000000 .tohost
+00000000800003e0 l    d  .runner_fail_scratch	0000000000000000 .runner_fail_scratch
+0000000080000420 l    d  .signature	0000000000000000 .signature
+0000000080001000 l    d  .bss	0000000000000000 .bss
+0000000000000000 l    d  .riscv.attributes	0000000000000000 .riscv.attributes
+0000000000000000 l    df *ABS*	0000000000000000 ccfWtr16.o
+0000000010000000 l       *ABS*	0000000000000000 UART_BASE
+0000000080002000 l       .bss	0000000000000000 stack_top
+0000000080000448 l       .signature	0000000000000000 saved_runner_mtvec
+0000000080000128 l       .text	0000000000000000 trap_handler
+0000000080000440 l       .signature	0000000000000000 trap_count
+00000000800002b8 l       .rodata	0000000000000000 msg_start
+00000000800001fc l       .text	0000000000000000 uart_puts
+0000000080000420 l       .signature	0000000000000000 before_mstatus
+00000000800002d8 l       .rodata	0000000000000000 msg_before_test1
+0000000080000274 l       .text	0000000000000000 print_label_hex
+0000000080000070 l       .text	0000000000000000 test1
+0000000080000074 l       .text	0000000000000000 after_test1
+0000000080000428 l       .signature	0000000000000000 after_first_trap_mstatus
+00000000800002fd l       .rodata	0000000000000000 msg_after_test1
+0000000080000430 l       .signature	0000000000000000 before_read_mstatus
+000000008000031f l       .rodata	0000000000000000 msg_before_test2
+00000000800000c4 l       .text	0000000000000000 test2
+00000000800000c8 l       .text	0000000000000000 after_test2
+0000000080000438 l       .signature	0000000000000000 after_second_trap_mstatus
+0000000080000344 l       .rodata	0000000000000000 msg_after_test2
+00000000800000ec l       .text	0000000000000000 done
+00000000800003ad l       .rodata	0000000000000000 msg_done
+0000000080000450 l       .signature	0000000000000000 trap_log
+0000000080000366 l       .rodata	0000000000000000 msg_trap_mcause
+0000000080000377 l       .rodata	0000000000000000 msg_trap_mepc
+0000000080000386 l       .rodata	0000000000000000 msg_trap_mstatus
+0000000080000398 l       .rodata	0000000000000000 msg_trap_fs
+00000000800001e4 l       .text	0000000000000000 uart_putc
+0000000080000228 l       .text	0000000000000000 uart_hex64
+00000000800003ca l       .rodata	0000000000000000 nl
+00000000800004d0 g       .signature	0000000000000000 end_signature
+0000000080000420 g       .runner_fail_scratch	0000000000000000 end_failure_scratch
+0000000080000420 g       .signature	0000000000000000 begin_signature
+0000000080000000 g       .text	0000000000000000 _start
+00000000800003e0 g       .runner_fail_scratch	0000000000000000 begin_failure_scratch
+00000000800003d8 g       .tohost	0000000000000000 fromhost
+00000000800003d0 g       .tohost	0000000000000000 tohost
+
+
+
+Disassembly of section .text:
+
+0000000080000000 <_start>:
+    80000000:	00002117          	auipc	sp,0x2
+    80000004:	00010113          	mv	sp,sp
+    80000008:	305022f3          	csrr	t0,mtvec
+    8000000c:	00000317          	auipc	t1,0x0
+    80000010:	43c30313          	addi	t1,t1,1084 # 80000448 <saved_runner_mtvec>
+    80000014:	00533023          	sd	t0,0(t1)
+    80000018:	00000297          	auipc	t0,0x0
+    8000001c:	11028293          	addi	t0,t0,272 # 80000128 <trap_handler>
+    80000020:	30529073          	csrw	mtvec,t0
+    80000024:	00000297          	auipc	t0,0x0
+    80000028:	41c28293          	addi	t0,t0,1052 # 80000440 <trap_count>
+    8000002c:	0002b023          	sd	zero,0(t0)
+    80000030:	00000597          	auipc	a1,0x0
+    80000034:	28858593          	addi	a1,a1,648 # 800002b8 <msg_start>
+    80000038:	00000097          	auipc	ra,0x0
+    8000003c:	1c4080e7          	jalr	452(ra) # 800001fc <uart_puts>
+    80000040:	000062b7          	lui	t0,0x6
+    80000044:	3002b073          	csrc	mstatus,t0
+    80000048:	30002373          	csrr	t1,mstatus
+    8000004c:	00000397          	auipc	t2,0x0
+    80000050:	3d438393          	addi	t2,t2,980 # 80000420 <begin_signature>
+    80000054:	0063b023          	sd	t1,0(t2)
+    80000058:	00030513          	mv	a0,t1
+    8000005c:	00000597          	auipc	a1,0x0
+    80000060:	27c58593          	addi	a1,a1,636 # 800002d8 <msg_before_test1>
+    80000064:	00000097          	auipc	ra,0x0
+    80000068:	210080e7          	jalr	528(ra) # 80000274 <print_label_hex>
+    8000006c:	fff00613          	li	a2,-1
+
+0000000080000070 <test1>:
+    80000070:	00163673          	csrrc	a2,fflags,a2
+
+0000000080000074 <after_test1>:
+    80000074:	30002373          	csrr	t1,mstatus
+    80000078:	00000397          	auipc	t2,0x0
+    8000007c:	3b038393          	addi	t2,t2,944 # 80000428 <after_first_trap_mstatus>
+    80000080:	0063b023          	sd	t1,0(t2)
+    80000084:	00030513          	mv	a0,t1
+    80000088:	00000597          	auipc	a1,0x0
+    8000008c:	27558593          	addi	a1,a1,629 # 800002fd <msg_after_test1>
+    80000090:	00000097          	auipc	ra,0x0
+    80000094:	1e4080e7          	jalr	484(ra) # 80000274 <print_label_hex>
+    80000098:	000062b7          	lui	t0,0x6
+    8000009c:	3002b073          	csrc	mstatus,t0
+    800000a0:	30002373          	csrr	t1,mstatus
+    800000a4:	00000397          	auipc	t2,0x0
+    800000a8:	38c38393          	addi	t2,t2,908 # 80000430 <before_read_mstatus>
+    800000ac:	0063b023          	sd	t1,0(t2)
+    800000b0:	00030513          	mv	a0,t1
+    800000b4:	00000597          	auipc	a1,0x0
+    800000b8:	26b58593          	addi	a1,a1,619 # 8000031f <msg_before_test2>
+    800000bc:	00000097          	auipc	ra,0x0
+    800000c0:	1b8080e7          	jalr	440(ra) # 80000274 <print_label_hex>
+
+00000000800000c4 <test2>:
+    800000c4:	00102673          	frflags	a2
+
+00000000800000c8 <after_test2>:
+    800000c8:	30002373          	csrr	t1,mstatus
+    800000cc:	00000397          	auipc	t2,0x0
+    800000d0:	36c38393          	addi	t2,t2,876 # 80000438 <after_second_trap_mstatus>
+    800000d4:	0063b023          	sd	t1,0(t2)
+    800000d8:	00030513          	mv	a0,t1
+    800000dc:	00000597          	auipc	a1,0x0
+    800000e0:	26858593          	addi	a1,a1,616 # 80000344 <msg_after_test2>
+    800000e4:	00000097          	auipc	ra,0x0
+    800000e8:	190080e7          	jalr	400(ra) # 80000274 <print_label_hex>
+
+00000000800000ec <done>:
+    800000ec:	00000597          	auipc	a1,0x0
+    800000f0:	2c158593          	addi	a1,a1,705 # 800003ad <msg_done>
+    800000f4:	00000097          	auipc	ra,0x0
+    800000f8:	108080e7          	jalr	264(ra) # 800001fc <uart_puts>
+    800000fc:	00000297          	auipc	t0,0x0
+    80000100:	34c28293          	addi	t0,t0,844 # 80000448 <saved_runner_mtvec>
+    80000104:	0002b283          	ld	t0,0(t0)
+    80000108:	30529073          	csrw	mtvec,t0
+    8000010c:	00100193          	li	gp,1
+    80000110:	00000297          	auipc	t0,0x0
+    80000114:	2c028293          	addi	t0,t0,704 # 800003d0 <tohost>
+    80000118:	0032b023          	sd	gp,0(t0)
+    8000011c:	0330000f          	fence	rw,rw
+    80000120:	10500073          	wfi
+    80000124:	ffdff06f          	j	80000120 <done+0x34>
+
+0000000080000128 <trap_handler>:
+    80000128:	342022f3          	csrr	t0,mcause
+    8000012c:	34102373          	csrr	t1,mepc
+    80000130:	343023f3          	csrr	t2,mtval
+    80000134:	30002e73          	csrr	t3,mstatus
+    80000138:	00000e97          	auipc	t4,0x0
+    8000013c:	308e8e93          	addi	t4,t4,776 # 80000440 <trap_count>
+    80000140:	000ebf03          	ld	t5,0(t4)
+    80000144:	001f0f93          	addi	t6,t5,1
+    80000148:	01feb023          	sd	t6,0(t4)
+    8000014c:	00000e97          	auipc	t4,0x0
+    80000150:	304e8e93          	addi	t4,t4,772 # 80000450 <trap_log>
+    80000154:	006f1f93          	slli	t6,t5,0x6
+    80000158:	01fe8eb3          	add	t4,t4,t6
+    8000015c:	005eb023          	sd	t0,0(t4)
+    80000160:	006eb423          	sd	t1,8(t4)
+    80000164:	007eb823          	sd	t2,16(t4)
+    80000168:	01cebc23          	sd	t3,24(t4)
+    8000016c:	00de5f13          	srli	t5,t3,0xd
+    80000170:	003f7f13          	andi	t5,t5,3
+    80000174:	03eeb023          	sd	t5,32(t4)
+    80000178:	30502ff3          	csrr	t6,mtvec
+    8000017c:	03feb423          	sd	t6,40(t4)
+    80000180:	000e8913          	mv	s2,t4
+    80000184:	00093503          	ld	a0,0(s2)
+    80000188:	00000597          	auipc	a1,0x0
+    8000018c:	1de58593          	addi	a1,a1,478 # 80000366 <msg_trap_mcause>
+    80000190:	00000097          	auipc	ra,0x0
+    80000194:	0e4080e7          	jalr	228(ra) # 80000274 <print_label_hex>
+    80000198:	00893503          	ld	a0,8(s2)
+    8000019c:	00000597          	auipc	a1,0x0
+    800001a0:	1db58593          	addi	a1,a1,475 # 80000377 <msg_trap_mepc>
+    800001a4:	00000097          	auipc	ra,0x0
+    800001a8:	0d0080e7          	jalr	208(ra) # 80000274 <print_label_hex>
+    800001ac:	01893503          	ld	a0,24(s2)
+    800001b0:	00000597          	auipc	a1,0x0
+    800001b4:	1d658593          	addi	a1,a1,470 # 80000386 <msg_trap_mstatus>
+    800001b8:	00000097          	auipc	ra,0x0
+    800001bc:	0bc080e7          	jalr	188(ra) # 80000274 <print_label_hex>
+    800001c0:	02093503          	ld	a0,32(s2)
+    800001c4:	00000597          	auipc	a1,0x0
+    800001c8:	1d458593          	addi	a1,a1,468 # 80000398 <msg_trap_fs>
+    800001cc:	00000097          	auipc	ra,0x0
+    800001d0:	0a8080e7          	jalr	168(ra) # 80000274 <print_label_hex>
+    800001d4:	00893303          	ld	t1,8(s2)
+    800001d8:	00430313          	addi	t1,t1,4
+    800001dc:	34131073          	csrw	mepc,t1
+    800001e0:	30200073          	mret
+
+00000000800001e4 <uart_putc>:
+    800001e4:	10000fb7          	lui	t6,0x10000
+    800001e8:	014f8f03          	lb	t5,20(t6) # 10000014 <UART_BASE+0x14>
+    800001ec:	020f7f13          	andi	t5,t5,32
+    800001f0:	fe0f0ce3          	beqz	t5,800001e8 <uart_putc+0x4>
+    800001f4:	00af8023          	sb	a0,0(t6)
+    800001f8:	00008067          	ret
+
+00000000800001fc <uart_puts>:
+    800001fc:	ff010113          	addi	sp,sp,-16 # 80001ff0 <end_signature+0x1b20>
+    80000200:	00113423          	sd	ra,8(sp)
+    80000204:	00058503          	lb	a0,0(a1)
+    80000208:	00050a63          	beqz	a0,8000021c <uart_puts+0x20>
+    8000020c:	00158593          	addi	a1,a1,1
+    80000210:	00000097          	auipc	ra,0x0
+    80000214:	fd4080e7          	jalr	-44(ra) # 800001e4 <uart_putc>
+    80000218:	fedff06f          	j	80000204 <uart_puts+0x8>
+    8000021c:	00813083          	ld	ra,8(sp)
+    80000220:	01010113          	addi	sp,sp,16
+    80000224:	00008067          	ret
+
+0000000080000228 <uart_hex64>:
+    80000228:	ff010113          	addi	sp,sp,-16
+    8000022c:	00113423          	sd	ra,8(sp)
+    80000230:	00050e13          	mv	t3,a0
+    80000234:	01000e93          	li	t4,16
+    80000238:	03ce5f13          	srli	t5,t3,0x3c
+    8000023c:	00a00f93          	li	t6,10
+    80000240:	01ff4663          	blt	t5,t6,8000024c <uart_hex64+0x24>
+    80000244:	057f0f13          	addi	t5,t5,87
+    80000248:	0080006f          	j	80000250 <uart_hex64+0x28>
+    8000024c:	030f0f13          	addi	t5,t5,48
+    80000250:	000f0513          	mv	a0,t5
+    80000254:	00000097          	auipc	ra,0x0
+    80000258:	f90080e7          	jalr	-112(ra) # 800001e4 <uart_putc>
+    8000025c:	004e1e13          	slli	t3,t3,0x4
+    80000260:	fffe8e93          	addi	t4,t4,-1
+    80000264:	fc0e9ae3          	bnez	t4,80000238 <uart_hex64+0x10>
+    80000268:	00813083          	ld	ra,8(sp)
+    8000026c:	01010113          	addi	sp,sp,16
+    80000270:	00008067          	ret
+
+0000000080000274 <print_label_hex>:
+    80000274:	fe010113          	addi	sp,sp,-32
+    80000278:	00113c23          	sd	ra,24(sp)
+    8000027c:	00913823          	sd	s1,16(sp)
+    80000280:	00050493          	mv	s1,a0
+    80000284:	00000097          	auipc	ra,0x0
+    80000288:	f78080e7          	jalr	-136(ra) # 800001fc <uart_puts>
+    8000028c:	00048513          	mv	a0,s1
+    80000290:	00000097          	auipc	ra,0x0
+    80000294:	f98080e7          	jalr	-104(ra) # 80000228 <uart_hex64>
+    80000298:	00000597          	auipc	a1,0x0
+    8000029c:	13258593          	addi	a1,a1,306 # 800003ca <nl>
+    800002a0:	00000097          	auipc	ra,0x0
+    800002a4:	f5c080e7          	jalr	-164(ra) # 800001fc <uart_puts>
+    800002a8:	01013483          	ld	s1,16(sp)
+    800002ac:	01813083          	ld	ra,24(sp)
+    800002b0:	02010113          	addi	sp,sp,32
+    800002b4:	00008067          	ret
+
+Disassembly of section .rodata:
+
+00000000800002b8 <msg_start>:
+    800002b8:	0a0d                	.insn	2, 0x0a0d
+    800002ba:	4742445b          	.insn	4, 0x4742445b
+    800002be:	205d                	.insn	2, 0x205d
+    800002c0:	7366                	.insn	2, 0x7366
+    800002c2:	665f 6c66 6761      	.insn	6, 0x67616c66665f
+    800002c8:	72705f73          	csrrwi	t5,mhpmevent7h,0
+    800002cc:	2065626f          	jal	tp,800564d2 <stack_top+0x544d2>
+    800002d0:	72617473          	csrrci	s0,mhpmevent6h,2
+    800002d4:	0d74                	.insn	2, 0x0d74
+    800002d6:	000a                	.insn	2, 0x000a
+
+00000000800002d8 <msg_before_test1>:
+    800002d8:	4742445b          	.insn	4, 0x4742445b
+    800002dc:	205d                	.insn	2, 0x205d
+    800002de:	6562                	.insn	2, 0x6562
+    800002e0:	6f66                	.insn	2, 0x6f66
+    800002e2:	6572                	.insn	2, 0x6572
+    800002e4:	4320                	.insn	2, 0x4320
+    800002e6:	43525253          	.insn	4, 0x43525253
+    800002ea:	6620                	.insn	2, 0x6620
+    800002ec:	6c66                	.insn	2, 0x6c66
+    800002ee:	6761                	.insn	2, 0x6761
+    800002f0:	736d2073          	csrs	mhpmevent22h,s10
+    800002f4:	6174                	.insn	2, 0x6174
+    800002f6:	7574                	.insn	2, 0x7574
+    800002f8:	78303d73          	csrrc	s10,0x783,zero
+	...
+
+00000000800002fd <msg_after_test1>:
+    800002fd:	4742445b          	.insn	4, 0x4742445b
+    80000301:	205d                	.insn	2, 0x205d
+    80000303:	6661                	.insn	2, 0x6661
+    80000305:	6574                	.insn	2, 0x6574
+    80000307:	2072                	.insn	2, 0x2072
+    80000309:	52525343          	fmadd.d	ft6,ft4,ft5,fa0,unknown
+    8000030d:	72742043          	fmadd.d	ft0,fs0,ft7,fa4,rdn
+    80000311:	7061                	.insn	2, 0x7061
+    80000313:	6d20                	.insn	2, 0x6d20
+    80000315:	74617473          	csrrci	s0,0x746,2
+    80000319:	7375                	.insn	2, 0x7375
+    8000031b:	303d                	.insn	2, 0x303d
+    8000031d:	0078                	.insn	2, 0x0078
+
+000000008000031f <msg_before_test2>:
+    8000031f:	4742445b          	.insn	4, 0x4742445b
+    80000323:	205d                	.insn	2, 0x205d
+    80000325:	6562                	.insn	2, 0x6562
+    80000327:	6f66                	.insn	2, 0x6f66
+    80000329:	6572                	.insn	2, 0x6572
+    8000032b:	4320                	.insn	2, 0x4320
+    8000032d:	53525253          	.insn	4, 0x53525253
+    80000331:	6620                	.insn	2, 0x6620
+    80000333:	6c66                	.insn	2, 0x6c66
+    80000335:	6761                	.insn	2, 0x6761
+    80000337:	736d2073          	csrs	mhpmevent22h,s10
+    8000033b:	6174                	.insn	2, 0x6174
+    8000033d:	7574                	.insn	2, 0x7574
+    8000033f:	78303d73          	csrrc	s10,0x783,zero
+	...
+
+0000000080000344 <msg_after_test2>:
+    80000344:	4742445b          	.insn	4, 0x4742445b
+    80000348:	205d                	.insn	2, 0x205d
+    8000034a:	6661                	.insn	2, 0x6661
+    8000034c:	6574                	.insn	2, 0x6574
+    8000034e:	2072                	.insn	2, 0x2072
+    80000350:	52525343          	fmadd.d	ft6,ft4,ft5,fa0,unknown
+    80000354:	72742053          	.insn	4, 0x72742053
+    80000358:	7061                	.insn	2, 0x7061
+    8000035a:	6d20                	.insn	2, 0x6d20
+    8000035c:	74617473          	csrrci	s0,0x746,2
+    80000360:	7375                	.insn	2, 0x7375
+    80000362:	303d                	.insn	2, 0x303d
+    80000364:	0078                	.insn	2, 0x0078
+
+0000000080000366 <msg_trap_mcause>:
+    80000366:	4152545b          	.insn	4, 0x4152545b
+    8000036a:	5d50                	.insn	2, 0x5d50
+    8000036c:	6d20                	.insn	2, 0x6d20
+    8000036e:	73756163          	bltu	a0,s7,80000a90 <end_signature+0x5c0>
+    80000372:	3d65                	.insn	2, 0x3d65
+    80000374:	7830                	.insn	2, 0x7830
+	...
+
+0000000080000377 <msg_trap_mepc>:
+    80000377:	4152545b          	.insn	4, 0x4152545b
+    8000037b:	5d50                	.insn	2, 0x5d50
+    8000037d:	6d20                	.insn	2, 0x6d20
+    8000037f:	7065                	.insn	2, 0x7065
+    80000381:	78303d63          	.insn	4, 0x78303d63
+	...
+
+0000000080000386 <msg_trap_mstatus>:
+    80000386:	4152545b          	.insn	4, 0x4152545b
+    8000038a:	5d50                	.insn	2, 0x5d50
+    8000038c:	6d20                	.insn	2, 0x6d20
+    8000038e:	74617473          	csrrci	s0,0x746,2
+    80000392:	7375                	.insn	2, 0x7375
+    80000394:	303d                	.insn	2, 0x303d
+    80000396:	0078                	.insn	2, 0x0078
+
+0000000080000398 <msg_trap_fs>:
+    80000398:	4152545b          	.insn	4, 0x4152545b
+    8000039c:	5d50                	.insn	2, 0x5d50
+    8000039e:	6420                	.insn	2, 0x6420
+    800003a0:	6365                	.insn	2, 0x6365
+    800003a2:	6465646f          	jal	s0,800569e8 <stack_top+0x549e8>
+    800003a6:	4620                	.insn	2, 0x4620
+    800003a8:	78303d53          	.insn	4, 0x78303d53
+	...
+
+00000000800003ad <msg_done>:
+    800003ad:	4742445b          	.insn	4, 0x4742445b
+    800003b1:	205d                	.insn	2, 0x205d
+    800003b3:	7366                	.insn	2, 0x7366
+    800003b5:	665f 6c66 6761      	.insn	6, 0x67616c66665f
+    800003bb:	72705f73          	csrrwi	t5,mhpmevent7h,0
+    800003bf:	2065626f          	jal	tp,800565c5 <stack_top+0x545c5>
+    800003c3:	6f64                	.insn	2, 0x6f64
+    800003c5:	656e                	.insn	2, 0x656e
+    800003c7:	0a0d                	.insn	2, 0x0a0d
+	...
+
+00000000800003ca <nl>:
+    800003ca:	0a0d                	.insn	2, 0x0a0d
+	...
+
+Disassembly of section .tohost:
+
+00000000800003d0 <tohost>:
+	...
+
+00000000800003d8 <fromhost>:
+	...
+
+Disassembly of section .runner_fail_scratch:
+
+00000000800003e0 <begin_failure_scratch>:
+	...
+
+Disassembly of section .signature:
+
+0000000080000420 <begin_signature>:
+	...
+
+0000000080000428 <after_first_trap_mstatus>:
+	...
+
+0000000080000430 <before_read_mstatus>:
+	...
+
+0000000080000438 <after_second_trap_mstatus>:
+	...
+
+0000000080000440 <trap_count>:
+	...
+
+0000000080000448 <saved_runner_mtvec>:
+	...
+
+0000000080000450 <trap_log>:
+	...
+
+Disassembly of section .riscv.attributes:
+
+0000000000000000 <.riscv.attributes>:
+   0:	7541                	.insn	2, 0x7541
+   2:	0000                	.insn	2, 0x0000
+   4:	7200                	.insn	2, 0x7200
+   6:	7369                	.insn	2, 0x7369
+   8:	01007663          	bgeu	zero,a6,14 <UART_BASE-0xfffffec>
+   c:	0000006b          	.insn	4, 0x006b
+  10:	7205                	.insn	2, 0x7205
+  12:	3676                	.insn	2, 0x3676
+  14:	6934                	.insn	2, 0x6934
+  16:	7032                	.insn	2, 0x7032
+  18:	5f31                	.insn	2, 0x5f31
+  1a:	326d                	.insn	2, 0x326d
+  1c:	3070                	.insn	2, 0x3070
+  1e:	615f 7032 5f31      	.insn	6, 0x5f317032615f
+  24:	3266                	.insn	2, 0x3266
+  26:	3270                	.insn	2, 0x3270
+  28:	645f 7032 5f32      	.insn	6, 0x5f327032645f
+  2e:	30703263          	.insn	4, 0x30703263
+  32:	7a5f 6369 7273      	.insn	6, 0x727363697a5f
+  38:	7032                	.insn	2, 0x7032
+  3a:	5f30                	.insn	2, 0x5f30
+  3c:	697a                	.insn	2, 0x697a
+  3e:	6566                	.insn	2, 0x6566
+  40:	636e                	.insn	2, 0x636e
+  42:	6965                	.insn	2, 0x6965
+  44:	7032                	.insn	2, 0x7032
+  46:	5f30                	.insn	2, 0x5f30
+  48:	6d7a                	.insn	2, 0x6d7a
+  4a:	756d                	.insn	2, 0x756d
+  4c:	316c                	.insn	2, 0x316c
+  4e:	3070                	.insn	2, 0x3070
+  50:	7a5f 6161 6f6d      	.insn	6, 0x6f6d61617a5f
+  56:	7031                	.insn	2, 0x7031
+  58:	5f30                	.insn	2, 0x5f30
+  5a:	617a                	.insn	2, 0x617a
+  5c:	726c                	.insn	2, 0x726c
+  5e:	70316373          	csrrsi	t1,0x703,2
+  62:	5f30                	.insn	2, 0x5f30
+  64:	637a                	.insn	2, 0x637a
+  66:	3161                	.insn	2, 0x3161
+  68:	3070                	.insn	2, 0x3070
+  6a:	7a5f 6463 7031      	.insn	6, 0x703164637a5f
+  70:	0030                	.insn	2, 0x0030
+  72:	0108                	.insn	2, 0x0108
+  74:	0b0a                	.insn	2, 0x0b0a

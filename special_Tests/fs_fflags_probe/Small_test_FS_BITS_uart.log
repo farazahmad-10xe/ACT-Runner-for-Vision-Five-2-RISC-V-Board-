@@ -1,0 +1,147 @@
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827055 blocks=16
+[SD] next_index=0
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SD] mark in_progress_index=0 next_index=0 retry_count=1 rc=0x0000000000000000
+[CASE] START name=fs_fflags_probe
+[PAYLOAD] kind=ACT entry=0x0000000041000000 tohost=0x00000000410003d0 load_segments=0x0000000000000001
+[ACT] sig_begin=0x0000000041000420
+[ACT] sig_end=0x00000000410004d0
+
+[DBG] fs_fflags_probe start
+[DBG] before CSRRC fflags mstatus=0x0000000a00000008
+[TRAP] mcause=0x0000000000000002
+[TRAP] mepc=0x0000000041000070
+[TRAP] mstatus=0x0000000a00001880
+[TRAP] decoded FS=0x0000000000000000
+[DBG] after CSRRC trap mstatus=0x0000000a00000088
+[DBG] before CSRRS fflags mstatus=0x0000000a00000088
+[TRAP] mcause=0x0000000000000002
+[TRAP] mepc=0x00000000410000c4
+[TRAP] mstatus=0x0000000a00001880
+[TRAP] decoded FS=0x0000000000000000
+[DBG] after CSRRS trap mstatus=0x0000000a00000088
+[DBG] fs_fflags_probe done
+========================================================================
+[MON] tohost addr=0x00000000410003d0 value=0x0000000000000003
+========================================================================
+[MON] sig_begin=0x0000000041000420
+      sig_end=0x00000000410004d0
+      sig_bytes=0x00000000000000b0
+[CASE] REPORT name=fs_fflags_probe
+              exec_mode=M status=FAIL
+              rc=0x0000000000000000
+              tohost_addr=0x00000000410003d0
+              tohost_value=0x0000000000000003
+              sig_begin=0x0000000041000420
+              sig_end=0x00000000410004d0
+              sig_bytes=0x00000000000000b0
+              exit_pc=0x0000000000000000
+[CTX] reason=FAIL exec_mode=M uflow_marker=0x0000000000000000 trap_valid=0 exit_trap_mode=none exit_mcause=0x0000000000000000 exit_reason=no_trap exit_mepc=0x0000000000000000 exit_insn=0x0000000000000000 exit_insn_valid=0 exit_mtval=0x0000000000000000 exit_mstatus=0x0000000000000000 exit_symbol=unknown exit_symbol_addr=0x0000000000000000
+[REG] unavailable=no_trap_frame
+[FAILSCR] begin=0x00000000410003e0 end=0x0000000041000420 bytes=0x0000000000000040
+[FAILQ] 0x00000000410003e0 : 0x0000000000000000
+[FAILQ] 0x00000000410003e8 : 0x0000000000000000
+[FAILQ] 0x00000000410003f0 : 0x0000000000000000
+[FAILQ] 0x00000000410003f8 : 0x0000000000000000
+[FAILQ] 0x0000000041000400 : 0x0000000000000000
+[FAILQ] 0x0000000041000408 : 0x0000000000000000
+[FAILQ] 0x0000000041000410 : 0x0000000000000000
+[FAILQ] 0x0000000041000418 : 0x0000000000000000
+[ACTDBG] decoded_failure_scratch begin=0x00000000410003e0 end=0x0000000041000420
+[ACTDBG] failure_type=0x00000000 note=x0_slot_reused_by_ACT
+[ACTREG] x0=0x0000000000000000 x1=0x0000000000000000 x2=0x0000000000000000 x3=0x0000000000000000
+[ACTREG] x4=0x0000000000000000 x5=0x0000000000000000 x6=0x0000000000000000 x7=0x0000000000000000
+[ACTREG] x8=0x0000000a00000008 x9=0x0000000a00000088 x10=0x0000000a00000088 x11=0x0000000a00000088
+[ACTREG] x12=0x0000000000000002 x13=0x0000000040002ce8 x14=0x0000000000000002 x15=0x0000000041000070
+[ACTREG] x16=0x0000000000163673 x17=0x0000000a00001880 x18=0x0000000000000000 x19=0x0000000041000128
+[ACTREG] x20=0x0000000000000000 x21=0x0000000000000000 x22=0x0000000000000002 x23=0x00000000410000c4
+[ACTREG] x24=0x0000000000102673 x25=0x0000000a00001880 x26=0x0000000000000000 x27=0x0000000041000128
+[ACTREG] x28=0x0000000000000000 x29=0x0000000000000000 x30=0x0000000000000000 x31=0x0000000000000000
+[ACTFAIL] failing_instruction=unavailable
+[ACTFAIL] failing_addr=unavailable
+[ACTFAIL] failing_value=unavailable
+[ACTFAIL] expected_value=unavailable
+[ACTFAIL] failure_string_ptr=unavailable
+[ACTTRAP] trap_diag_actual_value=unavailable
+[ACTTRAP] trap_diag_expected_value=unavailable
+[ACTTSIG] unavailable=no_current_pointer
+[ACTHTRACE] unavailable=no_Mtramptbl_sv_symbol
+[ACTMTVEC] unavailable=no_Mtramptbl_sv_symbol
+[ACTCSR] saved_mepc=0x0000000000000000 saved_mcause=0x0000000000000000 saved_mtval=0x0000000000000000 saved_mstatus=0x0000000000000000 monitor_current_mtvec=0x0000000008000330
+[ACTDBG] instructions_around_saved_mepc=unavailable
+[SIG] begin=0x0000000041000420 end=0x00000000410004d0 bytes=0x00000000000000b0
+[SD] monitor persist next_index=1 clear_in_progress rc=0x0000000000000000
+[SD] quiesce busy_rc=0x0000000000000000 idle_rc=0x0000000000000000 clk_rc=0x0000000000000000
+[RST] trigger watchdog reset
+[HOST] hard cycle reason=watchdog_reset
+{'protocol': 4, 't': 1781523350, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781523363, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+[RST] watchdog armed
+dwmci_s: Response Timeout.
+[HOST] hard cycle reason=boot_media_failure retry=1/10
+{'protocol': 4, 't': 1781523364, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781523376, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+dwmci_s: Response Timeout.
+[HOST] hard cycle reason=boot_media_failure retry=2/10
+{'protocol': 4, 't': 1781523376, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}

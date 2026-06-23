@@ -51,6 +51,40 @@ done
 
 mkdir -p "$(dirname "$log_path")"
 
+if [[ -z "${TUYA_DEVICE_ID:-}" || -z "${TUYA_DEVICE_IP:-}" || -z "${TUYA_LOCAL_KEY:-}" ]]; then
+  if [[ -f ./devices.json ]]; then
+    while IFS='=' read -r key value; do
+      case "$key" in
+        TUYA_DEVICE_ID) export TUYA_DEVICE_ID="${TUYA_DEVICE_ID:-$value}" ;;
+        TUYA_DEVICE_IP) export TUYA_DEVICE_IP="${TUYA_DEVICE_IP:-$value}" ;;
+        TUYA_LOCAL_KEY) export TUYA_LOCAL_KEY="${TUYA_LOCAL_KEY:-$value}" ;;
+        TUYA_VERSION) export TUYA_VERSION="${TUYA_VERSION:-$value}" ;;
+      esac
+    done < <(python3 - <<'PY'
+import json
+
+with open("devices.json", "r", encoding="utf-8") as f:
+    devices = json.load(f)
+
+device = devices[0] if isinstance(devices, list) and devices else {}
+fields = {
+    "TUYA_DEVICE_ID": device.get("id", ""),
+    "TUYA_DEVICE_IP": device.get("ip", ""),
+    "TUYA_LOCAL_KEY": device.get("key", ""),
+    "TUYA_VERSION": str(device.get("version", "3.4")),
+}
+for key, value in fields.items():
+    if value:
+        print(f"{key}={value}")
+PY
+)
+  fi
+fi
+
+if [[ -z "${TUYA_DEVICE_ID:-}" || -z "${TUYA_DEVICE_IP:-}" || -z "${TUYA_LOCAL_KEY:-}" ]]; then
+  echo "[HOST] WARN: Tuya credentials are incomplete; power cycling will fail unless --start-cycle is omitted or env vars are exported." >&2
+fi
+
 stty -F "$serial_dev" 115200 cs8 -cstopb -parenb -ixon -ixoff -icanon -echo raw
 
 last_cycle_ts=0
@@ -108,7 +142,7 @@ cat "$serial_dev" | while IFS= read -r line; do
     consecutive_boot_fails=0
   fi
 
-  if [[ "$line" == *"[RST] trigger watchdog reset"* ]]; then
+  if [[ "$line" == *"[RST] fast fail reset"* ]] || [[ "$line" == *"[RST] trigger watchdog reset"* ]]; then
     trigger_cycle "watchdog_reset"
     continue
   fi
@@ -117,4 +151,4 @@ cat "$serial_dev" | while IFS= read -r line; do
     trigger_boot_recovery_cycle
     continue
   fi
-done | tee "$log_path"
+done | tee -a "$log_path"

@@ -1,0 +1,10 @@
+using /home/lpt-10xe/riscv-arch-test/work-vf2-4exceptions-vf2-sailjson-xenvcfg-guard/visionfive2-rv64gc/build/priv/ExceptionsU/ExceptionsU-00.sig for test-signature output.
+setting signature-granularity to 8 bytes
+using /home/lpt-10xe/riscv-arch-test/work-vf2-4exceptions-vf2-sailjson-xenvcfg-guard/visionfive2-rv64gc/build/priv/ExceptionsU/ExceptionsU-00.sig.trace for trace output.
+HTIF located at 0x8002da00
+begin_signature: 0x8000fec0
+end_signature: 0x8002d9f0
+Entry point: 0x80000000
+
+RVCP-SUMMARY: TEST SIGRUN - Test File "ExceptionsU-00.S"
+

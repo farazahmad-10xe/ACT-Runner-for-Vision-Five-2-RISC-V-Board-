@@ -1,0 +1,1227 @@
+Trap Report: ExceptionsSm-00 (RV64)
+===================================
+Total traps recorded in signature: 153
+
+Trap #0: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000001  (Instruction access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #1: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #2: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #3: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #4: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #5: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #6: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #7: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #8: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #9: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #10: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #11: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #12: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #13: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #14: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #15: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #16: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #17: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #18: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #19: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #20: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #21: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #22: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #23: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #24: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #25: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #26: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #27: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #28: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #29: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #30: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #31: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #32: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #33: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #34: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #35: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #36: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #37: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #38: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #39: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #40: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #41: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #42: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #43: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #44: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #45: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #46: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #47: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #48: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #49: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #50: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #51: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080008007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #52: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #53: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #54: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #55: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #56: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #57: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #58: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #59: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #60: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #61: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #62: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #63: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #64: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #65: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #66: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #67: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #68: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #69: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #70: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #71: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #72: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #73: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #74: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #75: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #76: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #77: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #78: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #79: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #80: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #81: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #82: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #83: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #84: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #85: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #86: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #87: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #88: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #89: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #90: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #91: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #92: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #93: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #94: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #95: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #96: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #97: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #98: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #99: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #100: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #101: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #102: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #103: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #104: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #105: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #106: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #107: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #108: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #109: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000005  (Load access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #110: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #111: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000004  (Load address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #112: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #113: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #114: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #115: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #116: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #117: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #118: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #119: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000001
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #120: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #121: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #122: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #123: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #124: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #125: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #126: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #127: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000003
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #128: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #129: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #130: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #131: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000004
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #132: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #133: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #134: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #135: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000005
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #136: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #137: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #138: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #139: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000006
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #140: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000007  (Store/AMO access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #141: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #142: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #143: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000006  (Store/AMO address misaligned)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000007
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #144: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000002  (Illegal instruction)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #145: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000001  (Instruction access fault)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000002
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #146: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000002  (Illegal instruction)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000001502573
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #147: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000002  (Illegal instruction)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000001503473
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #148: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000002  (Illegal instruction)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x00000000015066f3
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #149: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000002  (Illegal instruction)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000001507773
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #150: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000003  (Breakpoint)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000080004498
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #151: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000002  (Illegal instruction)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x0000000000000000
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0
+
+Trap #152: Exception
+  Mode:    M
+  XCAUSE:  0x0000000000000002  (Illegal instruction)
+  XEPC:    0x0000000080000040  (rvtest_code_begin)
+  XTVAL:   0x00000000ffffffff
+  Status:  SIE=0, MIE=0, SPIE=0, MPIE=0, SPP=0, MPP=3 (M), MPRV=0, GVA=1, MPV=0, SPVP=0
+  XIE[cause]: 0  XIP[cause]: 0

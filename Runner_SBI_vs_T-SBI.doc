@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Runner SBI vs T-SBI Comparison</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      color: #111827;
+    }
+    h1 {
+      font-size: 18pt;
+      margin-bottom: 14px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #9ca3af;
+      padding: 7px 9px;
+      vertical-align: top;
+    }
+    th {
+      background: #e5e7eb;
+      font-weight: bold;
+      text-align: left;
+    }
+    tr:nth-child(even) td {
+      background: #f9fafb;
+    }
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 10pt;
+    }
+  </style>
+</head>
+<body>
+  <h1>Runner SBI vs Proposed / ACT T-SBI</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Area</th>
+        <th>Current Runner SBI</th>
+        <th>Proposed / ACT T-SBI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Purpose</td><td>Lightweight private bridge for this runner's ACT S/U execution path</td><td>Standard lightweight test SBI for ACT certification across conforming or custom M-mode</td></tr>
+      <tr><td>Full OpenSBI?</td><td>No</td><td>No</td></tr>
+      <tr><td>ABI compatibility with ratified SBI</td><td>Separate private ABI plus limited ratified SBI handling</td><td>Test-focused ABI; should coexist carefully with ratified SBI if both are present</td></tr>
+      <tr><td>Main dispatch register</td><td><code>a7</code> selects private extension, <code>a0</code> selects operation</td><td><code>a0</code> selects operation directly</td></tr>
+      <tr><td>Extension ID</td><td><code>a7 = RUNNER_TEST_SBI_EXT = 0x56524632</code></td><td>No private <code>a7</code> extension in the original T-SBI table</td></tr>
+      <tr><td>Function ID register</td><td>Not using ratified <code>a6</code> for private bridge</td><td>Not using <code>a6</code> in original lightweight ABI</td></tr>
+      <tr><td>Basic call shape</td><td><code>a7 = ext</code>, <code>a0 = op</code>, <code>a1/a2 = args</code></td><td><code>a0 = op</code>, <code>a1 = optional arg</code>, return in <code>a0</code></td></tr>
+      <tr><td>ECALL test op</td><td><code>RUNNER_TEST_OP_ECALL_TEST = 0</code></td><td><code>ECALL_TEST = 0x00000073</code> in Table 6, or <code>0</code> in later system-call text</td></tr>
+      <tr><td>CSR access op</td><td><code>RUNNER_TEST_OP_ACCESS_CSR = 5</code></td><td>Either encoded CSR instruction directly in <code>a0</code> per Table 6, or <code>a0 = 5</code> and <code>a1 = opcode</code> per later system-call text</td></tr>
+      <tr><td>CSR value argument</td><td>Uses <code>a2</code> for source value when forwarding CSR access</td><td>Original Table 6 uses <code>a1</code> as source value</td></tr>
+      <tr><td>CSR read result</td><td>Writes result through SBI result convention or back into saved lower trap frame</td><td>Returns result in <code>a0</code>, or modifies target GPR depending on handler model</td></tr>
+      <tr><td>Unknown op behavior</td><td>Often returns <code>-2</code> / not supported</td><td>Returns <code>-1</code> for reserved or invalid operation</td></tr>
+      <tr><td>Mode switch calls</td><td>Private <code>GOTO_M_MODE = 1</code> and <code>GOTO_S_MODE = 2</code>, but currently return not-supported</td><td>ACT calls include <code>GOTO_MMODE</code>, <code>GOTO_SMODE</code>, <code>GOTO_UMODE</code>, and possibly VS/VU modes</td></tr>
+      <tr><td>Lower-mode return</td><td>Uses private <code>RETURN_TO_M = 0x8000000000000000</code></td><td>Not part of original T-SBI table; framework may use mode/trap return conventions</td></tr>
+      <tr><td>S-mode forwarding</td><td>S trap handler rewrites frame into private runner ABI and executes <code>ecall</code> to M-mode</td><td>S trap handler should handle what it can and forward unchanged T-SBI request upward</td></tr>
+      <tr><td>Illegal M-CSR access from S</td><td>Optional compatibility path converts illegal CSR trap into private <code>ACCESS_CSR</code> bridge</td><td>Expected behavior is to route/emulate illegal or explicit M-CSR access through T-SBI</td></tr>
+      <tr><td>CSR decoding</td><td>Decodes general CSR instruction format and can emulate reads/writes</td><td>Should validate exact T-SBI CSR forms depending on chosen ABI</td></tr>
+      <tr><td>CSR support scope</td><td>Limited set; compatibility-safe set is narrower for S-mode CSR policy</td><td>Must cover writable M-mode CSRs that affect lower modes: <code>mstatus</code>, <code>medeleg/mideleg</code>, <code>mie/mip</code>, <code>mtvec</code>, PMP, counters, <code>misa</code>, <code>menvcfg</code>, <code>mseccfg</code>, etc.</td></tr>
+      <tr><td>Ratified SBI services</td><td>Has limited support for base, timer, IPI, RFNC, legacy console/shutdown</td><td>T-SBI is separate from full OpenSBI, but system may still need ratified SBI coexistence</td></tr>
+      <tr><td>Custom M-mode support</td><td>Partial: can execute/emulate selected standard machine CSRs in M-mode</td><td>Core goal: M-mode handler may translate/emulate standard test requests onto DUT-specific custom M-mode resources</td></tr>
+      <tr><td>Test body portability</td><td>Helps isolate ACT lower-mode execution, but private ABI is runner-specific</td><td>Designed so portable ACT test body avoids direct dependency on conforming M-mode</td></tr>
+      <tr><td>Current status</td><td>Working private runner bridge, conceptually similar to T-SBI</td><td>Target architecture/ABI for certification with conforming or custom M-mode</td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

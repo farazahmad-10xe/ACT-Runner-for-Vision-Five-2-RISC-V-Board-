@@ -11,7 +11,6 @@ Options:
   --tests-dir <dir>          Directory containing test ELFs (searched with --pattern).
   --test-list <file>         File with one ELF path per line.
   --pattern <glob>           ELF glob inside --tests-dir (default: *.elf).
-  --golden-build-root <dir>  Root containing expected ACT .sig files (required).
   --run-root <dir>           Output root for run artifacts (default: ./runs).
   --run-name <name>          Output run name (default: timestamp).
   --serial-dev <path>        UART device for capture (default: /dev/ttyUSB0).
@@ -25,14 +24,13 @@ Options:
 Notes:
   1) This script builds firmware per test and creates uboot_part2_new.bin.
   2) Flash/boot is left to your current method; script pauses for user confirmation.
-  3) After capture, it runs extract_act_report.sh and diffs signature.sig vs golden .sig.
+  3) After capture, it runs extract_act_report.sh and uses the firmware-reported verdict.
 EOF2
 }
 
 tests_dir=""
 test_list=""
 pattern="*.elf"
-golden_build_root=""
 run_root="./runs"
 run_name="$(date +%Y%m%d_%H%M%S)"
 serial_dev="/dev/ttyUSB0"
@@ -47,7 +45,6 @@ while [[ $# -gt 0 ]]; do
     --tests-dir) tests_dir="${2:-}"; shift 2 ;;
     --test-list) test_list="${2:-}"; shift 2 ;;
     --pattern) pattern="${2:-}"; shift 2 ;;
-    --golden-build-root) golden_build_root="${2:-}"; shift 2 ;;
     --run-root) run_root="${2:-}"; shift 2 ;;
     --run-name) run_name="${2:-}"; shift 2 ;;
     --serial-dev) serial_dev="${2:-}"; shift 2 ;;
@@ -61,10 +58,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$golden_build_root" ]]; then
-  echo "ERROR: --golden-build-root is required." >&2
-  exit 1
-fi
 if [[ -z "$tests_dir" && -z "$test_list" ]]; then
   echo "ERROR: provide either --tests-dir or --test-list." >&2
   exit 1
@@ -95,7 +88,7 @@ run_dir="$run_root/$run_name"
 mkdir -p "$run_dir"
 summary_csv="$run_dir/suite_summary.csv"
 failed_txt="$run_dir/failed_tests.txt"
-printf "test,result,golden_sig,artifacts_dir\n" > "$summary_csv"
+printf "test,result,artifacts_dir\n" > "$summary_csv"
 : > "$failed_txt"
 
 echo "Run dir: $run_dir"
@@ -140,7 +133,6 @@ for elf in "${tests[@]}"; do
   attempt=1
   power_cycled_this_test=0
   final_result=""
-  final_golden_sig=""
   while [[ $attempt -le $max_attempts ]]; do
     uart_log="$test_dir/uart_attempt${attempt}.log"
     echo "Prepared image: $test_dir/uboot_part2_new.bin"
@@ -189,30 +181,36 @@ for elf in "${tests[@]}"; do
     ln -sf "uart_attempt${attempt}.log" "$test_dir/uart.log"
     ./extract_act_report.sh "$uart_log" "$report_dir" >/dev/null
 
-    golden_sig="$(find "$golden_build_root" -type f -name "${test_name}.sig" | head -n1 || true)"
-    final_golden_sig="$golden_sig"
-    if [[ -z "$golden_sig" ]]; then
-      echo "WARN: no golden .sig found for $test_name under $golden_build_root"
-      final_result="NO_GOLDEN_SIG"
-      break
+    final_result="$(
+      awk -F, '
+        NR==1 {
+          for (i = 1; i <= NF; i++) {
+            if ($i == "final_verdict") fv_col = i;
+            if ($i == "status") st_col = i;
+          }
+          next;
+        }
+        NR==2 {
+          if (fv_col) print $fv_col;
+          else if (st_col) print $st_col;
+          exit;
+        }
+      ' "$report_dir/per_case_report.csv" 2>/dev/null || true
+    )"
+    if [[ -z "$final_result" ]]; then
+      final_result="$(
+        awk -F, 'NR==2 { print $2; exit }' "$report_dir/per_case_report.csv" 2>/dev/null || true
+      )"
     fi
-
-    diff_file="$report_dir/signature.diff"
-    if diff -u "$golden_sig" "$report_dir/signature.sig" > "$diff_file"; then
-      echo "PASS: signature match"
-      rm -f "$diff_file"
-      final_result="PASS"
-    else
-      echo "FAIL: signature mismatch -> $diff_file"
-      final_result="FAIL"
-    fi
+    final_result="${final_result:-ERROR}"
+    echo "Result: $final_result"
     break
   done
 
   if [[ "$final_result" == "PASS" ]]; then
-    printf "%s,%s,%s,%s\n" "$test_name" "$final_result" "$final_golden_sig" "$report_dir" >> "$summary_csv"
+    printf "%s,%s,%s\n" "$test_name" "$final_result" "$report_dir" >> "$summary_csv"
   else
-    printf "%s,%s,%s,%s\n" "$test_name" "${final_result:-FAIL}" "$final_golden_sig" "$report_dir" >> "$summary_csv"
+    printf "%s,%s,%s\n" "$test_name" "${final_result:-FAIL}" "$report_dir" >> "$summary_csv"
     echo "$test_name" >> "$failed_txt"
   fi
 

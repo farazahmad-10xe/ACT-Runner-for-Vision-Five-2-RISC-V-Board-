@@ -4,20 +4,105 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define UART_BASE       0x10000000UL
+#ifndef BOARD_UART_BASE
+#define BOARD_UART_BASE 0x10000000UL
+#endif
+#ifndef BOARD_UART_SIZE
+#define BOARD_UART_SIZE 0x1000UL
+#endif
+#ifndef BOARD_CLINT_MSIP_BASE
+#define BOARD_CLINT_MSIP_BASE 0x02000000UL
+#endif
+#ifndef BOARD_CLINT_MTIMECMP_BASE
+#define BOARD_CLINT_MTIMECMP_BASE 0x02004000UL
+#endif
+#ifndef BOARD_CLINT_MTIME_ADDR
+#define BOARD_CLINT_MTIME_ADDR 0x0200bff8UL
+#endif
+#ifndef BOARD_RUNNER_HART_ID
+#define BOARD_RUNNER_HART_ID 1u
+#endif
+#ifndef BOARD_MONITOR_HART_ID
+#define BOARD_MONITOR_HART_ID 2u
+#endif
+#ifndef BOARD_FIXED_TOHOST_ADDR
+#define BOARD_FIXED_TOHOST_ADDR 0x41008000ULL
+#endif
+#ifndef BOARD_RAM_BASE
+#define BOARD_RAM_BASE 0x40000000ULL
+#endif
+#ifndef BOARD_RAM_LIMIT
+#define BOARD_RAM_LIMIT 0x100000000ULL
+#endif
+#ifndef BOARD_EXT_PACK_ADDR
+#define BOARD_EXT_PACK_ADDR 0x88000000ULL
+#endif
+#ifndef BOARD_EXT_PACK_MAX_BYTES
+#define BOARD_EXT_PACK_MAX_BYTES (128ULL * 1024ULL * 1024ULL)
+#endif
+#ifndef BOARD_TEST_STACK_BYTES
+#define BOARD_TEST_STACK_BYTES (256u * 1024u)
+#endif
+#ifndef BOARD_SMODE_RUNTIME_STACK_BYTES
+#define BOARD_SMODE_RUNTIME_STACK_BYTES (16u * 1024u)
+#endif
+#ifndef BOARD_TRAP_STACK_BYTES
+#define BOARD_TRAP_STACK_BYTES 1024u
+#endif
+#ifndef BOARD_STRAP_STACK_BYTES
+#define BOARD_STRAP_STACK_BYTES 1024u
+#endif
+#ifndef BOARD_SDIO0_BASE
+#define BOARD_SDIO0_BASE 0x16010000UL
+#endif
+#ifndef BOARD_SDIO1_BASE
+#define BOARD_SDIO1_BASE 0x16020000UL
+#endif
+#ifndef BOARD_SD_BLOCK_SIZE
+#define BOARD_SD_BLOCK_SIZE 512u
+#endif
+#ifndef BOARD_SD_ENABLE
+#define BOARD_SD_ENABLE 1
+#endif
+#ifndef BOARD_WDT_ENABLE
+#define BOARD_WDT_ENABLE 1
+#endif
+#ifndef BOARD_WDT_BASE
+#define BOARD_WDT_BASE 0x13070000UL
+#endif
+#ifndef BOARD_WDT_LOAD
+#define BOARD_WDT_LOAD 0x000
+#endif
+#ifndef BOARD_WDT_CTRL
+#define BOARD_WDT_CTRL 0x008
+#endif
+#ifndef BOARD_WDT_LOCK
+#define BOARD_WDT_LOCK 0xc00
+#endif
+#ifndef BOARD_WDT_UNLOCK_KEY
+#define BOARD_WDT_UNLOCK_KEY 0x1acce551u
+#endif
+
+#define UART_BASE       BOARD_UART_BASE
+#define UART_SIZE       BOARD_UART_SIZE
 
 #define UART_THR        0x00
+#define UART_RBR        0x00
 #define UART_LSR        0x14
+#define UART_LSR_DR     (1u << 0)
 #define UART_LSR_THRE   (1u << 5)
 
-#define CLINT_MSIP_BASE 0x02000000UL
-#define CLINT_MTIMECMP_BASE 0x02004000UL
-#define CLINT_MTIME_ADDR    0x0200bff8UL
-#define RUNNER_HART_ID  1u
-#define MONITOR_HART_ID 2u
+#define CLINT_MSIP_BASE BOARD_CLINT_MSIP_BASE
+#define CLINT_MTIMECMP_BASE BOARD_CLINT_MTIMECMP_BASE
+#define CLINT_MTIME_ADDR    BOARD_CLINT_MTIME_ADDR
+#define RUNNER_HART_ID  BOARD_RUNNER_HART_ID
+#define MONITOR_HART_ID BOARD_MONITOR_HART_ID
+#define FIXED_TOHOST_ADDR BOARD_FIXED_TOHOST_ADDR
 
 #define PT_LOAD         1u
 #define PF_X            1u
+#define PF_W            2u
+#define PF_R            4u
 #define EM_RISCV        243u
 #define EI_NIDENT       16u
 #define ELFCLASS64      2u
@@ -28,66 +113,218 @@
 #define PACK_MAGIC      0x4b504341u
 #define PACK_VERSION    1u
 #define MAX_PACK_TESTS  512u
-#define EXT_PACK_ADDR   0x88000000ULL
-#define EXT_PACK_MAX_BYTES (128ULL * 1024ULL * 1024ULL)
+#define EXT_PACK_ADDR   BOARD_EXT_PACK_ADDR
+#define EXT_PACK_MAX_BYTES BOARD_EXT_PACK_MAX_BYTES
 #define PACK_FOOTER_MAGIC 0x464b5041u
-#define TEST_STACK_BYTES (256u * 1024u)
-#define TRAP_STACK_BYTES 1024u
+#define TEST_STACK_BYTES BOARD_TEST_STACK_BYTES
+#define SMODE_RUNTIME_STACK_BYTES BOARD_SMODE_RUNTIME_STACK_BYTES
+#define TRAP_STACK_BYTES BOARD_TRAP_STACK_BYTES
+#define STRAP_STACK_BYTES BOARD_STRAP_STACK_BYTES
+#define FOOTER_IDX_NONE 0xffffffffu
 
-#define SDIO0_BASE      0x16010000UL
-#define SDIO1_BASE      0x16020000UL
-#define SD_BLOCK_SIZE   512u
-#define JH7110_WDT_BASE 0x13070000UL
-#define JH7110_WDT_LOAD 0x000
-#define JH7110_WDT_CTRL 0x008
-#define JH7110_WDT_LOCK 0xc00
-#define JH7110_WDT_UNLOCK_KEY 0x1acce551u
+#define SDIO0_BASE      BOARD_SDIO0_BASE
+#define SDIO1_BASE      BOARD_SDIO1_BASE
+#define SD_BLOCK_SIZE   BOARD_SD_BLOCK_SIZE
+#define RUNNER_SD_ENABLE BOARD_SD_ENABLE
+#define RUNNER_WDT_ENABLE BOARD_WDT_ENABLE
+#define RUNNER_WDT_BASE BOARD_WDT_BASE
+#define RUNNER_WDT_LOAD BOARD_WDT_LOAD
+#define RUNNER_WDT_CTRL BOARD_WDT_CTRL
+#define RUNNER_WDT_LOCK BOARD_WDT_LOCK
+#define RUNNER_WDT_UNLOCK_KEY BOARD_WDT_UNLOCK_KEY
 
 #define MCAUSE_INTERRUPT_BIT (1ULL << 63)
+#define MCAUSE_SSI      (MCAUSE_INTERRUPT_BIT | 1ULL)
 #define MCAUSE_MSI      (MCAUSE_INTERRUPT_BIT | 3ULL)
+#define MCAUSE_STI      (MCAUSE_INTERRUPT_BIT | 5ULL)
 #define MCAUSE_MTI      (MCAUSE_INTERRUPT_BIT | 7ULL)
+#define MCAUSE_SEI      (MCAUSE_INTERRUPT_BIT | 9ULL)
+#define MCAUSE_LCOFI    (MCAUSE_INTERRUPT_BIT | 13ULL)
+#define MCAUSE_ECALL_U  8ULL
+#define MCAUSE_ECALL_S  9ULL
 #define MCAUSE_ECALL_M  11ULL
 #define MCAUSE_INST_MISALIGNED 0ULL
+#define MCAUSE_INST_ACCESS_FAULT 1ULL
+#define MCAUSE_ILLEGAL_INSN 2ULL
+#define MCAUSE_BREAKPOINT 3ULL
 #define MCAUSE_LOAD_MISALIGNED 4ULL
+#define MCAUSE_LOAD_ACCESS_FAULT 5ULL
 #define MCAUSE_STORE_MISALIGNED 6ULL
+#define MCAUSE_STORE_ACCESS_FAULT 7ULL
+#define MCAUSE_INST_PAGE_FAULT 12ULL
+#define MCAUSE_LOAD_PAGE_FAULT 13ULL
+#define MCAUSE_STORE_PAGE_FAULT 15ULL
 #define TOHOST_TIMEOUT  0xdead000000000001ULL
 #define TOHOST_TRAP     0xdead000000000002ULL
-#define TEST_TIMEOUT_TICKS 50000000ULL
-#define RESET_DELAY_TICKS 20000000ULL
+#ifndef RUNNER_TEST_TIMEOUT_TICKS
+#define RUNNER_TEST_TIMEOUT_TICKS 50000000ULL
+#endif
+#ifndef RUNNER_RESET_DELAY_TICKS
+#define RUNNER_RESET_DELAY_TICKS 20000000ULL
+#endif
+#ifndef RUNNER_TIMEOUT_FAST_RESET
+#define RUNNER_TIMEOUT_FAST_RESET 0
+#endif
+#define TEST_TIMEOUT_TICKS RUNNER_TEST_TIMEOUT_TICKS
+#define RESET_DELAY_TICKS RUNNER_RESET_DELAY_TICKS
+#define SATP_MODE_SV39  8ULL
+#define MIE_MSIE        (1ULL << 3)
+#define MIE_MTIE        (1ULL << 7)
+#define SIE_SSIE        (1ULL << 1)
+#define SIE_STIE        (1ULL << 5)
+#define SIE_SEIE        (1ULL << 9)
+#define SIE_LCOFIE      (1ULL << 13)
+#define MCOUNTEREN_CY   (1ULL << 0)
+#define MCOUNTEREN_TM   (1ULL << 1)
+#define MCOUNTEREN_IR   (1ULL << 2)
+#define COUNTEREN_BASE  (MCOUNTEREN_CY | MCOUNTEREN_TM | MCOUNTEREN_IR)
+#define COUNTEREN_ALL   0xffffffffULL
+#define SV39_L0_TABLE_COUNT 64u
+#define PAYLOAD_KIND_ACT 0u
+#define PAYLOAD_KIND_RIESCUE 1u
+#define RUNNER_RIESCUE_COUNTER_POLICY_NONE 0u
+#define RUNNER_RIESCUE_COUNTER_POLICY_BASE 1u
+#define RUNNER_RIESCUE_COUNTER_POLICY_ALL  2u
+
+#ifndef RUNNER_PAYLOAD_KIND
+#define RUNNER_PAYLOAD_KIND PAYLOAD_KIND_ACT
+#endif
+
+#ifndef RUNNER_RIESCUE_COUNTER_POLICY
+#define RUNNER_RIESCUE_COUNTER_POLICY RUNNER_RIESCUE_COUNTER_POLICY_NONE
+#endif
+
+#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_RIESCUE
+#define MAX_RUNNER_LOAD_SEGMENTS 128u
+#else
+#define MAX_RUNNER_LOAD_SEGMENTS 16u
+#endif
+#define RUNNER_TEST_SBI_EXT 0x56524632ULL
+#define RUNNER_TEST_OP_ECALL_TEST 0ULL
+#define RUNNER_TEST_OP_GOTO_M_MODE 1ULL
+#define RUNNER_TEST_OP_GOTO_S_MODE 2ULL
+#define RUNNER_TEST_OP_ACCESS_CSR 5ULL
+#define RUNNER_TEST_OP_RETURN_TO_M 0x8000000000000000ULL
+#define TSBI_ECALL_TEST 0x00000073ULL
+#define TSBI_GOTO_MMODE 0xf0001001ULL
+#define TSBI_GOTO_SMODE 0xf0001002ULL
+#define TSBI_GOTO_UMODE 0xf0001003ULL
+#define TSBI_GOTO_VSMODE 0xf0001004ULL
+#define TSBI_GOTO_VUMODE 0xf0001005ULL
+
+#ifndef RUNNER_ENABLE_TSBI
+#define RUNNER_ENABLE_TSBI 1
+#endif
+
+#ifndef RUNNER_ENABLE_PRIVATE_SBI
+#define RUNNER_ENABLE_PRIVATE_SBI 1
+#endif
+
+#ifndef RUNNER_ENABLE_LOWER_MODES
+#define RUNNER_ENABLE_LOWER_MODES 1
+#endif
+
+#ifndef RUNNER_VERBOSE_FLOW
+#define RUNNER_VERBOSE_FLOW 0
+#endif
+
+#ifndef RUNNER_SMODE_CSR_POLICY
+#define RUNNER_SMODE_CSR_POLICY RUNNER_SMODE_CSR_POLICY_STRICT
+#endif
 
 extern uint8_t _act_elf_start[];
 extern uint8_t _act_elf_end[];
 extern uint8_t _act_pack_start[];
 extern uint8_t _act_pack_end[];
+extern uint8_t __text_start[];
+extern uint8_t __text_end[];
+extern uint8_t __rodata_start[];
+extern uint8_t __rodata_end[];
+extern uint8_t __data_start[];
+extern uint8_t __data_end[];
+extern uint8_t __stack_bottom[];
+extern uint8_t __stack_top[];
+extern uint8_t __bss_end[];
 extern volatile uint64_t g_boot_sync;
 
-extern volatile uint64_t* g_tohost_ptr;
-extern volatile uint64_t g_tohost_addr;
-extern volatile uint64_t g_sig_begin;
-extern volatile uint64_t g_sig_end;
-extern volatile uint64_t g_fail_begin;
-extern volatile uint64_t g_fail_end;
+typedef struct RunnerLoadSegment {
+    uint64_t start;
+    uint64_t end;
+    uint32_t flags;
+} RunnerLoadSegment;
 
-extern volatile uint64_t g_runner_active;
-extern volatile uint64_t g_monitor_seen_tohost;
-extern volatile uint64_t g_test_done;
-extern volatile uint64_t g_test_tohost_value;
-extern volatile uint64_t g_test_resume_pc;
-extern volatile uint64_t g_runner_saved_sp;
-extern volatile uint64_t g_runner_saved_gp;
-extern volatile uint64_t g_reset_armed;
-extern volatile uint64_t g_test_deadline_mtime;
-extern volatile uint64_t g_reset_request_mtime;
-extern volatile uint64_t g_sig_dump_in_progress;
-extern volatile uint64_t g_case_report_ready;
-extern volatile uint64_t g_monitor_report_done;
-extern volatile uint64_t g_fault_reported;
-extern volatile const char *g_active_case_name;
+typedef struct RunnerImageState {
+    volatile uint64_t *tohost_ptr;
+    volatile uint64_t tohost_addr;
+    volatile uint64_t sig_begin;
+    volatile uint64_t sig_end;
+    volatile uint64_t fail_begin;
+    volatile uint64_t fail_end;
+    volatile uint64_t riescue_hart_context_addr;
+    const uint8_t *loaded_blob;
+    size_t loaded_blob_size;
+    uint64_t loaded_region_start;
+    uint64_t loaded_region_end;
+    uint32_t load_segment_count;
+    RunnerLoadSegment load_segments[MAX_RUNNER_LOAD_SEGMENTS];
+} RunnerImageState;
+
+typedef struct RunnerExecState {
+    volatile uint64_t runner_active;
+    volatile uint64_t monitor_seen_tohost;
+    volatile uint64_t test_done;
+    volatile uint64_t test_tohost_value;
+    volatile uint64_t test_resume_pc;
+    volatile uint64_t runner_saved_sp;
+    volatile uint64_t runner_saved_gp;
+    volatile uint64_t reset_armed;
+    volatile uint64_t test_deadline_mtime;
+    volatile uint64_t reset_request_mtime;
+    volatile uint64_t sig_dump_in_progress;
+    volatile uint64_t case_report_ready;
+    volatile uint64_t monitor_report_done;
+    volatile uint64_t fault_reported;
+    volatile const char *active_case_name;
+    volatile uint64_t hart1_csr_snapshot_valid;
+    volatile uint64_t hart1_csr_snapshot_reason;
+    volatile uint64_t hart1_mhartid;
+    volatile uint64_t hart1_mstatus;
+    volatile uint64_t hart1_mepc;
+    volatile uint64_t hart1_mcause;
+    volatile uint64_t hart1_mtval;
+    volatile uint64_t hart1_medeleg;
+    volatile uint64_t hart1_mideleg;
+    volatile uint64_t hart1_satp;
+    volatile uint64_t hart1_pmpcfg0;
+    volatile uint64_t hart1_pmpaddr[8];
+} RunnerExecState;
+
+typedef struct LowerModeState {
+    volatile uint64_t requested_exec_mode;
+    volatile uint64_t active_exec_mode;
+    volatile uint64_t smode_trap_bridge_to_m;
+    volatile uint64_t lower_entry_pc;
+    volatile uint64_t lower_user_sp;
+    volatile uint64_t uflow_marker;
+} LowerModeState;
+
+extern RunnerImageState g_runner_image;
+extern RunnerExecState g_runner_exec;
+extern LowerModeState g_lower_state;
+extern struct MachineEnvConfig g_machine_env_config;
+extern uint32_t g_pack_footer_lba;
+extern uint32_t g_ext_next_index;
+extern uint32_t g_ext_inflight_index;
+extern uint32_t g_ext_active_index;
+extern uint32_t g_ext_progress_persisted;
+extern int g_ext_pack_loaded;
+extern uint64_t g_sv39_root_page_table[512];
+extern uint64_t g_sv39_l1_page_tables[4][512];
+extern uint64_t g_sv39_l0_page_tables[SV39_L0_TABLE_COUNT][512];
 extern uint8_t g_test_stack[TEST_STACK_BYTES];
+extern uint8_t g_smode_runtime_stack[SMODE_RUNTIME_STACK_BYTES];
 extern uint8_t g_trap_stack[TRAP_STACK_BYTES];
-extern const uint8_t *g_loaded_blob;
-extern size_t g_loaded_blob_size;
-
+extern uint8_t g_strap_stack[STRAP_STACK_BYTES];
 typedef struct {
     uint64_t ra;
     uint64_t gp;
@@ -122,12 +359,33 @@ typedef struct {
     uint64_t sp;
 } TrapFrame;
 
-extern TrapFrame g_last_trap_frame;
-extern uint64_t g_last_trap_mcause;
-extern uint64_t g_last_trap_mepc;
-extern uint64_t g_last_trap_mtval;
-extern uint64_t g_last_trap_mstatus;
-extern uint8_t g_last_trap_valid;
+typedef struct LastTrapState {
+    TrapFrame frame;
+    uint64_t mcause;
+    uint64_t mepc;
+    uint64_t mtval;
+    uint64_t mstatus;
+    uint64_t mode;
+    uint8_t valid;
+} LastTrapState;
+
+typedef struct RunnerSbiState {
+    volatile uint64_t pending_kind;
+    TrapFrame *lower_tf;
+    uint64_t lower_sepc;
+    uint32_t lower_insn;
+    uint64_t lower_src_value;
+    uint64_t lower_saved_a0;
+    uint64_t lower_saved_a1;
+    uint64_t lower_saved_a2;
+    uint64_t lower_saved_a7;
+    volatile uint64_t compat_forward_count;
+    volatile uint64_t direct_request_count;
+    volatile uint64_t last_error;
+} RunnerSbiState;
+
+extern LastTrapState g_last_trap;
+extern RunnerSbiState g_runner_sbi;
 
 static inline void mmio_write8(uintptr_t addr, uint8_t v) { *(volatile uint8_t*)addr = v; }
 static inline uint8_t mmio_read8(uintptr_t addr) { return *(volatile uint8_t*)addr; }
@@ -137,13 +395,57 @@ static inline uint32_t mmio_read32(uintptr_t addr) { return *(volatile uint32_t*
 static inline uint64_t read_csr_mhartid(void) { uint64_t v; __asm__ volatile ("csrr %0, mhartid" : "=r"(v)); return v; }
 static inline void write_csr_mtvec(uint64_t v) { __asm__ volatile ("csrw mtvec, %0" :: "r"(v)); }
 static inline void write_csr_mscratch(uint64_t v) { __asm__ volatile ("csrw mscratch, %0" :: "r"(v)); }
+static inline void write_csr_mepc(uint64_t v) { __asm__ volatile ("csrw mepc, %0" :: "r"(v)); }
+static inline void write_csr_sepc(uint64_t v) { __asm__ volatile ("csrw sepc, %0" :: "r"(v)); }
+static inline void write_csr_stvec(uint64_t v) { __asm__ volatile ("csrw stvec, %0" :: "r"(v)); }
+static inline void write_csr_sscratch(uint64_t v) { __asm__ volatile ("csrw sscratch, %0" :: "r"(v)); }
+static inline void write_csr_satp(uint64_t v) { __asm__ volatile ("csrw satp, %0" :: "r"(v)); }
+static inline void write_csr_medeleg(uint64_t v) { __asm__ volatile ("csrw medeleg, %0" :: "r"(v)); }
+static inline void write_csr_mideleg(uint64_t v) { __asm__ volatile ("csrw mideleg, %0" :: "r"(v)); }
+static inline void write_csr_mcounteren(uint64_t v) { __asm__ volatile ("csrw mcounteren, %0" :: "r"(v)); }
+static inline void write_csr_mcountinhibit(uint64_t v) { __asm__ volatile ("csrw mcountinhibit, %0" :: "r"(v)); }
+static inline void write_csr_menvcfg(uint64_t v) { __asm__ volatile ("csrw menvcfg, %0" :: "r"(v)); }
+static inline void write_csr_scounteren(uint64_t v) { __asm__ volatile ("csrw scounteren, %0" :: "r"(v)); }
+static inline void write_csr_senvcfg(uint64_t v) { __asm__ volatile ("csrw senvcfg, %0" :: "r"(v)); }
+static inline void write_csr_sie(uint64_t v) { __asm__ volatile ("csrw sie, %0" :: "r"(v)); }
+static inline void write_sstatus(uint64_t x){ asm volatile("csrw sstatus, %0"::"r"(x)); }
+static inline void write_csr_pmpaddr0(uint64_t v) { __asm__ volatile ("csrw pmpaddr0, %0" :: "r"(v)); }
+static inline void write_csr_pmpaddr1(uint64_t v) { __asm__ volatile ("csrw pmpaddr1, %0" :: "r"(v)); }
+static inline void write_csr_pmpaddr2(uint64_t v) { __asm__ volatile ("csrw pmpaddr2, %0" :: "r"(v)); }
+static inline void write_csr_pmpaddr3(uint64_t v) { __asm__ volatile ("csrw pmpaddr3, %0" :: "r"(v)); }
+static inline void write_csr_pmpaddr4(uint64_t v) { __asm__ volatile ("csrw pmpaddr4, %0" :: "r"(v)); }
+static inline void write_csr_pmpaddr5(uint64_t v) { __asm__ volatile ("csrw pmpaddr5, %0" :: "r"(v)); }
+static inline void write_csr_pmpaddr6(uint64_t v) { __asm__ volatile ("csrw pmpaddr6, %0" :: "r"(v)); }
+static inline void write_csr_pmpaddr7(uint64_t v) { __asm__ volatile ("csrw pmpaddr7, %0" :: "r"(v)); }
+static inline void write_csr_pmpcfg0(uint64_t v) { __asm__ volatile ("csrw pmpcfg0, %0" :: "r"(v)); }
+static inline uint64_t read_csr_pmpaddr0(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpaddr0" : "=r"(v)); return v; }
+static inline uint64_t read_csr_pmpaddr1(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpaddr1" : "=r"(v)); return v; }
+static inline uint64_t read_csr_pmpaddr2(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpaddr2" : "=r"(v)); return v; }
+static inline uint64_t read_csr_pmpaddr3(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpaddr3" : "=r"(v)); return v; }
+static inline uint64_t read_csr_pmpaddr4(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpaddr4" : "=r"(v)); return v; }
+static inline uint64_t read_csr_pmpaddr5(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpaddr5" : "=r"(v)); return v; }
+static inline uint64_t read_csr_pmpaddr6(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpaddr6" : "=r"(v)); return v; }
+static inline uint64_t read_csr_pmpaddr7(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpaddr7" : "=r"(v)); return v; }
+static inline uint64_t read_csr_pmpcfg0(void) { uint64_t v; __asm__ volatile ("csrr %0, pmpcfg0" : "=r"(v)); return v; }
 static inline void wfi(void) { __asm__ volatile ("wfi"); }
 static inline void cpu_relax(void) { __asm__ volatile ("nop" ::: "memory"); }
+static inline void sfence_vma_all(void) { __asm__ volatile ("sfence.vma x0, x0" ::: "memory"); }
 static inline uint64_t read_mstatus(void){ uint64_t x; asm volatile("csrr %0, mstatus":"=r"(x)); return x; }
+static inline uint64_t read_sstatus(void){ uint64_t x; asm volatile("csrr %0, sstatus":"=r"(x)); return x; }
+static inline uint64_t read_csr_mtvec(void){ uint64_t x; asm volatile("csrr %0, mtvec":"=r"(x)); return x; }
+static inline uint64_t read_csr_medeleg(void){ uint64_t x; asm volatile("csrr %0, medeleg":"=r"(x)); return x; }
+static inline uint64_t read_csr_mideleg(void){ uint64_t x; asm volatile("csrr %0, mideleg":"=r"(x)); return x; }
+static inline uint64_t read_csr_satp(void){ uint64_t x; asm volatile("csrr %0, satp":"=r"(x)); return x; }
 static inline uint64_t read_misa(void){ uint64_t x; asm volatile("csrr %0, misa":"=r"(x)); return x; }
+static inline uint64_t read_mvendorid(void){ uint64_t x; asm volatile("csrr %0, mvendorid":"=r"(x)); return x; }
+static inline uint64_t read_marchid(void){ uint64_t x; asm volatile("csrr %0, marchid":"=r"(x)); return x; }
+static inline uint64_t read_mimpid(void){ uint64_t x; asm volatile("csrr %0, mimpid":"=r"(x)); return x; }
 static inline void write_mstatus(uint64_t x){ asm volatile("csrw mstatus, %0"::"r"(x)); }
 static inline uint64_t read_mie(void){ uint64_t x; asm volatile("csrr %0, mie":"=r"(x)); return x; }
 static inline void write_mie(uint64_t x){ asm volatile("csrw mie, %0"::"r"(x)); }
+static inline uint64_t read_fflags(void){ uint64_t x; asm volatile("csrr %0, fflags":"=r"(x)); return x; }
+static inline uint64_t read_frm(void){ uint64_t x; asm volatile("csrr %0, frm":"=r"(x)); return x; }
+static inline uint64_t read_fcsr(void){ uint64_t x; asm volatile("csrr %0, fcsr":"=r"(x)); return x; }
 static inline void write_fcsr(uint64_t x){ asm volatile("csrw fcsr, %0"::"r"(x)); }
 static inline volatile uint32_t *msip_ptr(uint32_t hartid)
 {
@@ -246,6 +548,54 @@ typedef struct {
     int status;
 } TestResult;
 
+typedef struct MachineEnvConfig {
+    uint64_t mode;
+    uint64_t delegation_policy;
+    uint64_t medeleg;
+    uint64_t mideleg;
+    uint64_t mie;
+    uint64_t mcounteren;
+    uint64_t mcountinhibit;
+    uint64_t menvcfg;
+    uint64_t scounteren;
+    uint64_t senvcfg;
+    uint64_t satp;
+    uint64_t stvec;
+    uint64_t sscratch;
+    uint64_t sie;
+    uint64_t pmpcfg0;
+    uint64_t pmpaddr[8];
+} MachineEnvConfig;
+
+enum {
+    EXEC_MODE_M = 0,
+    EXEC_MODE_S = 1,
+    EXEC_MODE_U = 2,
+};
+
+enum {
+    DELEGATION_POLICY_NONE = 0,
+    DELEGATION_POLICY_S_BASE = 1,
+};
+
+enum {
+    RUNNER_SMODE_BRIDGE_NONE = 0,
+    RUNNER_SMODE_BRIDGE_RETURN_TO_M = 1,
+    RUNNER_SMODE_BRIDGE_REQUEST = 2,
+};
+
+enum {
+    RUNNER_SMODE_CSR_POLICY_STRICT = 0,
+    RUNNER_SMODE_CSR_POLICY_COMPAT = 1,
+};
+
+enum {
+    RUNNER_SBI_PENDING_NONE = 0,
+    RUNNER_SBI_PENDING_COMPAT_CSR = 1,
+    RUNNER_SBI_PENDING_FORWARDED_ECALL = 2,
+    RUNNER_SBI_PENDING_TSBI = 3,
+};
+
 enum {
     CASE_STATUS_PASS = 0,
     CASE_STATUS_FAIL = 1,
@@ -265,6 +615,8 @@ void uart_putc(char c);
 void uart_puts(const char* s);
 void uart_put_hex(uint64_t x);
 void uart_put_dec_u64(uint64_t v);
+void uart_log_lock(void);
+void uart_log_unlock(void);
 
 void dbg_putc(char c);
 void dbg_puts(const char *s);
@@ -291,23 +643,47 @@ void monitor_irq_enable(void);
 void monitor_irq_disable(void);
 void enable_fpu_set_fs_only(void);
 void enable_fpu_try_clear_fcsr(void);
+const char *exec_mode_name(uint64_t mode);
+const char *payload_kind_name(void);
+const char *delegation_policy_name(uint64_t policy);
+const char *smode_csr_policy_name(uint64_t policy);
+uint64_t select_default_exec_mode(void);
+uint64_t select_default_delegation_policy(uint64_t mode);
+void build_machine_env_config(uint64_t mode, MachineEnvConfig *cfg);
+void apply_machine_env_config(const MachineEnvConfig *cfg);
+void emit_machine_env_config(const MachineEnvConfig *cfg);
+void platform_prepare_exec_env(uint64_t mode);
+void platform_prepare_riescue_payload_env(void);
+void reset_lower_mode_state(void);
+void run_test_in_requested_mode(uint64_t entry, uintptr_t test_sp);
+void enter_smode_from_m(uint64_t entry, uintptr_t smode_sp);
+void runner_reset_sbi_state(void);
+void runner_prepare_smode_return_bridge(TrapFrame *tf);
+int runner_prepare_smode_request_bridge(uint64_t sepc, TrapFrame *tf);
+int runner_prepare_smode_illegal_csr_bridge(uint64_t scause, uint64_t sepc, TrapFrame *tf);
+int runner_handle_test_sbi(TrapFrame *tf, uint64_t trap_pc, uint64_t trap_mode, uint64_t *next_pc_out);
+int runner_prepare_smode_tsbi_bridge(uint64_t sepc, TrapFrame *tf);
+int runner_handle_tsbi(TrapFrame *tf, uint64_t trap_pc, uint64_t trap_mode, uint64_t *next_pc_out);
 
 int streq(const char* a, const char* b);
 int find_symbol_for_addr(const uint8_t *blob, size_t blob_size, uint64_t addr, SymbolInfo *out);
+void capture_last_trap_in_mode(const TrapFrame *tf, uint64_t mcause, uint64_t mepc,
+                               uint64_t mtval, uint64_t mstatus, uint64_t trap_mode);
 void capture_last_trap(const TrapFrame *tf, uint64_t mcause, uint64_t mepc,
                        uint64_t mtval, uint64_t mstatus);
 const char *trap_reason_name(uint64_t mcause);
 uint32_t read_insn_word(uint64_t pc, int *valid_out);
-void find_signature_range(const uint8_t* blob, size_t blob_size, const Elf64_Ehdr* eh,
+void find_signature_range(const uint8_t *blob, size_t blob_size, const Elf64_Ehdr *eh,
                           uint64_t *sig_begin_out, uint64_t *sig_end_out);
 void find_failure_scratch_range(const uint8_t *blob, size_t blob_size, const Elf64_Ehdr *eh,
                                 uint64_t *begin_out, uint64_t *end_out);
-void clear_signature_region(uint64_t begin, uint64_t end);
 void dump_signature_region(uint64_t begin, uint64_t end);
 void dump_failure_scratch_region(uint64_t begin, uint64_t end);
+void dump_act_failure_context(void);
 int load_elf_blob(const uint8_t *blob, size_t blob_size, uint64_t *entry_out);
-
 int load_pack_from_sd_tail(void);
+int persist_footer_progress(uint32_t next_index, uint32_t inflight_index_or_none);
+void sd_quiesce_for_reset(void);
 void emit_execution_context(const char *reason);
 uint64_t get_case_exit_pc(void);
 void emit_trap_failure_report(uint64_t mcause, uint64_t mepc);
@@ -318,6 +694,9 @@ int wait_for_monitor_report(void);
 uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus,
                 TrapFrame *tf);
 void trap_entry(void);
+uint64_t s_trap_c(uint64_t scause, uint64_t sepc, uint64_t stval, uint64_t sstatus,
+                  TrapFrame *tf);
+void s_trap_entry(void);
 void monitor_hart_loop(void);
 const char *case_status_name(int status);
 int case_is_pass(const TestResult *tr);

@@ -1,0 +1,194 @@
+
+special_Tests/fs_fflags_probe/fs_fflags_probe.elf:     file format elf64-littleriscv
+
+SYMBOL TABLE:
+0000000041000000 l    d  .text	0000000000000000 .text
+0000000041000100 l    d  .tohost	0000000000000000 .tohost
+0000000041000110 l    d  .runner_fail_scratch	0000000000000000 .runner_fail_scratch
+0000000041000150 l    d  .signature	0000000000000000 .signature
+0000000041001000 l    d  .bss	0000000000000000 .bss
+0000000000000000 l    d  .riscv.attributes	0000000000000000 .riscv.attributes
+0000000000000000 l    df *ABS*	0000000000000000 ccwS3Skn.o
+0000000041002000 l       .bss	0000000000000000 stack_top
+0000000041000098 l       .text	0000000000000000 trap_handler
+0000000041000170 l       .signature	0000000000000000 trap_count
+0000000041000150 l       .signature	0000000000000000 before_mstatus
+000000004100003c l       .text	0000000000000000 test1
+0000000041000040 l       .text	0000000000000000 after_test1
+0000000041000158 l       .signature	0000000000000000 after_first_trap_mstatus
+0000000041000160 l       .signature	0000000000000000 before_read_mstatus
+0000000041000068 l       .text	0000000000000000 test2
+000000004100006c l       .text	0000000000000000 after_test2
+0000000041000168 l       .signature	0000000000000000 after_second_trap_mstatus
+000000004100007c l       .text	0000000000000000 done
+0000000041000178 l       .signature	0000000000000000 trap_log
+00000000410001f8 g       .signature	0000000000000000 end_signature
+0000000041000150 g       .runner_fail_scratch	0000000000000000 end_failure_scratch
+0000000041000150 g       .signature	0000000000000000 begin_signature
+0000000041000000 g       .text	0000000000000000 _start
+0000000041000110 g       .runner_fail_scratch	0000000000000000 begin_failure_scratch
+0000000041000108 g       .tohost	0000000000000000 fromhost
+0000000041000100 g       .tohost	0000000000000000 tohost
+
+
+
+Disassembly of section .text:
+
+0000000041000000 <_start>:
+    41000000:	00002117          	auipc	x2,0x2
+    41000004:	00010113          	addi	x2,x2,0 # 41002000 <stack_top>
+    41000008:	00000297          	auipc	x5,0x0
+    4100000c:	09028293          	addi	x5,x5,144 # 41000098 <trap_handler>
+    41000010:	30529073          	csrrw	x0,mtvec,x5
+    41000014:	00000297          	auipc	x5,0x0
+    41000018:	15c28293          	addi	x5,x5,348 # 41000170 <trap_count>
+    4100001c:	0002b023          	sd	x0,0(x5)
+    41000020:	000062b7          	lui	x5,0x6
+    41000024:	3002b073          	csrrc	x0,mstatus,x5
+    41000028:	30002373          	csrrs	x6,mstatus,x0
+    4100002c:	00000397          	auipc	x7,0x0
+    41000030:	12438393          	addi	x7,x7,292 # 41000150 <begin_signature>
+    41000034:	0063b023          	sd	x6,0(x7)
+    41000038:	fff00613          	addi	x12,x0,-1
+
+000000004100003c <test1>:
+    4100003c:	00163673          	csrrc	x12,fflags,x12
+
+0000000041000040 <after_test1>:
+    41000040:	30002373          	csrrs	x6,mstatus,x0
+    41000044:	00000397          	auipc	x7,0x0
+    41000048:	11438393          	addi	x7,x7,276 # 41000158 <after_first_trap_mstatus>
+    4100004c:	0063b023          	sd	x6,0(x7)
+    41000050:	000062b7          	lui	x5,0x6
+    41000054:	3002b073          	csrrc	x0,mstatus,x5
+    41000058:	30002373          	csrrs	x6,mstatus,x0
+    4100005c:	00000397          	auipc	x7,0x0
+    41000060:	10438393          	addi	x7,x7,260 # 41000160 <before_read_mstatus>
+    41000064:	0063b023          	sd	x6,0(x7)
+
+0000000041000068 <test2>:
+    41000068:	00102673          	csrrs	x12,fflags,x0
+
+000000004100006c <after_test2>:
+    4100006c:	30002373          	csrrs	x6,mstatus,x0
+    41000070:	00000397          	auipc	x7,0x0
+    41000074:	0f838393          	addi	x7,x7,248 # 41000168 <after_second_trap_mstatus>
+    41000078:	0063b023          	sd	x6,0(x7)
+
+000000004100007c <done>:
+    4100007c:	00300193          	addi	x3,x0,3
+    41000080:	00000297          	auipc	x5,0x0
+    41000084:	08028293          	addi	x5,x5,128 # 41000100 <tohost>
+    41000088:	0032b023          	sd	x3,0(x5)
+    4100008c:	0330000f          	fence	rw,rw
+    41000090:	10500073          	wfi
+    41000094:	ffdff06f          	jal	x0,41000090 <done+0x14>
+
+0000000041000098 <trap_handler>:
+    41000098:	342022f3          	csrrs	x5,mcause,x0
+    4100009c:	34102373          	csrrs	x6,mepc,x0
+    410000a0:	343023f3          	csrrs	x7,mtval,x0
+    410000a4:	30002e73          	csrrs	x28,mstatus,x0
+    410000a8:	00000e97          	auipc	x29,0x0
+    410000ac:	0c8e8e93          	addi	x29,x29,200 # 41000170 <trap_count>
+    410000b0:	000ebf03          	ld	x30,0(x29)
+    410000b4:	001f0f93          	addi	x31,x30,1
+    410000b8:	01feb023          	sd	x31,0(x29)
+    410000bc:	00000e97          	auipc	x29,0x0
+    410000c0:	0bce8e93          	addi	x29,x29,188 # 41000178 <trap_log>
+    410000c4:	006f1f93          	slli	x31,x30,0x6
+    410000c8:	01fe8eb3          	add	x29,x29,x31
+    410000cc:	005eb023          	sd	x5,0(x29)
+    410000d0:	006eb423          	sd	x6,8(x29)
+    410000d4:	007eb823          	sd	x7,16(x29)
+    410000d8:	01cebc23          	sd	x28,24(x29)
+    410000dc:	00de5f13          	srli	x30,x28,0xd
+    410000e0:	003f7f13          	andi	x30,x30,3
+    410000e4:	03eeb023          	sd	x30,32(x29)
+    410000e8:	30502ff3          	csrrs	x31,mtvec,x0
+    410000ec:	03feb423          	sd	x31,40(x29)
+    410000f0:	00430313          	addi	x6,x6,4
+    410000f4:	34131073          	csrrw	x0,mepc,x6
+    410000f8:	30200073          	mret
+
+Disassembly of section .tohost:
+
+0000000041000100 <tohost>:
+	...
+
+0000000041000108 <fromhost>:
+	...
+
+Disassembly of section .runner_fail_scratch:
+
+0000000041000110 <begin_failure_scratch>:
+	...
+
+Disassembly of section .signature:
+
+0000000041000150 <begin_signature>:
+	...
+
+0000000041000158 <after_first_trap_mstatus>:
+	...
+
+0000000041000160 <before_read_mstatus>:
+	...
+
+0000000041000168 <after_second_trap_mstatus>:
+	...
+
+0000000041000170 <trap_count>:
+	...
+
+0000000041000178 <trap_log>:
+	...
+
+Disassembly of section .riscv.attributes:
+
+0000000000000000 <.riscv.attributes>:
+   0:	7541                	.insn	2, 0x7541
+   2:	0000                	.insn	2, 0x0000
+   4:	7200                	.insn	2, 0x7200
+   6:	7369                	.insn	2, 0x7369
+   8:	01007663          	bgeu	x0,x16,14 <_start-0x40ffffec>
+   c:	0000006b          	.insn	4, 0x006b
+  10:	7205                	.insn	2, 0x7205
+  12:	3676                	.insn	2, 0x3676
+  14:	6934                	.insn	2, 0x6934
+  16:	7032                	.insn	2, 0x7032
+  18:	5f31                	.insn	2, 0x5f31
+  1a:	326d                	.insn	2, 0x326d
+  1c:	3070                	.insn	2, 0x3070
+  1e:	615f 7032 5f31      	.insn	6, 0x5f317032615f
+  24:	3266                	.insn	2, 0x3266
+  26:	3270                	.insn	2, 0x3270
+  28:	645f 7032 5f32      	.insn	6, 0x5f327032645f
+  2e:	30703263          	.insn	4, 0x30703263
+  32:	7a5f 6369 7273      	.insn	6, 0x727363697a5f
+  38:	7032                	.insn	2, 0x7032
+  3a:	5f30                	.insn	2, 0x5f30
+  3c:	697a                	.insn	2, 0x697a
+  3e:	6566                	.insn	2, 0x6566
+  40:	636e                	.insn	2, 0x636e
+  42:	6965                	.insn	2, 0x6965
+  44:	7032                	.insn	2, 0x7032
+  46:	5f30                	.insn	2, 0x5f30
+  48:	6d7a                	.insn	2, 0x6d7a
+  4a:	756d                	.insn	2, 0x756d
+  4c:	316c                	.insn	2, 0x316c
+  4e:	3070                	.insn	2, 0x3070
+  50:	7a5f 6161 6f6d      	.insn	6, 0x6f6d61617a5f
+  56:	7031                	.insn	2, 0x7031
+  58:	5f30                	.insn	2, 0x5f30
+  5a:	617a                	.insn	2, 0x617a
+  5c:	726c                	.insn	2, 0x726c
+  5e:	70316373          	csrrsi	x6,0x703,2
+  62:	5f30                	.insn	2, 0x5f30
+  64:	637a                	.insn	2, 0x637a
+  66:	3161                	.insn	2, 0x3161
+  68:	3070                	.insn	2, 0x3070
+  6a:	7a5f 6463 7031      	.insn	6, 0x703164637a5f
+  70:	0030                	.insn	2, 0x0030
+  72:	0108                	.insn	2, 0x0108
+  74:	0b0a                	.insn	2, 0x0b0a

@@ -1,0 +1,23 @@
+# Conservative allowlist for lower-privilege ACT runs on the VF2 runner.
+#
+# Match against ELF basename using shell-style globs.
+# Keep this empty until a test has been validated on hardware.
+#
+# Examples:
+# I-sample-00.elf
+# U-*.elf
+I-add-00.elf
+I-and-00.elf
+I-or-00.elf
+Zalrsc-lr.d-00.elf
+Zalrsc-lr.w-00.elf
+Zalrsc-sc.d-00.elf
+Zalrsc-sc.w-00.elf
+I-add-00.elf
+I-and-00.elf
+I-or-00.elf
+I-addi-00.elf
+I-addw-00.elf
+I-addiw-00.elf
+I-sub-00.elf
+I-xor-00.elf

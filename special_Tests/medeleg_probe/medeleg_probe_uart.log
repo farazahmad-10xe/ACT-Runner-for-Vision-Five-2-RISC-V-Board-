@@ -1,0 +1,1184 @@
+dwmci_s: Response Timeout.
+[HOST] hard cycle reason=boot_media_failure retry=1/10
+{'protocol': 4, 't': 1781591347, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781591359, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+dwmci_s: Response Timeout.
+[HOST] hard cycle reason=boot_media_failure retry=2/10
+{'protocol': 4, 't': 1781591359, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781591371, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+BOOT fail,Error is 0xffffffff
+[HOST] hard cycle reason=boot_media_failure retry=3/10
+{'protocol': 4, 't': 1781591372, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781591384, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827050 blocks=21
+[SD] next_index=0
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SD] mark in_progress_index=0 next_index=0 retry_count=1 rc=0x0000000000000000
+[CASE] START name=medeleg_probe
+[PAYLOAD] kind=ACT entry=0x0000000041000000 tohost=0x0000000041000798 load_segments=0x0000000000000001
+[ACT] sig_begin=0x00000000410007e8
+[ACT] sig_end=0x0000000041000858
+
+[DBG] medeleg_probe start
+[DBG] mhartid=0x0000000000000001
+[DBG] misa=0x800000000094112f
+[DBG] initial_medeleg=0x0000000000000000
+[DBG] medeleg_warl_mask=0x000000000000b15d
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000001
+[CASEDBG] requested_medeleg=0x0000000000000002
+[CASEDBG] observed_medeleg=0x0000000000000000
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x000000004100027c
+[TRAPDBG] tval=0x000000004100027c
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x000000004100027c
+[RESULT] final_medeleg=0x0000000000000000
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000002
+[CASEDBG] requested_medeleg=0x0000000000000004
+[CASEDBG] observed_medeleg=0x0000000000000004
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x000000004100027c
+[TRAPDBG] tval=0x000000004100027c
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x000000004100027c
+[RESULT] final_medeleg=0x0000000000000004
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000003
+[CASEDBG] requested_medeleg=0x0000000000000008
+[CASEDBG] observed_medeleg=0x0000000000000008
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x000000004100027c
+[TRAPDBG] tval=0x000000004100027c
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x000000004100027c
+[RESULT] final_medeleg=0x0000000000000008
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000004
+[CASEDBG] requested_medeleg=0x0000000000000010
+[CASEDBG] observed_medeleg=0x0000000000000010
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x000000004100027c
+[TRAPDBG] tval=0x000000004100027c
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x000000004100027c
+[RESULT] final_medeleg=0x0000000000000010
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000006
+[CASEDBG] requested_medeleg=0x0000000000000040
+[CASEDBG] observed_medeleg=0x0000000000000040
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x000000004100027c
+[TRAPDBG] tval=0x000000004100027c
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x000000004100027c
+[RESULT] final_medeleg=0x0000000000000040
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000009
+[CASEDBG] requested_medeleg=0x0000000000000200
+[CASEDBG] observed_medeleg=0x0000000000000000
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x000000004100027c
+[TRAPDBG] tval=0x000000004100027c
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x000000004100027c
+[RESULT] final_medeleg=0x0000000000000000
+
+[DBG] medeleg_probe done
+========================================================================
+[MON] tohost addr=0x0000000041000798 value=0x0000000000000003
+========================================================================
+[MON] sig_begin=0x00000000410007e8
+      sig_end=0x0000000041000858
+      sig_bytes=0x0000000000000070
+[CASE] REPORT name=medeleg_probe
+              exec_mode=M status=FAIL
+              rc=0x0000000000000000
+              tohost_addr=0x0000000041000798
+              tohost_value=0x0000000000000003
+              sig_begin=0x00000000410007e8
+              sig_end=0x0000000041000858
+              sig_bytes=0x0000000000000070
+              exit_pc=0x0000000000000000
+[CTX] reason=FAIL exec_mode=M uflow_marker=0x0000000000000000 trap_valid=0 exit_trap_mode=none exit_mcause=0x0000000000000000 exit_reason=no_trap exit_mepc=0x0000000000000000 exit_insn=0x0000000000000000 exit_insn_valid=0 exit_mtval=0x0000000000000000 exit_mstatus=0x0000000000000000 exit_symbol=unknown exit_symbol_addr=0x0000000000000000
+[REG] unavailable=no_trap_frame
+[FAILSCR] begin=0x00000000410007a8 end=0x00000000410007e8 bytes=0x0000000000000040
+[FAILQ] 0x00000000410007a8 : 0x0000000000000000
+[FAILQ] 0x00000000410007b0 : 0x0000000000000000
+[FAILQ] 0x00000000410007b8 : 0x0000000000000000
+[FAILQ] 0x00000000410007c0 : 0x0000000000000000
+[FAILQ] 0x00000000410007c8 : 0x0000000000000000
+[FAILQ] 0x00000000410007d0 : 0x0000000000000000
+[FAILQ] 0x00000000410007d8 : 0x0000000000000000
+[FAILQ] 0x00000000410007e0 : 0x0000000000000000
+[ACTDBG] decoded_failure_scratch begin=0x00000000410007a8 end=0x00000000410007e8
+[ACTDBG] failure_type=0x00000000 note=x0_slot_reused_by_ACT
+[ACTREG] x0=0x0000000000000000 x1=0x0000000000000000 x2=0x0000000000000000 x3=0x0000000000000000
+[ACTREG] x4=0x0000000000000000 x5=0x0000000000000000 x6=0x0000000000000000 x7=0x0000000000000000
+[ACTREG] x8=0x0000000040002d50 x9=0x0000000000000000 x10=0x0000000000000000 x11=0x000000000000b15d
+[ACTREG] x12=0x0000000000000200 x13=0x0000000000000000 x14=0x0000000000000009 x15=0x0000000000000003
+[ACTREG] x16=0x0000000000000001 x17=0x000000004100027c x18=0x000000004100027c x19=0x8000000a00006880
+[ACTREG] x20=0x0000000000000000 x21=0x1122334455667788 x22=0x0000000000000000 x23=0x0000000000000000
+[ACTREG] x24=0x0000000000000000 x25=0x0000000000000000 x26=0x0000000000000000 x27=0x0000000000000000
+[ACTREG] x28=0x0000000000000000 x29=0x0000000000000000 x30=0x0000000000000000 x31=0x0000000000000000
+[ACTFAIL] failing_instruction=unavailable
+[ACTFAIL] failing_addr=unavailable
+[ACTFAIL] failing_value=unavailable
+[ACTFAIL] expected_value=unavailable
+[ACTFAIL] failure_string_ptr=unavailable
+[ACTTRAP] trap_diag_actual_value=unavailable
+[ACTTRAP] trap_diag_expected_value=unavailable
+[ACTTSIG] unavailable=no_current_pointer
+[ACTHTRACE] unavailable=no_Mtramptbl_sv_symbol
+[ACTMTVEC] unavailable=no_Mtramptbl_sv_symbol
+[ACTCSR] saved_mepc=0x0000000000000000 saved_mcause=0x0000000000000000 saved_mtval=0x0000000000000000 saved_mstatus=0x0000000000000000 monitor_current_mtvec=0x0000000008000330 monitor_current_medeleg=0x0000000000001101 monitor_current_mideleg=0x0000000000000222 monitor_medeleg_saved_mcause_bit=0x0000000000000001
+[ACTDBG] instructions_around_saved_mepc=unavailable
+[SIG] begin=0x00000000410007e8 end=0x0000000041000858 bytes=0x0000000000000070
+[SD] monitor persist next_index=1 clear_in_progress rc=0x0000000000000000
+[SD] quiesce busy_rc=0x0000000000000000 idle_rc=0x0000000000000000 clk_rc=0x0000000000000000
+[RST] trigger watchdog reset
+[HOST] hard cycle reason=watchdog_reset
+{'protocol': 4, 't': 1781591387, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781591399, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+[RST] watchdog armed
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827050 blocks=21
+[SD] next_index=1
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SUITE] all external tests already dispatched
+[SUITE] SUMMARY total=0 pass=0 fail=0
+PASS
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827050 blocks=21
+[SD] next_index=0
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SD] mark in_progress_index=0 next_index=0 retry_count=1 rc=0x0000000000000000
+[CASE] START name=medeleg_probe
+[PAYLOAD] kind=ACT entry=0x0000000041000000 tohost=0x00000000410007e8 load_segments=0x0000000000000001
+[ACT] sig_begin=0x0000000041000838
+[ACT] sig_end=0x00000000410008b8
+
+[DBG] medeleg_probe start
+[DBG] mhartid=0x0000000000000001
+[DBG] misa=0x800000000094112f
+[DBG] initial_medeleg=0x0000000000000000
+[DBG] medeleg_warl_mask=0x000000000000b15d
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000001
+[CASEDBG] requested_medeleg=0x0000000000000002
+[CASEDBG] observed_medeleg=0x0000000000000000
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x0000000000000000
+[TRAPDBG] tval=0x0000000000000000
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x0000000000000000
+[RESULT] final_medeleg=0x0000000000000000
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000002
+[CASEDBG] requested_medeleg=0x0000000000000004
+[CASEDBG] observed_medeleg=0x0000000000000004
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000002
+[TRAPDBG] epc=0x000000004100031c
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000002
+[RESULT] trap_epc=0x000000004100031c
+[RESULT] final_medeleg=0x0000000000000004
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000003
+[CASEDBG] requested_medeleg=0x0000000000000008
+[CASEDBG] observed_medeleg=0x0000000000000008
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000003
+[TRAPDBG] epc=0x0000000041000324
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000003
+[RESULT] trap_epc=0x0000000041000324
+[RESULT] final_medeleg=0x0000000000000008
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000004
+[CASEDBG] requested_medeleg=0x0000000000000010
+[CASEDBG] observed_medeleg=0x0000000000000010
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000004
+[TRAPDBG] epc=0x0000000041000334
+[TRAPDBG] tval=0x00000000410008b1
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000004
+[RESULT] trap_epc=0x0000000041000334
+[RESULT] final_medeleg=0x0000000000000010
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000006
+[CASEDBG] requested_medeleg=0x0000000000000040
+[CASEDBG] observed_medeleg=0x0000000000000040
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000006
+[TRAPDBG] epc=0x0000000041000344
+[TRAPDBG] tval=0x00000000410008b1
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000006
+[RESULT] trap_epc=0x0000000041000344
+[RESULT] final_medeleg=0x0000000000000040
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000009
+[CASEDBG] requested_medeleg=0x0000000000000200
+[CASEDBG] observed_medeleg=0x0000000000000000
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000009
+[TRAPDBG] epc=0x000000004100034c
+[TRAPDBG] tval=0x0000000000000000
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000009
+[RESULT] trap_epc=0x000000004100034c
+[RESULT] final_medeleg=0x0000000000000000
+
+[DBG] medeleg_probe done
+========================================================================
+[MON] tohost addr=0x00000000410007e8 value=0x0000000000000003
+========================================================================
+[MON] sig_begin=0x0000000041000838
+      sig_end=0x00000000410008b8
+      sig_bytes=0x0000000000000080
+[CASE] REPORT name=medeleg_probe
+              exec_mode=M status=FAIL
+              rc=0x0000000000000000
+              tohost_addr=0x00000000410007e8
+              tohost_value=0x0000000000000003
+              sig_begin=0x0000000041000838
+              sig_end=0x00000000410008b8
+              sig_bytes=0x0000000000000080
+              exit_pc=0x0000000000000000
+[CTX] reason=FAIL exec_mode=M uflow_marker=0x0000000000000000 trap_valid=0 exit_trap_mode=none exit_mcause=0x0000000000000000 exit_reason=no_trap exit_mepc=0x0000000000000000 exit_insn=0x0000000000000000 exit_insn_valid=0 exit_mtval=0x0000000000000000 exit_mstatus=0x0000000000000000 exit_symbol=unknown exit_symbol_addr=0x0000000000000000
+[REG] unavailable=no_trap_frame
+[FAILSCR] begin=0x00000000410007f8 end=0x0000000041000838 bytes=0x0000000000000040
+[FAILQ] 0x00000000410007f8 : 0x0000000000000000
+[FAILQ] 0x0000000041000800 : 0x0000000000000000
+[FAILQ] 0x0000000041000808 : 0x0000000000000000
+[FAILQ] 0x0000000041000810 : 0x0000000000000000
+[FAILQ] 0x0000000041000818 : 0x0000000000000000
+[FAILQ] 0x0000000041000820 : 0x0000000000000000
+[FAILQ] 0x0000000041000828 : 0x0000000000000000
+[FAILQ] 0x0000000041000830 : 0x0000000000000000
+[ACTDBG] decoded_failure_scratch begin=0x00000000410007f8 end=0x0000000041000838
+[ACTDBG] failure_type=0x00000000 note=x0_slot_reused_by_ACT
+[ACTREG] x0=0x0000000000000000 x1=0x0000000000000000 x2=0x0000000000000000 x3=0x0000000000000000
+[ACTREG] x4=0x0000000000000000 x5=0x0000000000000000 x6=0x0000000000000000 x7=0x0000000000000000
+[ACTREG] x8=0x0000000040002d50 x9=0x0000000000000000 x10=0x0000000000000000 x11=0x0000000000000000
+[ACTREG] x12=0x0000000000000000 x13=0x000000000000b15d x14=0x0000000000000200 x15=0x0000000000000000
+[ACTREG] x16=0x0000000000000009 x17=0x0000000000000003 x18=0x0000000000000009 x19=0x000000004100034c
+[ACTREG] x20=0x0000000000000000 x21=0x8000000a000068a0 x22=0x0000000000000000 x23=0x1122334455667788
+[ACTREG] x24=0x0000000000000000 x25=0x0000000000000000 x26=0x0000000000000000 x27=0x0000000000000000
+[ACTREG] x28=0x0000000000000000 x29=0x0000000000000000 x30=0x0000000000000000 x31=0x0000000000000000
+[ACTFAIL] failing_instruction=unavailable
+[ACTFAIL] failing_addr=unavailable
+[ACTFAIL] failing_value=unavailable
+[ACTFAIL] expected_value=unavailable
+[ACTFAIL] failure_string_ptr=unavailable
+[ACTTRAP] trap_diag_actual_value=unavailable
+[ACTTRAP] trap_diag_expected_value=unavailable
+[ACTTSIG] unavailable=no_current_pointer
+[ACTHTRACE] unavailable=no_Mtramptbl_sv_symbol
+[ACTMTVEC] unavailable=no_Mtramptbl_sv_symbol
+[ACTCSR] saved_mepc=0x0000000000000000 saved_mcause=0x0000000000000000 saved_mtval=0x0000000000000000 saved_mstatus=0x0000000000000000 monitor_current_mtvec=0x0000000008000330 monitor_current_medeleg=0x0000000000003101 monitor_current_mideleg=0x0000000000000220 monitor_medeleg_saved_mcause_bit=0x0000000000000001
+[ACTDBG] instructions_around_saved_mepc=unavailable
+[SIG] begin=0x0000000041000838 end=0x00000000410008b8 bytes=0x0000000000000080
+[SD] monitor persist next_index=1 clear_in_progress rc=0x0000000000000000
+[SD] quiesce busy_rc=0x0000000000000000 idle_rc=0x0000000000000000 clk_rc=0x0000000000000000
+[RST] trigger watchdog reset
+[HOST] hard cycle reason=watchdog_reset
+{'protocol': 4, 't': 1781591670, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781591682, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+[RST] watchdog armed
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827050 blocks=21
+[SD] next_index=1
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SUITE] all external tests already dispatched
+[SUITE] SUMMARY total=0 pass=0 fail=0
+PASS
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827047 blocks=24
+[SD] next_index=0
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SD] mark in_progress_index=0 next_index=0 retry_count=1 rc=0x0000000000000000
+[CASE] START name=medeleg_probe
+[PAYLOAD] kind=ACT entry=0x0000000041000000 tohost=0x0000000041000b28 load_segments=0x0000000000000001
+[ACT] sig_begin=0x0000000041000b78
+[ACT] sig_end=0x0000000041000c10
+
+[DBG] medeleg_probe start
+[DBG] mhartid=0x0000000000000001
+[DBG] misa=0x800000000094112f
+[DBG] initial_medeleg=0x0000000000000000
+[DBG] medeleg_warl_mask=0x000000000000b15d
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000001
+[CASEDBG] requested_medeleg=0x0000000000000002
+[CASEDBG] observed_medeleg=0x0000000000000000
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x0000000000000000
+[TRAPDBG] tval=0x0000000000000000
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x0000000000000000
+[RESULT] final_medeleg=0x0000000000000000
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000002
+[CASEDBG] requested_medeleg=0x0000000000000004
+[CASEDBG] observed_medeleg=0x0000000000000004
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000002
+[TRAPDBG] epc=0x0000000041000358
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000002
+[RESULT] trap_epc=0x0000000041000358
+[RESULT] final_medeleg=0x0000000000000004
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000003
+[CASEDBG] requested_medeleg=0x0000000000000008
+[CASEDBG] observed_medeleg=0x0000000000000008
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000003
+[TRAPDBG] epc=0x0000000041000360
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000003
+[RESULT] trap_epc=0x0000000041000360
+[RESULT] final_medeleg=0x0000000000000008
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000004
+[CASEDBG] requested_medeleg=0x0000000000000010
+[CASEDBG] observed_medeleg=0x0000000000000010
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000004
+[TRAPDBG] epc=0x0000000041000370
+[TRAPDBG] tval=0x0000000041000c09
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000004
+[RESULT] trap_epc=0x0000000041000370
+[RESULT] final_medeleg=0x0000000000000010
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000006
+[CASEDBG] requested_medeleg=0x0000000000000040
+[CASEDBG] observed_medeleg=0x0000000000000040
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000006
+[TRAPDBG] epc=0x0000000041000380
+[TRAPDBG] tval=0x0000000041000c09
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000006
+[RESULT] trap_epc=0x0000000041000380
+[RESULT] final_medeleg=0x0000000000000040
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000009
+[CASEDBG] requested_medeleg=0x0000000000000200
+[CASEDBG] observed_medeleg=0x0000000000000000
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000009
+[TRAPDBG] epc=0x0000000041000388
+[TRAPDBG] tval=0x0000000000000000
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000009
+[RESULT] trap_epc=0x0000000041000388
+[RESULT] final_medeleg=0x0000000000000000
+
+[FETCHDBG] auipc_plus2_fetch_probe
+[FETCHDBG] medeleg_after_request_bits_1_2=0x0000000000000004
+[FETCHDBG] auipc_inst_addr=0x00000000410003a0
+[FETCHDBG] requested_fetch_addr=0x00000000410003a2
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000002
+[TRAPDBG] epc=0x00000000410003a2
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[FETCHDBG] recorded_fetch_addr=0x00000000410003a2
+[FETCHDBG] halfword_at_target=0x0000000000000000
+[FETCHDBG] trap_mode 1=S 3=M =0x0000000000000001
+[FETCHDBG] trap_cause=0x0000000000000002
+[FETCHDBG] trap_epc=0x00000000410003a2
+[FETCHDBG] trap_tval=0x0000000000000000
+
+[DBG] medeleg_probe done
+========================================================================
+[MON] tohost addr=0x0000000041000b28 value=0x0000000000000003
+========================================================================
+[MON] sig_begin=0x0000000041000b78
+      sig_end=0x0000000041000c10
+      sig_bytes=0x0000000000000098
+[CASE] REPORT name=medeleg_probe
+              exec_mode=M status=FAIL
+              rc=0x0000000000000000
+              tohost_addr=0x0000000041000b28
+              tohost_value=0x0000000000000003
+              sig_begin=0x0000000041000b78
+              sig_end=0x0000000041000c10
+              sig_bytes=0x0000000000000098
+              exit_pc=0x0000000000000000
+[CTX] reason=FAIL exec_mode=M uflow_marker=0x0000000000000000 trap_valid=0 exit_trap_mode=none exit_mcause=0x0000000000000000 exit_reason=no_trap exit_mepc=0x0000000000000000 exit_insn=0x0000000000000000 exit_insn_valid=0 exit_mtval=0x0000000000000000 exit_mstatus=0x0000000000000000 exit_symbol=unknown exit_symbol_addr=0x0000000000000000
+[REG] unavailable=no_trap_frame
+[FAILSCR] begin=0x0000000041000b38 end=0x0000000041000b78 bytes=0x0000000000000040
+[FAILQ] 0x0000000041000b38 : 0x0000000000000000
+[FAILQ] 0x0000000041000b40 : 0x0000000000000000
+[FAILQ] 0x0000000041000b48 : 0x0000000000000000
+[FAILQ] 0x0000000041000b50 : 0x0000000000000000
+[FAILQ] 0x0000000041000b58 : 0x0000000000000000
+[FAILQ] 0x0000000041000b60 : 0x0000000000000000
+[FAILQ] 0x0000000041000b68 : 0x0000000000000000
+[FAILQ] 0x0000000041000b70 : 0x0000000000000000
+[ACTDBG] decoded_failure_scratch begin=0x0000000041000b38 end=0x0000000041000b78
+[ACTDBG] failure_type=0x00000000 note=x0_slot_reused_by_ACT
+[ACTREG] x0=0x0000000000000000 x1=0x0000000000000000 x2=0x0000000000000000 x3=0x0000000000000000
+[ACTREG] x4=0x0000000000000000 x5=0x0000000000000000 x6=0x0000000000000000 x7=0x0000000000000000
+[ACTREG] x8=0x0000000040002d50 x9=0x0000000000000000 x10=0x0000000000000000 x11=0x0000000000000000
+[ACTREG] x12=0x0000000000000000 x13=0x000000000000b15d x14=0x0000000000000200 x15=0x0000000000000000
+[ACTREG] x16=0x0000000000000100 x17=0x0000000000000001 x18=0x0000000000000002 x19=0x00000000410003a2
+[ACTREG] x20=0x0000000000000000 x21=0x8000000200006100 x22=0x00000000410003a0 x23=0x00000000410003a2
+[ACTREG] x24=0x0000000000000000 x25=0x0000000000000000 x26=0x1122334455667788 x27=0x0000000000000000
+[ACTREG] x28=0x0000000000000000 x29=0x0000000000000000 x30=0x0000000000000000 x31=0x0000000000000000
+[ACTFAIL] failing_instruction=unavailable
+[ACTFAIL] failing_addr=unavailable
+[ACTFAIL] failing_value=unavailable
+[ACTFAIL] expected_value=unavailable
+[ACTFAIL] failure_string_ptr=unavailable
+[ACTTRAP] trap_diag_actual_value=unavailable
+[ACTTRAP] trap_diag_expected_value=unavailable
+[ACTTSIG] unavailable=no_current_pointer
+[ACTHTRACE] unavailable=no_Mtramptbl_sv_symbol
+[ACTMTVEC] unavailable=no_Mtramptbl_sv_symbol
+[ACTCSR] saved_mepc=0x0000000000000000 saved_mcause=0x0000000000000000 saved_mtval=0x0000000000000000 saved_mstatus=0x0000000000000000 monitor_current_mtvec=0x0000000008000330 monitor_current_medeleg=0x0000000000003005 monitor_current_mideleg=0x0000000000000220 monitor_medeleg_saved_mcause_bit=0x0000000000000001
+[ACTDBG] instructions_around_saved_mepc=unavailable
+[SIG] begin=0x0000000041000b78 end=0x0000000041000c10 bytes=0x0000000000000098
+[SD] monitor persist next_index=1 clear_in_progress rc=0x0000000000000000
+[SD] quiesce busy_rc=0x0000000000000000 idle_rc=0x0000000000000000 clk_rc=0x0000000000000000
+[RST] trigger watchdog reset
+[HOST] hard cycle reason=watchdog_reset
+{'protocol': 4, 't': 1781596885, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781596897, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+[RST] watchdog armed
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827047 blocks=24
+[SD] next_index=1
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SUITE] all external tests already dispatched
+[SUITE] SUMMARY total=0 pass=0 fail=0
+PASS
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827045 blocks=26
+[SD] next_index=0
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SD] mark in_progress_index=0 next_index=0 retry_count=1 rc=0x0000000000000000
+[CASE] START name=medeleg_probe
+[PAYLOAD] kind=ACT entry=0x0000000041000000 tohost=0x0000000041000da0 load_segments=0x0000000000000001
+[ACT] sig_begin=0x0000000041000df0
+[ACT] sig_end=0x0000000041000e88
+
+[DBG] medeleg_probe start
+[DBG] mhartid=0x0000000000000001
+[DBG] misa=0x800000000094112f
+[DBG] initial_medeleg=0x0000000000000000
+[DBG] medeleg_warl_mask=0x000000000000b15d
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000001
+[CASEDBG] requested_medeleg=0x0000000000000002
+[CASEDBG] observed_medeleg=0x0000000000000000
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000001
+[TRAPDBG] epc=0x0000000000000000
+[TRAPDBG] tval=0x0000000000000000
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000001
+[RESULT] trap_epc=0x0000000000000000
+[RESULT] final_medeleg=0x0000000000000000
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000002
+[CASEDBG] requested_medeleg=0x0000000000000004
+[CASEDBG] observed_medeleg=0x0000000000000004
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000002
+[TRAPDBG] epc=0x00000000410003a4
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000002
+[RESULT] trap_epc=0x00000000410003a4
+[RESULT] final_medeleg=0x0000000000000004
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000003
+[CASEDBG] requested_medeleg=0x0000000000000008
+[CASEDBG] observed_medeleg=0x0000000000000008
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000003
+[TRAPDBG] epc=0x00000000410003ac
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000003
+[RESULT] trap_epc=0x00000000410003ac
+[RESULT] final_medeleg=0x0000000000000008
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000004
+[CASEDBG] requested_medeleg=0x0000000000000010
+[CASEDBG] observed_medeleg=0x0000000000000010
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000004
+[TRAPDBG] epc=0x00000000410003bc
+[TRAPDBG] tval=0x0000000041000e81
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000004
+[RESULT] trap_epc=0x00000000410003bc
+[RESULT] final_medeleg=0x0000000000000010
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000006
+[CASEDBG] requested_medeleg=0x0000000000000040
+[CASEDBG] observed_medeleg=0x0000000000000040
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000006
+[TRAPDBG] epc=0x00000000410003cc
+[TRAPDBG] tval=0x0000000041000e81
+[TRAPDBG] return_trap_to_M
+[RESULT] trap_mode 1=S 3=M =0x0000000000000001
+[RESULT] trap_cause=0x0000000000000006
+[RESULT] trap_epc=0x00000000410003cc
+[RESULT] final_medeleg=0x0000000000000040
+
+[CASEDBG] ----------------
+[CASEDBG] requested_cause=0x0000000000000009
+[CASEDBG] requested_medeleg=0x0000000000000200
+[CASEDBG] observed_medeleg=0x0000000000000000
+[TRAPDBG] handled_in=M
+[TRAPDBG] cause=0x0000000000000009
+[TRAPDBG] epc=0x00000000410003d4
+[TRAPDBG] tval=0x0000000000000000
+[RESULT] trap_mode 1=S 3=M =0x0000000000000003
+[RESULT] trap_cause=0x0000000000000009
+[RESULT] trap_epc=0x00000000410003d4
+[RESULT] final_medeleg=0x0000000000000000
+
+[FETCHDBG] auipc_plus2_fetch_probe
+[FETCHDBG] medeleg_after_request_bits_1_2=0x0000000000000004
+[FETCHDBG] auipc_inst_addr=0x00000000410003ec
+[FETCHDBG] requested_fetch_addr=0x00000000410003ee
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000002
+[TRAPDBG] epc=0x00000000410003ee
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[FETCHDBG] recorded_fetch_addr=0x00000000410003ee
+[FETCHDBG] halfword_at_target=0x0000000000000000
+[FETCHDBG] trap_mode 1=S 3=M =0x0000000000000001
+[FETCHDBG] trap_cause=0x0000000000000002
+[FETCHDBG] trap_epc=0x00000000410003ee
+[FETCHDBG] trap_tval=0x0000000000000000
+
+[FETCHDBG] act_jalr_upper_halfword_probe
+[FETCHDBG] medeleg_after_request_bits_1_2=0x0000000000000004
+[FETCHDBG] act_jalr_inst_addr=0x00000000410003fc
+[FETCHDBG] requested_fetch_addr=0x0000000041000406
+[TRAPDBG] handled_in=S
+[TRAPDBG] cause=0x0000000000000002
+[TRAPDBG] epc=0x0000000041000406
+[TRAPDBG] tval=0x0000000000000000
+[TRAPDBG] return_trap_to_M
+[FETCHDBG] recorded_fetch_addr=0x0000000041000406
+[FETCHDBG] halfword_at_target=0x0000000000000000
+[FETCHDBG] trap_mode 1=S 3=M =0x0000000000000001
+[FETCHDBG] trap_cause=0x0000000000000002
+[FETCHDBG] trap_epc=0x0000000041000406
+[FETCHDBG] trap_tval=0x0000000000000000
+
+[DBG] medeleg_probe done
+========================================================================
+[MON] tohost addr=0x0000000041000da0 value=0x0000000000000003
+========================================================================
+[MON] sig_begin=0x0000000041000df0
+      sig_end=0x0000000041000e88
+      sig_bytes=0x0000000000000098
+[CASE] REPORT name=medeleg_probe
+              exec_mode=M status=FAIL
+              rc=0x0000000000000000
+              tohost_addr=0x0000000041000da0
+              tohost_value=0x0000000000000003
+              sig_begin=0x0000000041000df0
+              sig_end=0x0000000041000e88
+              sig_bytes=0x0000000000000098
+              exit_pc=0x0000000000000000
+[CTX] reason=FAIL exec_mode=M uflow_marker=0x0000000000000000 trap_valid=0 exit_trap_mode=none exit_mcause=0x0000000000000000 exit_reason=no_trap exit_mepc=0x0000000000000000 exit_insn=0x0000000000000000 exit_insn_valid=0 exit_mtval=0x0000000000000000 exit_mstatus=0x0000000000000000 exit_symbol=unknown exit_symbol_addr=0x0000000000000000
+[REG] unavailable=no_trap_frame
+[FAILSCR] begin=0x0000000041000db0 end=0x0000000041000df0 bytes=0x0000000000000040
+[FAILQ] 0x0000000041000db0 : 0x0000000000000000
+[FAILQ] 0x0000000041000db8 : 0x0000000000000000
+[FAILQ] 0x0000000041000dc0 : 0x0000000000000000
+[FAILQ] 0x0000000041000dc8 : 0x0000000000000000
+[FAILQ] 0x0000000041000dd0 : 0x0000000000000000
+[FAILQ] 0x0000000041000dd8 : 0x0000000000000000
+[FAILQ] 0x0000000041000de0 : 0x0000000000000000
+[FAILQ] 0x0000000041000de8 : 0x0000000000000000
+[ACTDBG] decoded_failure_scratch begin=0x0000000041000db0 end=0x0000000041000df0
+[ACTDBG] failure_type=0x00000000 note=x0_slot_reused_by_ACT
+[ACTREG] x0=0x0000000000000000 x1=0x0000000000000000 x2=0x0000000000000000 x3=0x0000000000000000
+[ACTREG] x4=0x0000000000000000 x5=0x0000000000000000 x6=0x0000000000000000 x7=0x0000000000000000
+[ACTREG] x8=0x0000000040002d50 x9=0x0000000000000000 x10=0x0000000000000000 x11=0x0000000000000000
+[ACTREG] x12=0x0000000000000000 x13=0x000000000000b15d x14=0x0000000000000200 x15=0x0000000000000000
+[ACTREG] x16=0x0000000000000101 x17=0x0000000000000001 x18=0x0000000000000002 x19=0x0000000041000406
+[ACTREG] x20=0x0000000000000000 x21=0x8000000200006100 x22=0x00000000410003fc x23=0x0000000041000406
+[ACTREG] x24=0x0000000000000000 x25=0x0000000000000000 x26=0x1122334455667788 x27=0x0000000000000000
+[ACTREG] x28=0x0000000000000000 x29=0x0000000000000000 x30=0x0000000000000000 x31=0x0000000000000000
+[ACTFAIL] failing_instruction=unavailable
+[ACTFAIL] failing_addr=unavailable
+[ACTFAIL] failing_value=unavailable
+[ACTFAIL] expected_value=unavailable
+[ACTFAIL] failure_string_ptr=unavailable
+[ACTTRAP] trap_diag_actual_value=unavailable
+[ACTTRAP] trap_diag_expected_value=unavailable
+[ACTTSIG] unavailable=no_current_pointer
+[ACTHTRACE] unavailable=no_Mtramptbl_sv_symbol
+[ACTMTVEC] unavailable=no_Mtramptbl_sv_symbol
+[ACTCSR] saved_mepc=0x0000000000000000 saved_mcause=0x0000000000000000 saved_mtval=0x0000000000000000 saved_mstatus=0x0000000000000000 monitor_current_mtvec=0x0000000008000330 monitor_current_medeleg=0x000000000000b005 monitor_current_mideleg=0x0000000000000200 monitor_medeleg_saved_mcause_bit=0x0000000000000001
+[ACTDBG] instructions_around_saved_mepc=unavailable
+[SIG] begin=0x0000000041000df0 end=0x0000000041000e88 bytes=0x0000000000000098
+[SD] monitor persist next_index=1 clear_in_progress rc=0x0000000000000000
+[SD] quiesce busy_rc=0x0000000000000000 idle_rc=0x0000000000000000 clk_rc=0x0000000000000000
+[RST] trigger watchdog reset
+[HOST] hard cycle reason=watchdog_reset
+{'protocol': 4, 't': 1781597642, 'data': {'dps': {'1': False}}, 'dps': {'1': False}}
+{'protocol': 4, 't': 1781597655, 'data': {'dps': {'1': True}}, 'dps': {'1': True}}
+[RST] watchdog armed
+
+U-Boot SPL 2021.10 (Sep 19 2024 - 15:43:53 +0800)
+LPDDR4: 8G version: g8ad50857.
+Trying to boot from MMC2
+[MON] hart2 online
+
+=============================
+M-mode (VisionFive2) payload runner
+hartid=0x0000000000000001
+payload_kind=ACT
+exec_mode=M
+[ENV] exec_mode=M
+[ENV] deleg_policy=none medeleg=0x0000000000000000
+[ENV] mideleg=0x0000000000000000
+[ENV] mie=0x0000000000000088
+[ENV] mcounteren=0x0000000000000000
+[ENV] mcountinhibit=0x0000000000000000
+[ENV] menvcfg=0x0000000000000000
+[ENV] scounteren=0x0000000000000000
+[ENV] senvcfg=0x0000000000000000
+[ENV] satp=0x0000000000000000
+[ENV] stvec=0x0000000000000000
+[ENV] sscratch=0x0000000000000000
+[ENV] sie=0x0000000000000000
+[ENV] pmpcfg0=0x0000000000000000
+[ENV] pmpaddr0=0x0000000000000000
+[ENV] pmpaddr1=0x0000000000000000
+[ENV] pmpaddr2=0x0000000000000000
+[ENV] pmpaddr3=0x0000000000000000
+[ENV] pmpaddr4=0x0000000000000000
+[ENV] pmpaddr5=0x0000000000000000
+[ENV] pmpaddr6=0x0000000000000000
+[ENV] pmpaddr7=0x0000000000000000
+[ENV] touch_menvcfg=0
+[ENV] use_sv39=0
+[ENV] smode_csr_policy=strict
+=============================
+[SUITE] ACT profile: pack or single embedded ELF
+[SD] probing base=0x0000000016020000
+[SD] attach: use SPL-initialized card
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach: retry CMD3
+[SD] attach failed rc=0xffffffffffffffff
+[SD] init attempt 1
+[SD] init: pwren
+[SD] init: reset
+[SD] init: clk400k
+[SD] init: regs
+[SD] init: cmd0/cmd8
+[SD] init: acmd41
+[SD] init: cid/rca/select
+[SD] csd raw=0x00000000400e0032 0x000000005b590001 0x00000000dfff7f80 0x000000000a400051
+[SD] csd_structure=1
+[SD] c_size=122879
+[SD] blocks=125829120
+[SD] init: clk25m
+[SD] init: done
+[SD] total_blocks=125829120
+[SD] footer magic=0x00000000464b5041 ver=1 start=125827045 blocks=26
+[SD] next_index=1
+[SD] table_count=1
+[SUITE] loaded external pack from SD tail
+[SUITE] external pack @ 0x0000000088000000 count=1
+[SUITE] all external tests already dispatched
+[SUITE] SUMMARY total=0 pass=0 fail=0
+PASS

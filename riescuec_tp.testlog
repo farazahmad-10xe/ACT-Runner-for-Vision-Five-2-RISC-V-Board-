@@ -1,0 +1,14 @@
+[2026-05-25T13:59:12]INFO riescue.lib.logger:161  Logger initialized, setting log level to INFO
+[2026-05-25T13:59:12]WARNING riescue.lib.toolchain.toolchain:79  Spike not found: Could not find tt_spike in PATH. Add it to your PATH or set SPIKE_PATH environment variable
+[2026-05-25T13:59:12]INFO riescue:73  Initialized RiescueD with seed: 2
+[2026-05-25T13:59:12]INFO riescue:289  test_config: env: TEST_ENV_BARE_METAL
+[2026-05-25T13:59:12]INFO riescue:290  test_config: secure_mode: NON_SECURE
+[2026-05-25T13:59:12]INFO riescue:291  test_config: priv: USER
+[2026-05-25T13:59:12]INFO riescue:292  test_config: paging: DISABLE
+[2026-05-25T13:59:12]INFO riescue:293  test_config: paging_g: DISABLE
+[2026-05-25T13:59:12]INFO riescue.lib.toolchain.tool:97  Running 
+	/home/lpt-10xe/riscv64/bin/riscv64-unknown-elf-gcc -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv64imafdc_zicntr_zicsr_zifencei_zihpm_zba_zbb -mno-relax -mabi=lp64d -I /home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/special_Tests/vf2_riescue_tp_zifencei_msu_norelax/zifencei_user_seed2 -c /home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/special_Tests/vf2_riescue_tp_zifencei_msu_norelax/zifencei_user_seed2/tp_zifencei_2.S
+[2026-05-25T13:59:12]INFO riescue.lib.toolchain.tool:97  Running 
+	/home/lpt-10xe/riscv64/bin/riscv64-unknown-elf-gcc -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv64imafdc_zicntr_zicsr_zifencei_zihpm_zba_zbb -mno-relax -mabi=lp64d -T /home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/special_Tests/vf2_riescue_tp_zifencei_msu_norelax/zifencei_user_seed2/tp_zifencei_2.ld -o /home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/special_Tests/vf2_riescue_tp_zifencei_msu_norelax/zifencei_user_seed2/tp_zifencei_2 /home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/special_Tests/vf2_riescue_tp_zifencei_msu_norelax/zifencei_user_seed2/tp_zifencei_2.o
+[2026-05-25T13:59:12]INFO riescue.lib.toolchain.tool:93  Running 
+	/home/lpt-10xe/riscv64/bin/riscv64-unknown-elf-objdump -D /home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/special_Tests/vf2_riescue_tp_zifencei_msu_norelax/zifencei_user_seed2/tp_zifencei_2 -M numeric > /home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/special_Tests/vf2_riescue_tp_zifencei_msu_norelax/zifencei_user_seed2/tp_zifencei_2.dis

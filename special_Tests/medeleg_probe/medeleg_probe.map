@@ -1,0 +1,55 @@
+
+There are no discarded input sections
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+LOAD /tmp/cctBtdfj.o
+                0x0000000041000000                . = 0x41000000
+
+.text           0x0000000041000000      0xaa0
+ *(.text .text.*)
+ .text          0x0000000041000000      0xaa0 /tmp/cctBtdfj.o
+                0x0000000041000000                _start
+
+.rodata         0x0000000041000aa0      0x407
+ *(.rodata .rodata.*)
+ .rodata        0x0000000041000aa0      0x407 /tmp/cctBtdfj.o
+
+.tohost         0x0000000041000ea8       0x10
+ *(.tohost)
+ .tohost        0x0000000041000ea8       0x10 /tmp/cctBtdfj.o
+                0x0000000041000ea8                tohost
+                0x0000000041000eb0                fromhost
+
+.runner_fail_scratch
+                0x0000000041000eb8       0x40
+ *(.runner_fail_scratch)
+ .runner_fail_scratch
+                0x0000000041000eb8       0x40 /tmp/cctBtdfj.o
+                0x0000000041000eb8                begin_failure_scratch
+                0x0000000041000ef8                end_failure_scratch
+
+.signature      0x0000000041000ef8       0x98
+ *(.signature)
+ .signature     0x0000000041000ef8       0x98 /tmp/cctBtdfj.o
+                0x0000000041000ef8                begin_signature
+                0x0000000041000f90                end_signature
+
+.data           0x0000000041000f90        0x0
+ *(.data .data.*)
+ .data          0x0000000041000f90        0x0 /tmp/cctBtdfj.o
+
+.bss            0x0000000041001000     0x1000
+ *(.bss .bss.* COMMON)
+ .bss           0x0000000041001000     0x1000 /tmp/cctBtdfj.o
+OUTPUT(special_Tests/medeleg_probe/medeleg_probe.elf elf64-littleriscv)
+
+.riscv.attributes
+                0x0000000000000000       0x76
+ .riscv.attributes
+                0x0000000000000000       0x76 /tmp/cctBtdfj.o

@@ -1,0 +1,882 @@
+
+special_Tests/medeleg_probe/medeleg_probe.elf:     file format elf64-littleriscv
+
+SYMBOL TABLE:
+0000000041000000 l    d  .text	0000000000000000 .text
+0000000041000aa0 l    d  .rodata	0000000000000000 .rodata
+0000000041000ea8 l    d  .tohost	0000000000000000 .tohost
+0000000041000eb8 l    d  .runner_fail_scratch	0000000000000000 .runner_fail_scratch
+0000000041000ef8 l    d  .signature	0000000000000000 .signature
+0000000041001000 l    d  .bss	0000000000000000 .bss
+0000000000000000 l    d  .riscv.attributes	0000000000000000 .riscv.attributes
+0000000000000000 l    df *ABS*	0000000000000000 cctBtdfj.o
+0000000010000000 l       *ABS*	0000000000000000 UART_BASE
+0000000000000001 l       *ABS*	0000000000000000 MODE_S
+0000000000000003 l       *ABS*	0000000000000000 MODE_M
+0000000041002000 l       .bss	0000000000000000 stack_top
+0000000041000ef8 l       .signature	0000000000000000 saved_runner_mtvec
+0000000041000f00 l       .signature	0000000000000000 saved_runner_stvec
+0000000041000f08 l       .signature	0000000000000000 saved_runner_medeleg
+0000000041000f10 l       .signature	0000000000000000 saved_runner_pmpcfg0
+0000000041000f18 l       .signature	0000000000000000 saved_runner_pmpaddr0
+00000000410007b0 l       .text	0000000000000000 m_trap_handler
+00000000410008b4 l       .text	0000000000000000 s_trap_handler
+0000000041000f80 l       .signature	0000000000000000 trap_count
+0000000041000aa0 l       .rodata	0000000000000000 msg_start
+00000000410009f8 l       .text	0000000000000000 uart_puts
+0000000041000abe l       .rodata	0000000000000000 msg_mhartid
+0000000041000a68 l       .text	0000000000000000 print_label_hex
+0000000041000acf l       .rodata	0000000000000000 msg_misa
+0000000041000add l       .rodata	0000000000000000 msg_initial_medeleg
+0000000041000f20 l       .signature	0000000000000000 medeleg_warl_mask
+0000000041000af6 l       .rodata	0000000000000000 msg_mask
+00000000410002dc l       .text	0000000000000000 print_medeleg_warl_report
+00000000410001a8 l       .text	0000000000000000 run_one_cause
+0000000041000498 l       .text	0000000000000000 run_auipc_plus2_fetch_probe
+000000004100061c l       .text	0000000000000000 run_act_jalr_fetch_probe
+0000000041000130 l       .text	0000000000000000 done
+0000000041000e87 l       .rodata	0000000000000000 msg_done
+0000000041000b95 l       .rodata	0000000000000000 msg_case
+0000000041000bb4 l       .rodata	0000000000000000 msg_cause
+0000000041000f28 l       .signature	0000000000000000 requested_medeleg
+0000000041000f30 l       .signature	0000000000000000 observed_medeleg
+0000000041000bd1 l       .rodata	0000000000000000 msg_requested
+0000000041000bf0 l       .rodata	0000000000000000 msg_observed
+0000000041000f38 l       .signature	0000000000000000 current_cause
+0000000041000f40 l       .signature	0000000000000000 current_mode
+0000000041000f48 l       .signature	0000000000000000 current_mcause
+0000000041000364 l       .text	0000000000000000 s_entry
+0000000041000274 l       .text	0000000000000000 m_after_probe
+0000000041000c93 l       .rodata	0000000000000000 msg_result_mode
+0000000041000cb2 l       .rodata	0000000000000000 msg_result_cause
+0000000041000f50 l       .signature	0000000000000000 current_mepc
+0000000041000cc9 l       .rodata	0000000000000000 msg_result_epc
+0000000041000cde l       .rodata	0000000000000000 msg_after_medeleg
+0000000041000b11 l       .rodata	0000000000000000 msg_warl_report
+0000000041000b48 l       .rodata	0000000000000000 msg_warl_cause
+0000000041000b5b l       .rodata	0000000000000000 msg_warl_writable
+0000000041000b7d l       .rodata	0000000000000000 msg_warl_done
+00000000410003c0 l       .text	0000000000000000 s_trigger_auipc_plus2_fetch
+00000000410003f0 l       .text	0000000000000000 s_trigger_act_jalr_fetch
+00000000410003b4 l       .text	0000000000000000 s_trigger_iaf
+0000000041000430 l       .text	0000000000000000 s_trigger_illegal
+0000000041000438 l       .text	0000000000000000 s_trigger_ebreak
+0000000041000440 l       .text	0000000000000000 s_trigger_load_misaligned
+0000000041000450 l       .text	0000000000000000 s_trigger_store_misaligned
+0000000041000460 l       .text	0000000000000000 s_trigger_ecall_s
+0000000041000468 l       .text	0000000000000000 s_return_ecall
+0000000041000478 l       .text	0000000000000000 auipc_probe_inst
+0000000041000f70 l       .signature	0000000000000000 fetch_probe_target
+0000000041000f78 l       .signature	0000000000000000 fetch_probe_halfword
+0000000041000488 l       .text	0000000000000000 act_jalr_probe_jalr
+0000000041000f68 l       .signature	0000000000000000 fetch_probe_inst
+0000000041000490 l       .text	0000000000000000 act_jalr_probe_target_inst
+0000000041000480 l       .text	0000000000000000 act_jalr_probe_setup
+0000000041000f88 l       .signature	0000000000000000 misalign_data
+0000000041000470 l       .text	0000000000000000 s_return_ebreak
+0000000041000cf8 l       .rodata	0000000000000000 msg_fetch_case
+0000000041000d4c l       .rodata	0000000000000000 msg_fetch_medeleg
+0000000041000d79 l       .rodata	0000000000000000 msg_fetch_inst
+0000000041000db8 l       .rodata	0000000000000000 msg_fetch_target
+0000000041000580 l       .text	0000000000000000 m_after_fetch_probe
+0000000041000ddb l       .rodata	0000000000000000 msg_fetch_target_seen
+0000000041000dfd l       .rodata	0000000000000000 msg_fetch_halfword
+0000000041000e1e l       .rodata	0000000000000000 msg_fetch_result_mode
+0000000041000e3f l       .rodata	0000000000000000 msg_fetch_result_cause
+0000000041000e58 l       .rodata	0000000000000000 msg_fetch_result_epc
+0000000041000f58 l       .signature	0000000000000000 current_mtval
+0000000041000e6f l       .rodata	0000000000000000 msg_fetch_result_tval
+0000000041000d1f l       .rodata	0000000000000000 msg_act_jalr_case
+0000000041000d97 l       .rodata	0000000000000000 msg_act_jalr_inst
+0000000041000714 l       .text	0000000000000000 m_after_act_jalr_probe
+00000000410007e0 l       .text	0000000000000000 m_record_tested_trap
+0000000041000828 l       .text	0000000000000000 m_finish_from_return_trap
+0000000041000f60 l       .signature	0000000000000000 current_xstatus
+000000004100093c l       .text	0000000000000000 print_trap_m
+000000004100082c l       .text	0000000000000000 m_resume_mmode
+000000004100096c l       .text	0000000000000000 print_return_trap_m
+0000000041000890 l       .text	0000000000000000 m_resume_fetch_probe
+000000004100086c l       .text	0000000000000000 m_resume_act_jalr_probe
+0000000041000954 l       .text	0000000000000000 print_trap_s
+000000004100092c l       .text	0000000000000000 s_use_ebreak_return
+0000000041000c0e l       .rodata	0000000000000000 msg_trap_m
+000000004100098c l       .text	0000000000000000 print_trap_common
+0000000041000c27 l       .rodata	0000000000000000 msg_trap_s
+0000000041000c40 l       .rodata	0000000000000000 msg_return_m
+0000000041000c5d l       .rodata	0000000000000000 msg_trap_cause
+0000000041000c70 l       .rodata	0000000000000000 msg_trap_epc
+0000000041000c81 l       .rodata	0000000000000000 msg_trap_tval
+00000000410009e0 l       .text	0000000000000000 uart_putc
+0000000041000a20 l       .text	0000000000000000 uart_hex64
+0000000041000ea4 l       .rodata	0000000000000000 nl
+0000000041000f90 g       .signature	0000000000000000 end_signature
+0000000041000ef8 g       .runner_fail_scratch	0000000000000000 end_failure_scratch
+0000000041000ef8 g       .signature	0000000000000000 begin_signature
+0000000041000000 g       .text	0000000000000000 _start
+0000000041000eb8 g       .runner_fail_scratch	0000000000000000 begin_failure_scratch
+0000000041000eb0 g       .tohost	0000000000000000 fromhost
+0000000041000ea8 g       .tohost	0000000000000000 tohost
+
+
+
+Disassembly of section .text:
+
+0000000041000000 <_start>:
+    41000000:	00002117          	auipc	sp,0x2
+    41000004:	00010113          	mv	sp,sp
+    41000008:	305022f3          	csrr	t0,mtvec
+    4100000c:	00001317          	auipc	t1,0x1
+    41000010:	eec30313          	addi	t1,t1,-276 # 41000ef8 <begin_signature>
+    41000014:	00533023          	sd	t0,0(t1)
+    41000018:	105022f3          	csrr	t0,stvec
+    4100001c:	00001317          	auipc	t1,0x1
+    41000020:	ee430313          	addi	t1,t1,-284 # 41000f00 <saved_runner_stvec>
+    41000024:	00533023          	sd	t0,0(t1)
+    41000028:	302022f3          	csrr	t0,medeleg
+    4100002c:	00001317          	auipc	t1,0x1
+    41000030:	edc30313          	addi	t1,t1,-292 # 41000f08 <saved_runner_medeleg>
+    41000034:	00533023          	sd	t0,0(t1)
+    41000038:	3a0022f3          	csrr	t0,pmpcfg0
+    4100003c:	00001317          	auipc	t1,0x1
+    41000040:	ed430313          	addi	t1,t1,-300 # 41000f10 <saved_runner_pmpcfg0>
+    41000044:	00533023          	sd	t0,0(t1)
+    41000048:	3b0022f3          	csrr	t0,pmpaddr0
+    4100004c:	00001317          	auipc	t1,0x1
+    41000050:	ecc30313          	addi	t1,t1,-308 # 41000f18 <saved_runner_pmpaddr0>
+    41000054:	00533023          	sd	t0,0(t1)
+    41000058:	fff00293          	li	t0,-1
+    4100005c:	3b029073          	csrw	pmpaddr0,t0
+    41000060:	01f00293          	li	t0,31
+    41000064:	3a029073          	csrw	pmpcfg0,t0
+    41000068:	0330000f          	fence	rw,rw
+    4100006c:	00000297          	auipc	t0,0x0
+    41000070:	74428293          	addi	t0,t0,1860 # 410007b0 <m_trap_handler>
+    41000074:	30529073          	csrw	mtvec,t0
+    41000078:	00001297          	auipc	t0,0x1
+    4100007c:	83c28293          	addi	t0,t0,-1988 # 410008b4 <s_trap_handler>
+    41000080:	10529073          	csrw	stvec,t0
+    41000084:	00001297          	auipc	t0,0x1
+    41000088:	efc28293          	addi	t0,t0,-260 # 41000f80 <trap_count>
+    4100008c:	0002b023          	sd	zero,0(t0)
+    41000090:	00001597          	auipc	a1,0x1
+    41000094:	a1058593          	addi	a1,a1,-1520 # 41000aa0 <msg_start>
+    41000098:	161000ef          	jal	410009f8 <uart_puts>
+    4100009c:	f1402573          	csrr	a0,mhartid
+    410000a0:	00001597          	auipc	a1,0x1
+    410000a4:	a1e58593          	addi	a1,a1,-1506 # 41000abe <msg_mhartid>
+    410000a8:	1c1000ef          	jal	41000a68 <print_label_hex>
+    410000ac:	30102573          	csrr	a0,misa
+    410000b0:	00001597          	auipc	a1,0x1
+    410000b4:	a1f58593          	addi	a1,a1,-1505 # 41000acf <msg_misa>
+    410000b8:	1b1000ef          	jal	41000a68 <print_label_hex>
+    410000bc:	30202573          	csrr	a0,medeleg
+    410000c0:	00001597          	auipc	a1,0x1
+    410000c4:	a1d58593          	addi	a1,a1,-1507 # 41000add <msg_initial_medeleg>
+    410000c8:	1a1000ef          	jal	41000a68 <print_label_hex>
+    410000cc:	fff00293          	li	t0,-1
+    410000d0:	30229073          	csrw	medeleg,t0
+    410000d4:	30202573          	csrr	a0,medeleg
+    410000d8:	00001317          	auipc	t1,0x1
+    410000dc:	e4830313          	addi	t1,t1,-440 # 41000f20 <medeleg_warl_mask>
+    410000e0:	00a33023          	sd	a0,0(t1)
+    410000e4:	00001597          	auipc	a1,0x1
+    410000e8:	a1258593          	addi	a1,a1,-1518 # 41000af6 <msg_mask>
+    410000ec:	17d000ef          	jal	41000a68 <print_label_hex>
+    410000f0:	1ec000ef          	jal	410002dc <print_medeleg_warl_report>
+    410000f4:	30201073          	csrw	medeleg,zero
+    410000f8:	00100413          	li	s0,1
+    410000fc:	0ac000ef          	jal	410001a8 <run_one_cause>
+    41000100:	00200413          	li	s0,2
+    41000104:	0a4000ef          	jal	410001a8 <run_one_cause>
+    41000108:	00300413          	li	s0,3
+    4100010c:	09c000ef          	jal	410001a8 <run_one_cause>
+    41000110:	00400413          	li	s0,4
+    41000114:	094000ef          	jal	410001a8 <run_one_cause>
+    41000118:	00600413          	li	s0,6
+    4100011c:	08c000ef          	jal	410001a8 <run_one_cause>
+    41000120:	00900413          	li	s0,9
+    41000124:	084000ef          	jal	410001a8 <run_one_cause>
+    41000128:	370000ef          	jal	41000498 <run_auipc_plus2_fetch_probe>
+    4100012c:	4f0000ef          	jal	4100061c <run_act_jalr_fetch_probe>
+
+0000000041000130 <done>:
+    41000130:	00001597          	auipc	a1,0x1
+    41000134:	d5758593          	addi	a1,a1,-681 # 41000e87 <msg_done>
+    41000138:	0c1000ef          	jal	410009f8 <uart_puts>
+    4100013c:	00001297          	auipc	t0,0x1
+    41000140:	ddc28293          	addi	t0,t0,-548 # 41000f18 <saved_runner_pmpaddr0>
+    41000144:	0002b283          	ld	t0,0(t0)
+    41000148:	3b029073          	csrw	pmpaddr0,t0
+    4100014c:	00001297          	auipc	t0,0x1
+    41000150:	dc428293          	addi	t0,t0,-572 # 41000f10 <saved_runner_pmpcfg0>
+    41000154:	0002b283          	ld	t0,0(t0)
+    41000158:	3a029073          	csrw	pmpcfg0,t0
+    4100015c:	00001297          	auipc	t0,0x1
+    41000160:	dac28293          	addi	t0,t0,-596 # 41000f08 <saved_runner_medeleg>
+    41000164:	0002b283          	ld	t0,0(t0)
+    41000168:	30229073          	csrw	medeleg,t0
+    4100016c:	00001297          	auipc	t0,0x1
+    41000170:	d9428293          	addi	t0,t0,-620 # 41000f00 <saved_runner_stvec>
+    41000174:	0002b283          	ld	t0,0(t0)
+    41000178:	10529073          	csrw	stvec,t0
+    4100017c:	00001297          	auipc	t0,0x1
+    41000180:	d7c28293          	addi	t0,t0,-644 # 41000ef8 <begin_signature>
+    41000184:	0002b283          	ld	t0,0(t0)
+    41000188:	30529073          	csrw	mtvec,t0
+    4100018c:	00300193          	li	gp,3
+    41000190:	00001297          	auipc	t0,0x1
+    41000194:	d1828293          	addi	t0,t0,-744 # 41000ea8 <tohost>
+    41000198:	0032b023          	sd	gp,0(t0)
+    4100019c:	0330000f          	fence	rw,rw
+    410001a0:	10500073          	wfi
+    410001a4:	ffdff06f          	j	410001a0 <done+0x70>
+
+00000000410001a8 <run_one_cause>:
+    410001a8:	ff010113          	addi	sp,sp,-16 # 41001ff0 <end_signature+0x1060>
+    410001ac:	00113423          	sd	ra,8(sp)
+    410001b0:	00813023          	sd	s0,0(sp)
+    410001b4:	00001597          	auipc	a1,0x1
+    410001b8:	9e158593          	addi	a1,a1,-1567 # 41000b95 <msg_case>
+    410001bc:	03d000ef          	jal	410009f8 <uart_puts>
+    410001c0:	00040513          	mv	a0,s0
+    410001c4:	00001597          	auipc	a1,0x1
+    410001c8:	9f058593          	addi	a1,a1,-1552 # 41000bb4 <msg_cause>
+    410001cc:	09d000ef          	jal	41000a68 <print_label_hex>
+    410001d0:	00100293          	li	t0,1
+    410001d4:	008292b3          	sll	t0,t0,s0
+    410001d8:	00001317          	auipc	t1,0x1
+    410001dc:	d5030313          	addi	t1,t1,-688 # 41000f28 <requested_medeleg>
+    410001e0:	00533023          	sd	t0,0(t1)
+    410001e4:	30201073          	csrw	medeleg,zero
+    410001e8:	30229073          	csrw	medeleg,t0
+    410001ec:	302023f3          	csrr	t2,medeleg
+    410001f0:	00001317          	auipc	t1,0x1
+    410001f4:	d4030313          	addi	t1,t1,-704 # 41000f30 <observed_medeleg>
+    410001f8:	00733023          	sd	t2,0(t1)
+    410001fc:	00028513          	mv	a0,t0
+    41000200:	00001597          	auipc	a1,0x1
+    41000204:	9d158593          	addi	a1,a1,-1583 # 41000bd1 <msg_requested>
+    41000208:	061000ef          	jal	41000a68 <print_label_hex>
+    4100020c:	00001317          	auipc	t1,0x1
+    41000210:	d2430313          	addi	t1,t1,-732 # 41000f30 <observed_medeleg>
+    41000214:	00033503          	ld	a0,0(t1)
+    41000218:	00001597          	auipc	a1,0x1
+    4100021c:	9d858593          	addi	a1,a1,-1576 # 41000bf0 <msg_observed>
+    41000220:	049000ef          	jal	41000a68 <print_label_hex>
+    41000224:	00001317          	auipc	t1,0x1
+    41000228:	d1430313          	addi	t1,t1,-748 # 41000f38 <current_cause>
+    4100022c:	00833023          	sd	s0,0(t1)
+    41000230:	00001317          	auipc	t1,0x1
+    41000234:	d1030313          	addi	t1,t1,-752 # 41000f40 <current_mode>
+    41000238:	00033023          	sd	zero,0(t1)
+    4100023c:	00001317          	auipc	t1,0x1
+    41000240:	d0c30313          	addi	t1,t1,-756 # 41000f48 <current_mcause>
+    41000244:	00033023          	sd	zero,0(t1)
+    41000248:	00000297          	auipc	t0,0x0
+    4100024c:	11c28293          	addi	t0,t0,284 # 41000364 <s_entry>
+    41000250:	34129073          	csrw	mepc,t0
+    41000254:	30002373          	csrr	t1,mstatus
+    41000258:	000023b7          	lui	t2,0x2
+    4100025c:	8003839b          	addiw	t2,t2,-2048 # 1800 <MODE_M+0x17fd>
+    41000260:	3003b073          	csrc	mstatus,t2
+    41000264:	000013b7          	lui	t2,0x1
+    41000268:	8003839b          	addiw	t2,t2,-2048 # 800 <MODE_M+0x7fd>
+    4100026c:	3003a073          	csrs	mstatus,t2
+    41000270:	30200073          	mret
+
+0000000041000274 <m_after_probe>:
+    41000274:	00001317          	auipc	t1,0x1
+    41000278:	ccc30313          	addi	t1,t1,-820 # 41000f40 <current_mode>
+    4100027c:	00033503          	ld	a0,0(t1)
+    41000280:	00001597          	auipc	a1,0x1
+    41000284:	a1358593          	addi	a1,a1,-1517 # 41000c93 <msg_result_mode>
+    41000288:	7e0000ef          	jal	41000a68 <print_label_hex>
+    4100028c:	00001317          	auipc	t1,0x1
+    41000290:	cbc30313          	addi	t1,t1,-836 # 41000f48 <current_mcause>
+    41000294:	00033503          	ld	a0,0(t1)
+    41000298:	00001597          	auipc	a1,0x1
+    4100029c:	a1a58593          	addi	a1,a1,-1510 # 41000cb2 <msg_result_cause>
+    410002a0:	7c8000ef          	jal	41000a68 <print_label_hex>
+    410002a4:	00001317          	auipc	t1,0x1
+    410002a8:	cac30313          	addi	t1,t1,-852 # 41000f50 <current_mepc>
+    410002ac:	00033503          	ld	a0,0(t1)
+    410002b0:	00001597          	auipc	a1,0x1
+    410002b4:	a1958593          	addi	a1,a1,-1511 # 41000cc9 <msg_result_epc>
+    410002b8:	7b0000ef          	jal	41000a68 <print_label_hex>
+    410002bc:	30202573          	csrr	a0,medeleg
+    410002c0:	00001597          	auipc	a1,0x1
+    410002c4:	a1e58593          	addi	a1,a1,-1506 # 41000cde <msg_after_medeleg>
+    410002c8:	7a0000ef          	jal	41000a68 <print_label_hex>
+    410002cc:	00013403          	ld	s0,0(sp)
+    410002d0:	00813083          	ld	ra,8(sp)
+    410002d4:	01010113          	addi	sp,sp,16
+    410002d8:	00008067          	ret
+
+00000000410002dc <print_medeleg_warl_report>:
+    410002dc:	fe010113          	addi	sp,sp,-32
+    410002e0:	00113c23          	sd	ra,24(sp)
+    410002e4:	00813823          	sd	s0,16(sp)
+    410002e8:	00913423          	sd	s1,8(sp)
+    410002ec:	00001597          	auipc	a1,0x1
+    410002f0:	82558593          	addi	a1,a1,-2011 # 41000b11 <msg_warl_report>
+    410002f4:	704000ef          	jal	410009f8 <uart_puts>
+    410002f8:	00001297          	auipc	t0,0x1
+    410002fc:	c2828293          	addi	t0,t0,-984 # 41000f20 <medeleg_warl_mask>
+    41000300:	0002b483          	ld	s1,0(t0)
+    41000304:	00000413          	li	s0,0
+    41000308:	00040513          	mv	a0,s0
+    4100030c:	00001597          	auipc	a1,0x1
+    41000310:	83c58593          	addi	a1,a1,-1988 # 41000b48 <msg_warl_cause>
+    41000314:	754000ef          	jal	41000a68 <print_label_hex>
+    41000318:	00100293          	li	t0,1
+    4100031c:	008292b3          	sll	t0,t0,s0
+    41000320:	0054f533          	and	a0,s1,t0
+    41000324:	00050463          	beqz	a0,4100032c <print_medeleg_warl_report+0x50>
+    41000328:	00100513          	li	a0,1
+    4100032c:	00001597          	auipc	a1,0x1
+    41000330:	82f58593          	addi	a1,a1,-2001 # 41000b5b <msg_warl_writable>
+    41000334:	734000ef          	jal	41000a68 <print_label_hex>
+    41000338:	00140413          	addi	s0,s0,1
+    4100033c:	01000293          	li	t0,16
+    41000340:	fc5444e3          	blt	s0,t0,41000308 <print_medeleg_warl_report+0x2c>
+    41000344:	00001597          	auipc	a1,0x1
+    41000348:	83958593          	addi	a1,a1,-1991 # 41000b7d <msg_warl_done>
+    4100034c:	6ac000ef          	jal	410009f8 <uart_puts>
+    41000350:	00813483          	ld	s1,8(sp)
+    41000354:	01013403          	ld	s0,16(sp)
+    41000358:	01813083          	ld	ra,24(sp)
+    4100035c:	02010113          	addi	sp,sp,32
+    41000360:	00008067          	ret
+
+0000000041000364 <s_entry>:
+    41000364:	00001297          	auipc	t0,0x1
+    41000368:	bd428293          	addi	t0,t0,-1068 # 41000f38 <current_cause>
+    4100036c:	0002b303          	ld	t1,0(t0)
+    41000370:	10000393          	li	t2,256
+    41000374:	04730663          	beq	t1,t2,410003c0 <s_trigger_auipc_plus2_fetch>
+    41000378:	10100393          	li	t2,257
+    4100037c:	06730a63          	beq	t1,t2,410003f0 <s_trigger_act_jalr_fetch>
+    41000380:	00100393          	li	t2,1
+    41000384:	02730863          	beq	t1,t2,410003b4 <s_trigger_iaf>
+    41000388:	00200393          	li	t2,2
+    4100038c:	0a730263          	beq	t1,t2,41000430 <s_trigger_illegal>
+    41000390:	00300393          	li	t2,3
+    41000394:	0a730263          	beq	t1,t2,41000438 <s_trigger_ebreak>
+    41000398:	00400393          	li	t2,4
+    4100039c:	0a730263          	beq	t1,t2,41000440 <s_trigger_load_misaligned>
+    410003a0:	00600393          	li	t2,6
+    410003a4:	0a730663          	beq	t1,t2,41000450 <s_trigger_store_misaligned>
+    410003a8:	00900393          	li	t2,9
+    410003ac:	0a730a63          	beq	t1,t2,41000460 <s_trigger_ecall_s>
+    410003b0:	0b80006f          	j	41000468 <s_return_ecall>
+
+00000000410003b4 <s_trigger_iaf>:
+    410003b4:	00000293          	li	t0,0
+    410003b8:	000280e7          	jalr	t0
+    410003bc:	0ac0006f          	j	41000468 <s_return_ecall>
+
+00000000410003c0 <s_trigger_auipc_plus2_fetch>:
+    410003c0:	00000297          	auipc	t0,0x0
+    410003c4:	0b828293          	addi	t0,t0,184 # 41000478 <auipc_probe_inst>
+    410003c8:	00228293          	addi	t0,t0,2
+    410003cc:	00001317          	auipc	t1,0x1
+    410003d0:	ba430313          	addi	t1,t1,-1116 # 41000f70 <fetch_probe_target>
+    410003d4:	00533023          	sd	t0,0(t1)
+    410003d8:	0002d383          	lhu	t2,0(t0)
+    410003dc:	00001317          	auipc	t1,0x1
+    410003e0:	b9c30313          	addi	t1,t1,-1124 # 41000f78 <fetch_probe_halfword>
+    410003e4:	00733023          	sd	t2,0(t1)
+    410003e8:	00028067          	jr	t0
+    410003ec:	07c0006f          	j	41000468 <s_return_ecall>
+
+00000000410003f0 <s_trigger_act_jalr_fetch>:
+    410003f0:	00000297          	auipc	t0,0x0
+    410003f4:	09828293          	addi	t0,t0,152 # 41000488 <act_jalr_probe_jalr>
+    410003f8:	00001317          	auipc	t1,0x1
+    410003fc:	b7030313          	addi	t1,t1,-1168 # 41000f68 <fetch_probe_inst>
+    41000400:	00533023          	sd	t0,0(t1)
+    41000404:	00000297          	auipc	t0,0x0
+    41000408:	08c28293          	addi	t0,t0,140 # 41000490 <act_jalr_probe_target_inst>
+    4100040c:	00228293          	addi	t0,t0,2
+    41000410:	00001317          	auipc	t1,0x1
+    41000414:	b6030313          	addi	t1,t1,-1184 # 41000f70 <fetch_probe_target>
+    41000418:	00533023          	sd	t0,0(t1)
+    4100041c:	0002d383          	lhu	t2,0(t0)
+    41000420:	00001317          	auipc	t1,0x1
+    41000424:	b5830313          	addi	t1,t1,-1192 # 41000f78 <fetch_probe_halfword>
+    41000428:	00733023          	sd	t2,0(t1)
+    4100042c:	0540006f          	j	41000480 <act_jalr_probe_setup>
+
+0000000041000430 <s_trigger_illegal>:
+    41000430:	00000000          	.word	0x00000000
+    41000434:	0340006f          	j	41000468 <s_return_ecall>
+
+0000000041000438 <s_trigger_ebreak>:
+    41000438:	00100073          	ebreak
+    4100043c:	02c0006f          	j	41000468 <s_return_ecall>
+
+0000000041000440 <s_trigger_load_misaligned>:
+    41000440:	00001297          	auipc	t0,0x1
+    41000444:	b4828293          	addi	t0,t0,-1208 # 41000f88 <misalign_data>
+    41000448:	0012b303          	ld	t1,1(t0)
+    4100044c:	01c0006f          	j	41000468 <s_return_ecall>
+
+0000000041000450 <s_trigger_store_misaligned>:
+    41000450:	00001297          	auipc	t0,0x1
+    41000454:	b3828293          	addi	t0,t0,-1224 # 41000f88 <misalign_data>
+    41000458:	0062b0a3          	sd	t1,1(t0)
+    4100045c:	00c0006f          	j	41000468 <s_return_ecall>
+
+0000000041000460 <s_trigger_ecall_s>:
+    41000460:	00000073          	ecall
+    41000464:	00c0006f          	j	41000470 <s_return_ebreak>
+
+0000000041000468 <s_return_ecall>:
+    41000468:	00000073          	ecall
+    4100046c:	ffdff06f          	j	41000468 <s_return_ecall>
+
+0000000041000470 <s_return_ebreak>:
+    41000470:	00100073          	ebreak
+    41000474:	ffdff06f          	j	41000470 <s_return_ebreak>
+
+0000000041000478 <auipc_probe_inst>:
+    41000478:	00000297          	auipc	t0,0x0
+    4100047c:	00000013          	nop
+
+0000000041000480 <act_jalr_probe_setup>:
+    41000480:	00000597          	auipc	a1,0x0
+    41000484:	00958593          	addi	a1,a1,9 # 41000489 <act_jalr_probe_jalr+0x1>
+
+0000000041000488 <act_jalr_probe_jalr>:
+    41000488:	009580e7          	jalr	9(a1)
+    4100048c:	00010013          	mv	zero,sp
+
+0000000041000490 <act_jalr_probe_target_inst>:
+    41000490:	00000597          	auipc	a1,0x0
+    41000494:	00000013          	nop
+
+0000000041000498 <run_auipc_plus2_fetch_probe>:
+    41000498:	ff010113          	addi	sp,sp,-16
+    4100049c:	00113423          	sd	ra,8(sp)
+    410004a0:	00001597          	auipc	a1,0x1
+    410004a4:	85858593          	addi	a1,a1,-1960 # 41000cf8 <msg_fetch_case>
+    410004a8:	550000ef          	jal	410009f8 <uart_puts>
+    410004ac:	10000293          	li	t0,256
+    410004b0:	00001317          	auipc	t1,0x1
+    410004b4:	a8830313          	addi	t1,t1,-1400 # 41000f38 <current_cause>
+    410004b8:	00533023          	sd	t0,0(t1)
+    410004bc:	00001317          	auipc	t1,0x1
+    410004c0:	a8430313          	addi	t1,t1,-1404 # 41000f40 <current_mode>
+    410004c4:	00033023          	sd	zero,0(t1)
+    410004c8:	00001317          	auipc	t1,0x1
+    410004cc:	a8030313          	addi	t1,t1,-1408 # 41000f48 <current_mcause>
+    410004d0:	00033023          	sd	zero,0(t1)
+    410004d4:	00001317          	auipc	t1,0x1
+    410004d8:	a9c30313          	addi	t1,t1,-1380 # 41000f70 <fetch_probe_target>
+    410004dc:	00033023          	sd	zero,0(t1)
+    410004e0:	00001317          	auipc	t1,0x1
+    410004e4:	a9830313          	addi	t1,t1,-1384 # 41000f78 <fetch_probe_halfword>
+    410004e8:	00033023          	sd	zero,0(t1)
+    410004ec:	00600293          	li	t0,6
+    410004f0:	30201073          	csrw	medeleg,zero
+    410004f4:	30229073          	csrw	medeleg,t0
+    410004f8:	30202573          	csrr	a0,medeleg
+    410004fc:	00001597          	auipc	a1,0x1
+    41000500:	85058593          	addi	a1,a1,-1968 # 41000d4c <msg_fetch_medeleg>
+    41000504:	564000ef          	jal	41000a68 <print_label_hex>
+    41000508:	00000297          	auipc	t0,0x0
+    4100050c:	f7028293          	addi	t0,t0,-144 # 41000478 <auipc_probe_inst>
+    41000510:	00001317          	auipc	t1,0x1
+    41000514:	a5830313          	addi	t1,t1,-1448 # 41000f68 <fetch_probe_inst>
+    41000518:	00533023          	sd	t0,0(t1)
+    4100051c:	00228393          	addi	t2,t0,2
+    41000520:	00001317          	auipc	t1,0x1
+    41000524:	a5030313          	addi	t1,t1,-1456 # 41000f70 <fetch_probe_target>
+    41000528:	00733023          	sd	t2,0(t1)
+    4100052c:	00028513          	mv	a0,t0
+    41000530:	00001597          	auipc	a1,0x1
+    41000534:	84958593          	addi	a1,a1,-1975 # 41000d79 <msg_fetch_inst>
+    41000538:	530000ef          	jal	41000a68 <print_label_hex>
+    4100053c:	00001317          	auipc	t1,0x1
+    41000540:	a3430313          	addi	t1,t1,-1484 # 41000f70 <fetch_probe_target>
+    41000544:	00033503          	ld	a0,0(t1)
+    41000548:	00001597          	auipc	a1,0x1
+    4100054c:	87058593          	addi	a1,a1,-1936 # 41000db8 <msg_fetch_target>
+    41000550:	518000ef          	jal	41000a68 <print_label_hex>
+    41000554:	00000297          	auipc	t0,0x0
+    41000558:	e1028293          	addi	t0,t0,-496 # 41000364 <s_entry>
+    4100055c:	34129073          	csrw	mepc,t0
+    41000560:	30002373          	csrr	t1,mstatus
+    41000564:	000023b7          	lui	t2,0x2
+    41000568:	8003839b          	addiw	t2,t2,-2048 # 1800 <MODE_M+0x17fd>
+    4100056c:	3003b073          	csrc	mstatus,t2
+    41000570:	000013b7          	lui	t2,0x1
+    41000574:	8003839b          	addiw	t2,t2,-2048 # 800 <MODE_M+0x7fd>
+    41000578:	3003a073          	csrs	mstatus,t2
+    4100057c:	30200073          	mret
+
+0000000041000580 <m_after_fetch_probe>:
+    41000580:	00001317          	auipc	t1,0x1
+    41000584:	9f030313          	addi	t1,t1,-1552 # 41000f70 <fetch_probe_target>
+    41000588:	00033503          	ld	a0,0(t1)
+    4100058c:	00001597          	auipc	a1,0x1
+    41000590:	84f58593          	addi	a1,a1,-1969 # 41000ddb <msg_fetch_target_seen>
+    41000594:	4d4000ef          	jal	41000a68 <print_label_hex>
+    41000598:	00001317          	auipc	t1,0x1
+    4100059c:	9e030313          	addi	t1,t1,-1568 # 41000f78 <fetch_probe_halfword>
+    410005a0:	00033503          	ld	a0,0(t1)
+    410005a4:	00001597          	auipc	a1,0x1
+    410005a8:	85958593          	addi	a1,a1,-1959 # 41000dfd <msg_fetch_halfword>
+    410005ac:	4bc000ef          	jal	41000a68 <print_label_hex>
+    410005b0:	00001317          	auipc	t1,0x1
+    410005b4:	99030313          	addi	t1,t1,-1648 # 41000f40 <current_mode>
+    410005b8:	00033503          	ld	a0,0(t1)
+    410005bc:	00001597          	auipc	a1,0x1
+    410005c0:	86258593          	addi	a1,a1,-1950 # 41000e1e <msg_fetch_result_mode>
+    410005c4:	4a4000ef          	jal	41000a68 <print_label_hex>
+    410005c8:	00001317          	auipc	t1,0x1
+    410005cc:	98030313          	addi	t1,t1,-1664 # 41000f48 <current_mcause>
+    410005d0:	00033503          	ld	a0,0(t1)
+    410005d4:	00001597          	auipc	a1,0x1
+    410005d8:	86b58593          	addi	a1,a1,-1941 # 41000e3f <msg_fetch_result_cause>
+    410005dc:	48c000ef          	jal	41000a68 <print_label_hex>
+    410005e0:	00001317          	auipc	t1,0x1
+    410005e4:	97030313          	addi	t1,t1,-1680 # 41000f50 <current_mepc>
+    410005e8:	00033503          	ld	a0,0(t1)
+    410005ec:	00001597          	auipc	a1,0x1
+    410005f0:	86c58593          	addi	a1,a1,-1940 # 41000e58 <msg_fetch_result_epc>
+    410005f4:	474000ef          	jal	41000a68 <print_label_hex>
+    410005f8:	00001317          	auipc	t1,0x1
+    410005fc:	96030313          	addi	t1,t1,-1696 # 41000f58 <current_mtval>
+    41000600:	00033503          	ld	a0,0(t1)
+    41000604:	00001597          	auipc	a1,0x1
+    41000608:	86b58593          	addi	a1,a1,-1941 # 41000e6f <msg_fetch_result_tval>
+    4100060c:	45c000ef          	jal	41000a68 <print_label_hex>
+    41000610:	00813083          	ld	ra,8(sp)
+    41000614:	01010113          	addi	sp,sp,16
+    41000618:	00008067          	ret
+
+000000004100061c <run_act_jalr_fetch_probe>:
+    4100061c:	ff010113          	addi	sp,sp,-16
+    41000620:	00113423          	sd	ra,8(sp)
+    41000624:	00000597          	auipc	a1,0x0
+    41000628:	6fb58593          	addi	a1,a1,1787 # 41000d1f <msg_act_jalr_case>
+    4100062c:	3cc000ef          	jal	410009f8 <uart_puts>
+    41000630:	10100293          	li	t0,257
+    41000634:	00001317          	auipc	t1,0x1
+    41000638:	90430313          	addi	t1,t1,-1788 # 41000f38 <current_cause>
+    4100063c:	00533023          	sd	t0,0(t1)
+    41000640:	00001317          	auipc	t1,0x1
+    41000644:	90030313          	addi	t1,t1,-1792 # 41000f40 <current_mode>
+    41000648:	00033023          	sd	zero,0(t1)
+    4100064c:	00001317          	auipc	t1,0x1
+    41000650:	8fc30313          	addi	t1,t1,-1796 # 41000f48 <current_mcause>
+    41000654:	00033023          	sd	zero,0(t1)
+    41000658:	00001317          	auipc	t1,0x1
+    4100065c:	91830313          	addi	t1,t1,-1768 # 41000f70 <fetch_probe_target>
+    41000660:	00033023          	sd	zero,0(t1)
+    41000664:	00001317          	auipc	t1,0x1
+    41000668:	91430313          	addi	t1,t1,-1772 # 41000f78 <fetch_probe_halfword>
+    4100066c:	00033023          	sd	zero,0(t1)
+    41000670:	00600293          	li	t0,6
+    41000674:	30201073          	csrw	medeleg,zero
+    41000678:	30229073          	csrw	medeleg,t0
+    4100067c:	30202573          	csrr	a0,medeleg
+    41000680:	00000597          	auipc	a1,0x0
+    41000684:	6cc58593          	addi	a1,a1,1740 # 41000d4c <msg_fetch_medeleg>
+    41000688:	3e0000ef          	jal	41000a68 <print_label_hex>
+    4100068c:	00000297          	auipc	t0,0x0
+    41000690:	dfc28293          	addi	t0,t0,-516 # 41000488 <act_jalr_probe_jalr>
+    41000694:	00001317          	auipc	t1,0x1
+    41000698:	8d430313          	addi	t1,t1,-1836 # 41000f68 <fetch_probe_inst>
+    4100069c:	00533023          	sd	t0,0(t1)
+    410006a0:	00000297          	auipc	t0,0x0
+    410006a4:	df028293          	addi	t0,t0,-528 # 41000490 <act_jalr_probe_target_inst>
+    410006a8:	00228293          	addi	t0,t0,2
+    410006ac:	00001317          	auipc	t1,0x1
+    410006b0:	8c430313          	addi	t1,t1,-1852 # 41000f70 <fetch_probe_target>
+    410006b4:	00533023          	sd	t0,0(t1)
+    410006b8:	00001317          	auipc	t1,0x1
+    410006bc:	8b030313          	addi	t1,t1,-1872 # 41000f68 <fetch_probe_inst>
+    410006c0:	00033503          	ld	a0,0(t1)
+    410006c4:	00000597          	auipc	a1,0x0
+    410006c8:	6d358593          	addi	a1,a1,1747 # 41000d97 <msg_act_jalr_inst>
+    410006cc:	39c000ef          	jal	41000a68 <print_label_hex>
+    410006d0:	00001317          	auipc	t1,0x1
+    410006d4:	8a030313          	addi	t1,t1,-1888 # 41000f70 <fetch_probe_target>
+    410006d8:	00033503          	ld	a0,0(t1)
+    410006dc:	00000597          	auipc	a1,0x0
+    410006e0:	6dc58593          	addi	a1,a1,1756 # 41000db8 <msg_fetch_target>
+    410006e4:	384000ef          	jal	41000a68 <print_label_hex>
+    410006e8:	00000297          	auipc	t0,0x0
+    410006ec:	c7c28293          	addi	t0,t0,-900 # 41000364 <s_entry>
+    410006f0:	34129073          	csrw	mepc,t0
+    410006f4:	30002373          	csrr	t1,mstatus
+    410006f8:	000023b7          	lui	t2,0x2
+    410006fc:	8003839b          	addiw	t2,t2,-2048 # 1800 <MODE_M+0x17fd>
+    41000700:	3003b073          	csrc	mstatus,t2
+    41000704:	000013b7          	lui	t2,0x1
+    41000708:	8003839b          	addiw	t2,t2,-2048 # 800 <MODE_M+0x7fd>
+    4100070c:	3003a073          	csrs	mstatus,t2
+    41000710:	30200073          	mret
+
+0000000041000714 <m_after_act_jalr_probe>:
+    41000714:	00001317          	auipc	t1,0x1
+    41000718:	85c30313          	addi	t1,t1,-1956 # 41000f70 <fetch_probe_target>
+    4100071c:	00033503          	ld	a0,0(t1)
+    41000720:	00000597          	auipc	a1,0x0
+    41000724:	6bb58593          	addi	a1,a1,1723 # 41000ddb <msg_fetch_target_seen>
+    41000728:	340000ef          	jal	41000a68 <print_label_hex>
+    4100072c:	00001317          	auipc	t1,0x1
+    41000730:	84c30313          	addi	t1,t1,-1972 # 41000f78 <fetch_probe_halfword>
+    41000734:	00033503          	ld	a0,0(t1)
+    41000738:	00000597          	auipc	a1,0x0
+    4100073c:	6c558593          	addi	a1,a1,1733 # 41000dfd <msg_fetch_halfword>
+    41000740:	328000ef          	jal	41000a68 <print_label_hex>
+    41000744:	00000317          	auipc	t1,0x0
+    41000748:	7fc30313          	addi	t1,t1,2044 # 41000f40 <current_mode>
+    4100074c:	00033503          	ld	a0,0(t1)
+    41000750:	00000597          	auipc	a1,0x0
+    41000754:	6ce58593          	addi	a1,a1,1742 # 41000e1e <msg_fetch_result_mode>
+    41000758:	310000ef          	jal	41000a68 <print_label_hex>
+    4100075c:	00000317          	auipc	t1,0x0
+    41000760:	7ec30313          	addi	t1,t1,2028 # 41000f48 <current_mcause>
+    41000764:	00033503          	ld	a0,0(t1)
+    41000768:	00000597          	auipc	a1,0x0
+    4100076c:	6d758593          	addi	a1,a1,1751 # 41000e3f <msg_fetch_result_cause>
+    41000770:	2f8000ef          	jal	41000a68 <print_label_hex>
+    41000774:	00000317          	auipc	t1,0x0
+    41000778:	7dc30313          	addi	t1,t1,2012 # 41000f50 <current_mepc>
+    4100077c:	00033503          	ld	a0,0(t1)
+    41000780:	00000597          	auipc	a1,0x0
+    41000784:	6d858593          	addi	a1,a1,1752 # 41000e58 <msg_fetch_result_epc>
+    41000788:	2e0000ef          	jal	41000a68 <print_label_hex>
+    4100078c:	00000317          	auipc	t1,0x0
+    41000790:	7cc30313          	addi	t1,t1,1996 # 41000f58 <current_mtval>
+    41000794:	00033503          	ld	a0,0(t1)
+    41000798:	00000597          	auipc	a1,0x0
+    4100079c:	6d758593          	addi	a1,a1,1751 # 41000e6f <msg_fetch_result_tval>
+    410007a0:	2c8000ef          	jal	41000a68 <print_label_hex>
+    410007a4:	00813083          	ld	ra,8(sp)
+    410007a8:	01010113          	addi	sp,sp,16
+    410007ac:	00008067          	ret
+
+00000000410007b0 <m_trap_handler>:
+    410007b0:	342022f3          	csrr	t0,mcause
+    410007b4:	34102373          	csrr	t1,mepc
+    410007b8:	343023f3          	csrr	t2,mtval
+    410007bc:	30002e73          	csrr	t3,mstatus
+    410007c0:	00000e97          	auipc	t4,0x0
+    410007c4:	778e8e93          	addi	t4,t4,1912 # 41000f38 <current_cause>
+    410007c8:	000ebf03          	ld	t5,0(t4)
+    410007cc:	01e28a63          	beq	t0,t5,410007e0 <m_record_tested_trap>
+    410007d0:	00900f93          	li	t6,9
+    410007d4:	05f28a63          	beq	t0,t6,41000828 <m_finish_from_return_trap>
+    410007d8:	00300f93          	li	t6,3
+    410007dc:	05f28663          	beq	t0,t6,41000828 <m_finish_from_return_trap>
+
+00000000410007e0 <m_record_tested_trap>:
+    410007e0:	00000e97          	auipc	t4,0x0
+    410007e4:	760e8e93          	addi	t4,t4,1888 # 41000f40 <current_mode>
+    410007e8:	00300f93          	li	t6,3
+    410007ec:	01feb023          	sd	t6,0(t4)
+    410007f0:	00000e97          	auipc	t4,0x0
+    410007f4:	758e8e93          	addi	t4,t4,1880 # 41000f48 <current_mcause>
+    410007f8:	005eb023          	sd	t0,0(t4)
+    410007fc:	00000e97          	auipc	t4,0x0
+    41000800:	754e8e93          	addi	t4,t4,1876 # 41000f50 <current_mepc>
+    41000804:	006eb023          	sd	t1,0(t4)
+    41000808:	00000e97          	auipc	t4,0x0
+    4100080c:	750e8e93          	addi	t4,t4,1872 # 41000f58 <current_mtval>
+    41000810:	007eb023          	sd	t2,0(t4)
+    41000814:	00000e97          	auipc	t4,0x0
+    41000818:	74ce8e93          	addi	t4,t4,1868 # 41000f60 <current_xstatus>
+    4100081c:	01ceb023          	sd	t3,0(t4)
+    41000820:	11c000ef          	jal	4100093c <print_trap_m>
+    41000824:	0080006f          	j	4100082c <m_resume_mmode>
+
+0000000041000828 <m_finish_from_return_trap>:
+    41000828:	144000ef          	jal	4100096c <print_return_trap_m>
+
+000000004100082c <m_resume_mmode>:
+    4100082c:	00000297          	auipc	t0,0x0
+    41000830:	70c28293          	addi	t0,t0,1804 # 41000f38 <current_cause>
+    41000834:	0002b303          	ld	t1,0(t0)
+    41000838:	10000393          	li	t2,256
+    4100083c:	04730a63          	beq	t1,t2,41000890 <m_resume_fetch_probe>
+    41000840:	10100393          	li	t2,257
+    41000844:	02730463          	beq	t1,t2,4100086c <m_resume_act_jalr_probe>
+    41000848:	00000297          	auipc	t0,0x0
+    4100084c:	a2c28293          	addi	t0,t0,-1492 # 41000274 <m_after_probe>
+    41000850:	34129073          	csrw	mepc,t0
+    41000854:	30002373          	csrr	t1,mstatus
+    41000858:	000023b7          	lui	t2,0x2
+    4100085c:	8003839b          	addiw	t2,t2,-2048 # 1800 <MODE_M+0x17fd>
+    41000860:	3003b073          	csrc	mstatus,t2
+    41000864:	3003a073          	csrs	mstatus,t2
+    41000868:	30200073          	mret
+
+000000004100086c <m_resume_act_jalr_probe>:
+    4100086c:	00000297          	auipc	t0,0x0
+    41000870:	ea828293          	addi	t0,t0,-344 # 41000714 <m_after_act_jalr_probe>
+    41000874:	34129073          	csrw	mepc,t0
+    41000878:	30002373          	csrr	t1,mstatus
+    4100087c:	000023b7          	lui	t2,0x2
+    41000880:	8003839b          	addiw	t2,t2,-2048 # 1800 <MODE_M+0x17fd>
+    41000884:	3003b073          	csrc	mstatus,t2
+    41000888:	3003a073          	csrs	mstatus,t2
+    4100088c:	30200073          	mret
+
+0000000041000890 <m_resume_fetch_probe>:
+    41000890:	00000297          	auipc	t0,0x0
+    41000894:	cf028293          	addi	t0,t0,-784 # 41000580 <m_after_fetch_probe>
+    41000898:	34129073          	csrw	mepc,t0
+    4100089c:	30002373          	csrr	t1,mstatus
+    410008a0:	000023b7          	lui	t2,0x2
+    410008a4:	8003839b          	addiw	t2,t2,-2048 # 1800 <MODE_M+0x17fd>
+    410008a8:	3003b073          	csrc	mstatus,t2
+    410008ac:	3003a073          	csrs	mstatus,t2
+    410008b0:	30200073          	mret
+
+00000000410008b4 <s_trap_handler>:
+    410008b4:	142022f3          	csrr	t0,scause
+    410008b8:	14102373          	csrr	t1,sepc
+    410008bc:	143023f3          	csrr	t2,stval
+    410008c0:	10002e73          	csrr	t3,sstatus
+    410008c4:	00000e97          	auipc	t4,0x0
+    410008c8:	67ce8e93          	addi	t4,t4,1660 # 41000f40 <current_mode>
+    410008cc:	00100f13          	li	t5,1
+    410008d0:	01eeb023          	sd	t5,0(t4)
+    410008d4:	00000e97          	auipc	t4,0x0
+    410008d8:	674e8e93          	addi	t4,t4,1652 # 41000f48 <current_mcause>
+    410008dc:	005eb023          	sd	t0,0(t4)
+    410008e0:	00000e97          	auipc	t4,0x0
+    410008e4:	670e8e93          	addi	t4,t4,1648 # 41000f50 <current_mepc>
+    410008e8:	006eb023          	sd	t1,0(t4)
+    410008ec:	00000e97          	auipc	t4,0x0
+    410008f0:	66ce8e93          	addi	t4,t4,1644 # 41000f58 <current_mtval>
+    410008f4:	007eb023          	sd	t2,0(t4)
+    410008f8:	00000e97          	auipc	t4,0x0
+    410008fc:	668e8e93          	addi	t4,t4,1640 # 41000f60 <current_xstatus>
+    41000900:	01ceb023          	sd	t3,0(t4)
+    41000904:	050000ef          	jal	41000954 <print_trap_s>
+    41000908:	00000e97          	auipc	t4,0x0
+    4100090c:	630e8e93          	addi	t4,t4,1584 # 41000f38 <current_cause>
+    41000910:	000ebf03          	ld	t5,0(t4)
+    41000914:	00900f93          	li	t6,9
+    41000918:	01ff0a63          	beq	t5,t6,4100092c <s_use_ebreak_return>
+    4100091c:	00000297          	auipc	t0,0x0
+    41000920:	b4c28293          	addi	t0,t0,-1204 # 41000468 <s_return_ecall>
+    41000924:	14129073          	csrw	sepc,t0
+    41000928:	10200073          	sret
+
+000000004100092c <s_use_ebreak_return>:
+    4100092c:	00000297          	auipc	t0,0x0
+    41000930:	b4428293          	addi	t0,t0,-1212 # 41000470 <s_return_ebreak>
+    41000934:	14129073          	csrw	sepc,t0
+    41000938:	10200073          	sret
+
+000000004100093c <print_trap_m>:
+    4100093c:	ff010113          	addi	sp,sp,-16
+    41000940:	00113423          	sd	ra,8(sp)
+    41000944:	00000597          	auipc	a1,0x0
+    41000948:	2ca58593          	addi	a1,a1,714 # 41000c0e <msg_trap_m>
+    4100094c:	0ac000ef          	jal	410009f8 <uart_puts>
+    41000950:	03c0006f          	j	4100098c <print_trap_common>
+
+0000000041000954 <print_trap_s>:
+    41000954:	ff010113          	addi	sp,sp,-16
+    41000958:	00113423          	sd	ra,8(sp)
+    4100095c:	00000597          	auipc	a1,0x0
+    41000960:	2cb58593          	addi	a1,a1,715 # 41000c27 <msg_trap_s>
+    41000964:	094000ef          	jal	410009f8 <uart_puts>
+    41000968:	0240006f          	j	4100098c <print_trap_common>
+
+000000004100096c <print_return_trap_m>:
+    4100096c:	ff010113          	addi	sp,sp,-16
+    41000970:	00113423          	sd	ra,8(sp)
+    41000974:	00000597          	auipc	a1,0x0
+    41000978:	2cc58593          	addi	a1,a1,716 # 41000c40 <msg_return_m>
+    4100097c:	07c000ef          	jal	410009f8 <uart_puts>
+    41000980:	00813083          	ld	ra,8(sp)
+    41000984:	01010113          	addi	sp,sp,16
+    41000988:	00008067          	ret
+
+000000004100098c <print_trap_common>:
+    4100098c:	00000297          	auipc	t0,0x0
+    41000990:	5bc28293          	addi	t0,t0,1468 # 41000f48 <current_mcause>
+    41000994:	0002b503          	ld	a0,0(t0)
+    41000998:	00000597          	auipc	a1,0x0
+    4100099c:	2c558593          	addi	a1,a1,709 # 41000c5d <msg_trap_cause>
+    410009a0:	0c8000ef          	jal	41000a68 <print_label_hex>
+    410009a4:	00000297          	auipc	t0,0x0
+    410009a8:	5ac28293          	addi	t0,t0,1452 # 41000f50 <current_mepc>
+    410009ac:	0002b503          	ld	a0,0(t0)
+    410009b0:	00000597          	auipc	a1,0x0
+    410009b4:	2c058593          	addi	a1,a1,704 # 41000c70 <msg_trap_epc>
+    410009b8:	0b0000ef          	jal	41000a68 <print_label_hex>
+    410009bc:	00000297          	auipc	t0,0x0
+    410009c0:	59c28293          	addi	t0,t0,1436 # 41000f58 <current_mtval>
+    410009c4:	0002b503          	ld	a0,0(t0)
+    410009c8:	00000597          	auipc	a1,0x0
+    410009cc:	2b958593          	addi	a1,a1,697 # 41000c81 <msg_trap_tval>
+    410009d0:	098000ef          	jal	41000a68 <print_label_hex>
+    410009d4:	00813083          	ld	ra,8(sp)
+    410009d8:	01010113          	addi	sp,sp,16
+    410009dc:	00008067          	ret
+
+00000000410009e0 <uart_putc>:
+    410009e0:	10000fb7          	lui	t6,0x10000
+    410009e4:	014f8f03          	lb	t5,20(t6) # 10000014 <UART_BASE+0x14>
+    410009e8:	020f7f13          	andi	t5,t5,32
+    410009ec:	fe0f0ce3          	beqz	t5,410009e4 <uart_putc+0x4>
+    410009f0:	00af8023          	sb	a0,0(t6)
+    410009f4:	00008067          	ret
+
+00000000410009f8 <uart_puts>:
+    410009f8:	ff010113          	addi	sp,sp,-16
+    410009fc:	00113423          	sd	ra,8(sp)
+    41000a00:	00058503          	lb	a0,0(a1)
+    41000a04:	00050863          	beqz	a0,41000a14 <uart_puts+0x1c>
+    41000a08:	00158593          	addi	a1,a1,1
+    41000a0c:	fd5ff0ef          	jal	410009e0 <uart_putc>
+    41000a10:	ff1ff06f          	j	41000a00 <uart_puts+0x8>
+    41000a14:	00813083          	ld	ra,8(sp)
+    41000a18:	01010113          	addi	sp,sp,16
+    41000a1c:	00008067          	ret
+
+0000000041000a20 <uart_hex64>:
+    41000a20:	ff010113          	addi	sp,sp,-16
+    41000a24:	00113423          	sd	ra,8(sp)
+    41000a28:	00050e13          	mv	t3,a0
+    41000a2c:	01000e93          	li	t4,16
+    41000a30:	03ce5f13          	srli	t5,t3,0x3c
+    41000a34:	00a00f93          	li	t6,10
+    41000a38:	01ff4663          	blt	t5,t6,41000a44 <uart_hex64+0x24>
+    41000a3c:	057f0f13          	addi	t5,t5,87
+    41000a40:	0080006f          	j	41000a48 <uart_hex64+0x28>
+    41000a44:	030f0f13          	addi	t5,t5,48
+    41000a48:	000f0513          	mv	a0,t5
+    41000a4c:	f95ff0ef          	jal	410009e0 <uart_putc>
+    41000a50:	004e1e13          	slli	t3,t3,0x4
+    41000a54:	fffe8e93          	addi	t4,t4,-1
+    41000a58:	fc0e9ce3          	bnez	t4,41000a30 <uart_hex64+0x10>
+    41000a5c:	00813083          	ld	ra,8(sp)
+    41000a60:	01010113          	addi	sp,sp,16
+    41000a64:	00008067          	ret
+
+0000000041000a68 <print_label_hex>:
+    41000a68:	fe010113          	addi	sp,sp,-32
+    41000a6c:	00113c23          	sd	ra,24(sp)
+    41000a70:	00913823          	sd	s1,16(sp)
+    41000a74:	00050493          	mv	s1,a0
+    41000a78:	f81ff0ef          	jal	410009f8 <uart_puts>
+    41000a7c:	00048513          	mv	a0,s1
+    41000a80:	fa1ff0ef          	jal	41000a20 <uart_hex64>
+    41000a84:	00000597          	auipc	a1,0x0
+    41000a88:	42058593          	addi	a1,a1,1056 # 41000ea4 <nl>
+    41000a8c:	f6dff0ef          	jal	410009f8 <uart_puts>
+    41000a90:	01013483          	ld	s1,16(sp)
+    41000a94:	01813083          	ld	ra,24(sp)
+    41000a98:	02010113          	addi	sp,sp,32
+    41000a9c:	00008067          	ret
