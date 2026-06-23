@@ -24,6 +24,7 @@ docs/logs/
 # Local test selection files
 pmp_tests.list
 prepare_pmp_external_pack.sh
+act_header_backups_20260619/
 
 # Local device and environment-specific data
 devices.json
