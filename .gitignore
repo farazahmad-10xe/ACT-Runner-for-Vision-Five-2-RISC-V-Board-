@@ -36,3 +36,13 @@ tinytuya.json
 .codex
 .vscode/
 tinytuya/
+docs/*.pptx
+docs/*.drawio
+docs/*.png
+docs/*.svg
+tools/
+docs/*.pptx
+docs/*.drawio
+docs/*.png
+docs/*.svg
+tools/
