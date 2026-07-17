@@ -1,4 +1,11 @@
-/* start.S - minimal reset entry for VF2 M-mode firmware (runner on hart1, monitor on hart2) */
+/* start.S - minimal reset entry, hart roles set by BOARD_RUNNER_HART_ID/BOARD_MONITOR_HART_ID */
+
+#ifndef BOARD_RUNNER_HART_ID
+#define BOARD_RUNNER_HART_ID 1
+#endif
+#ifndef BOARD_MONITOR_HART_ID
+#define BOARD_MONITOR_HART_ID 2
+#endif
 
 .section .text
 .globl _start
@@ -14,9 +21,9 @@ g_boot_sync:
 _start:
     /* ---- Use hart1 as runner, hart2 as monitor; park others ---- */
     csrr t0, mhartid
-    li   t1, 1
+    li   t1, BOARD_RUNNER_HART_ID
     beq  t0, t1, .Lhart1
-    li   t1, 2
+    li   t1, BOARD_MONITOR_HART_ID
     beq  t0, t1, .Lhart2
     j    .Lpark
 

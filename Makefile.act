@@ -2,7 +2,7 @@ CC=riscv64-unknown-elf-gcc
 OBJCOPY=riscv64-unknown-elf-objcopy
 OBJDUMP=riscv64-unknown-elf-objdump
 
-CFLAGS=-march=rv64imafdc_zicsr_zifencei -mabi=lp64d -Os -ffreestanding -nostdlib \
+CFLAGS=-march=rv64imafdc_zicsr_zifencei -mabi=lp64d -mcmodel=medany -Os -ffreestanding -nostdlib \
        -fno-builtin -fno-stack-protector -fno-pic -fno-plt -Wall -Wextra
 
 LINKER_SCRIPT?=link.ld
