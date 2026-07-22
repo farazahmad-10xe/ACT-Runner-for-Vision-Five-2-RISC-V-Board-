@@ -1,5 +1,7 @@
 #include "runner_shared.h"
+#include "runner_sd_sdhci_k1.h"
 
+#if RUNNER_SD_BACKEND == RUNNER_SD_BACKEND_DWMCI
 #define DWMCI_CTRL      0x000
 #define DWMCI_PWREN     0x004
 #define DWMCI_CLKDIV    0x008
@@ -90,6 +92,7 @@
 #define MMC_RSP_R3      (MMC_RSP_PRESENT)
 #define MMC_RSP_R6      (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE)
 #define MMC_RSP_R7      (MMC_RSP_PRESENT | MMC_RSP_CRC | MMC_RSP_OPCODE)
+#endif
 
 #define FOOTER_LEGACY_IDX16_MASK 0x0000ffffu
 #define FOOTER_IDX_MASK          0x000003ffu
@@ -111,8 +114,10 @@ uint32_t g_ext_progress_persisted = 0u;
 static uint32_t g_ext_recovery_retry_count = 0u;
 int g_ext_pack_loaded = 0;
 
+#if RUNNER_SD_BACKEND == RUNNER_SD_BACKEND_DWMCI
 static uint32_t g_sd_rca = 0;
 static uint8_t g_sd_high_capacity = 0;
+#endif
 static uint32_t g_sd_total_blocks = 0;
 static uint32_t g_sd_tmp_block[SD_BLOCK_SIZE / sizeof(uint32_t)];
 static uintptr_t g_sdio_base = SDIO1_BASE;
@@ -122,6 +127,7 @@ uint32_t g_ext_pack_count = 0;
 static ActPackEntry g_ext_entries[MAX_PACK_TESTS];
 static uint8_t g_ext_table_buf[sizeof(ActPackHeader) + (MAX_PACK_TESTS * sizeof(ActPackEntry))];
 
+#if RUNNER_SD_BACKEND == RUNNER_SD_BACKEND_DWMCI
 static inline uint32_t dw_readl(uint32_t reg)
 {
     return mmio_read32(g_sdio_base + reg);
@@ -473,6 +479,80 @@ static int sd_card_attach_from_spl(void)
     return 0;
 }
 
+static void sd_backend_reset_state(uintptr_t base)
+{
+    g_sdio_base = base;
+    g_sd_rca = 0;
+    g_sd_high_capacity = 0;
+    g_sd_total_blocks = 0;
+}
+
+static void sd_backend_quiesce(void)
+{
+    int busy_rc;
+    int idle_rc;
+    int clk_rc;
+
+    if (g_sdio_base == 0) return;
+    busy_rc = dw_wait_not_busy();
+    idle_rc = sd_send_cmd(MMC_CMD_GO_IDLE_STATE, 0, MMC_RSP_NONE, 0);
+    clk_rc = dw_update_clock(0);
+    dw_writel(DWMCI_INTMASK, 0);
+    dw_writel(DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
+    dw_writel(DWMCI_PWREN, 0);
+
+    uart_puts("[SD] quiesce busy_rc=");
+    uart_put_hex((uint64_t)(int64_t)busy_rc);
+    uart_puts(" idle_rc=");
+    uart_put_hex((uint64_t)(int64_t)idle_rc);
+    uart_puts(" clk_rc=");
+    uart_put_hex((uint64_t)(int64_t)clk_rc);
+    uart_puts("\n");
+}
+
+#elif RUNNER_SD_BACKEND == RUNNER_SD_BACKEND_K1_SDHCI
+
+static int sd_read_block_words(uint32_t lba, uint32_t *dst_words)
+{
+    return k1_sdhci_read_block_words(lba, dst_words);
+}
+
+static int sd_write_block_words(uint32_t lba, const uint32_t *src_words)
+{
+    return k1_sdhci_write_block_words(lba, src_words);
+}
+
+static int sd_get_capacity_blocks(uint32_t *blocks_out)
+{
+    return k1_sdhci_get_capacity_blocks(blocks_out);
+}
+
+static int sd_card_init_minimal(void)
+{
+    return k1_sdhci_card_init();
+}
+
+static int sd_card_attach_from_spl(void)
+{
+    return k1_sdhci_attach_from_spl();
+}
+
+static void sd_backend_reset_state(uintptr_t base)
+{
+    g_sdio_base = base;
+    g_sd_total_blocks = 0;
+    k1_sdhci_reset_state(base);
+}
+
+static void sd_backend_quiesce(void)
+{
+    k1_sdhci_quiesce();
+}
+
+#else
+#error "Unsupported RUNNER_SD_BACKEND"
+#endif
+
 static uint32_t footer_encode_progress(uint32_t next_index, uint32_t inflight_index_or_none,
                                        uint32_t retry_count)
 {
@@ -542,26 +622,7 @@ int persist_footer_progress(uint32_t next_index, uint32_t inflight_index_or_none
 
 void sd_quiesce_for_reset(void)
 {
-    int busy_rc;
-    int idle_rc;
-    int clk_rc;
-
-    if (g_sdio_base == 0) return;
-
-    busy_rc = dw_wait_not_busy();
-    idle_rc = sd_send_cmd(MMC_CMD_GO_IDLE_STATE, 0, MMC_RSP_NONE, 0);
-    clk_rc = dw_update_clock(0);
-    dw_writel(DWMCI_INTMASK, 0);
-    dw_writel(DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
-    dw_writel(DWMCI_PWREN, 0);
-
-    uart_puts("[SD] quiesce busy_rc=");
-    uart_put_hex((uint64_t)(int64_t)busy_rc);
-    uart_puts(" idle_rc=");
-    uart_put_hex((uint64_t)(int64_t)idle_rc);
-    uart_puts(" clk_rc=");
-    uart_put_hex((uint64_t)(int64_t)clk_rc);
-    uart_puts("\n");
+    sd_backend_quiesce();
 }
 
 int load_pack_from_sd_tail(void)
@@ -570,11 +631,8 @@ int load_pack_from_sd_tail(void)
     uint32_t footer_next_index = 0;
     uint32_t footer_inflight_index = FOOTER_IDX_NONE;
     uint32_t footer_retry_count = 0u;
-    g_sdio_base = SDIO1_BASE;
+    sd_backend_reset_state(SDIO1_BASE);
     uart_puts("[SD] probing base="); uart_put_hex((uint64_t)g_sdio_base); uart_puts("\n");
-    g_sd_rca = 0;
-    g_sd_high_capacity = 0;
-    g_sd_total_blocks = 0;
     g_ext_pack_loaded = 0;
     g_ext_active_index = FOOTER_IDX_NONE;
     g_ext_progress_persisted = 0u;

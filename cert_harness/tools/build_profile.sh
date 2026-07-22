@@ -150,6 +150,7 @@ for var in \
   BOARD_TEST_STACK_BYTES BOARD_SMODE_RUNTIME_STACK_BYTES \
   BOARD_TRAP_STACK_BYTES BOARD_STRAP_STACK_BYTES \
   BOARD_SDIO0_BASE BOARD_SDIO1_BASE BOARD_SD_BLOCK_SIZE BOARD_SD_ENABLE \
+  BOARD_SD_BACKEND \
   BOARD_WDT_ENABLE BOARD_WDT_BASE BOARD_WDT_LOAD BOARD_WDT_CTRL \
   BOARD_WDT_LOCK BOARD_WDT_UNLOCK_KEY
 do
@@ -264,6 +265,7 @@ cat > "$out_dir/manifest.json" <<EOF2
   "board_clint_mtime_addr": "${BOARD_CLINT_MTIME_ADDR:-}",
   "board_sdio1_base": "${BOARD_SDIO1_BASE:-}",
   "board_sd_enable": "${BOARD_SD_ENABLE:-}",
+  "board_sd_backend": "${BOARD_SD_BACKEND:-}",
   "board_ext_pack_addr": "${BOARD_EXT_PACK_ADDR:-}",
   "payload_transport": "$payload_transport",
   "profile": "$profile",
