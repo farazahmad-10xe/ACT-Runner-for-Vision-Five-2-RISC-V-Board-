@@ -1,0 +1,8 @@
+# Minimal plugins required by Jenkinsfile and the provisioned Pipeline job.
+workflow-aggregator
+git
+credentials-binding
+timestamper
+build-timeout
+pipeline-stage-view
+htmlpublisher

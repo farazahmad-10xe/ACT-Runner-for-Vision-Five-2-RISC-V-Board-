@@ -1,0 +1,13 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job">
+  <actions/>
+  <description>Controlled validation of the latest official ACT4 against the reviewed VF2/U74 ACT branch. Uses a disposable Git worktree; never flashes hardware or mutates the reviewed checkout.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps">
+    <script>__JENKINSFILE__</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <disabled>false</disabled>
+</flow-definition>

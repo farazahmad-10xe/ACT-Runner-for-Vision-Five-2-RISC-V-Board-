@@ -1,0 +1,191 @@
+{
+  "source": {
+    "spreadsheet_id": "1BFZ4SnrCr6xdMNws5hIqELPz0wAP_lZDRgim_itaPZo",
+    "gid": "1043525459",
+    "column": "Failure cause",
+    "verified_utc": "2026-07-24T10:05:00Z"
+  },
+  "tickets": {
+    "act-1752": {
+      "tracker": "ACT",
+      "number": 1752,
+      "kind": "issue",
+      "state": "open",
+      "title": "ExceptionsSm-00.S: cp_misaligned_priority_load uses access-fault base address",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1752"
+    },
+    "act-1753": {
+      "tracker": "ACT",
+      "number": 1753,
+      "kind": "issue",
+      "state": "closed",
+      "title": "ExceptionsS test generation fails when misaligned load/store exceptions are enabled in sail.json",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1753"
+    },
+    "act-1828": {
+      "tracker": "ACT",
+      "number": 1828,
+      "kind": "issue",
+      "state": "open",
+      "title": "[ACT/UDB Profile] Sstvecd-00 false failure on VF2/U74 due to unmodeled stvec.BASE WARL canonicalization",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1828"
+    },
+    "act-1850": {
+      "tracker": "ACT",
+      "number": 1850,
+      "kind": "issue",
+      "state": "open",
+      "title": "ACT Sv39 canonical tests reject legal implementation-defined stval conversion on SiFive U74",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1850"
+    },
+    "act-1851": {
+      "tracker": "ACT",
+      "number": 1851,
+      "kind": "issue",
+      "state": "closed",
+      "title": "ACT S-mode failure handler reads M-mode CSRs and enters an infinite illegal-instruction trap loop",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1851"
+    },
+    "act-1875": {
+      "tracker": "ACT",
+      "number": 1875,
+      "kind": "issue",
+      "state": "open",
+      "title": "Sv39 non-leaf D/A/U tests appear to require Privileged ISA 1.12 behavior for a 1.11 DUT",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1875"
+    },
+    "act-1880": {
+      "tracker": "ACT",
+      "number": 1880,
+      "kind": "issue",
+      "state": "closed",
+      "title": "PMPS/PMPU tests hardcode PMP entry 15 and abort on targets with 8 usable entries",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1880"
+    },
+    "act-1898": {
+      "tracker": "ACT",
+      "number": 1898,
+      "kind": "issue",
+      "state": "closed",
+      "title": "pmpzalrsc_cfg_wr expects success from an unconstrained LR/SC sequence",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1898"
+    },
+    "act-1899": {
+      "tracker": "ACT",
+      "number": 1899,
+      "kind": "issue",
+      "state": "closed",
+      "title": "SsstrictS-00 assumes senvcfg is implemented on a Privileged ISA 1.11 target",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1899"
+    },
+    "act-1900": {
+      "tracker": "ACT",
+      "number": 1900,
+      "kind": "issue",
+      "state": "closed",
+      "title": "SsstrictSm-04 models mconfigptr as present on a Privileged ISA 1.11 U74 target",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1900"
+    },
+    "act-1924": {
+      "tracker": "ACT",
+      "number": 1924,
+      "kind": "issue",
+      "state": "open",
+      "title": "SsstrictSm-03 ignores TIME_CSR_IMPLEMENTED=false and tests time CSR 0xC01",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1924"
+    },
+    "act-1953": {
+      "tracker": "ACT",
+      "number": 1953,
+      "kind": "issue",
+      "state": "open",
+      "title": "UDB/ACT lacks an independent vectored stvec.BASE alignment parameter",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1953"
+    },
+    "act-1956": {
+      "tracker": "ACT",
+      "number": 1956,
+      "kind": "issue",
+      "state": "open",
+      "title": "InterruptsS-00: U-mode WFI subtest races MTIP delivery on hardware",
+      "url": "https://github.com/riscv/riscv-arch-test/issues/1956"
+    },
+    "sail-1790": {
+      "tracker": "Sail",
+      "number": 1790,
+      "kind": "pull request",
+      "state": "closed",
+      "title": "Enable specification of delegatable trap and interrupt subsets for medeleg and mideleg",
+      "url": "https://github.com/riscv/sail-riscv/pull/1790"
+    },
+    "sail-1793": {
+      "tracker": "Sail",
+      "number": 1793,
+      "kind": "issue",
+      "state": "open",
+      "title": "Need configurable trap priority for overlapping misaligned load and access-fault behavior on SiFive U74/VF2",
+      "url": "https://github.com/riscv/sail-riscv/issues/1793"
+    },
+    "sail-1798": {
+      "tracker": "Sail",
+      "number": 1798,
+      "kind": "issue",
+      "state": "closed",
+      "title": "Sail needs a configurable mstatus.FS dirty-tracking policy",
+      "url": "https://github.com/riscv/sail-riscv/issues/1798"
+    },
+    "sail-1809": {
+      "tracker": "Sail",
+      "number": 1809,
+      "kind": "issue",
+      "state": "closed",
+      "title": "Configurable satp.PPN WARL behavior is needed for implementations with fewer than 44 writable PPN bits",
+      "url": "https://github.com/riscv/sail-riscv/issues/1809"
+    }
+  },
+  "tests": {
+    "ExceptionsS-00": ["act-1753"],
+    "ExceptionsSm-00": ["sail-1793", "act-1752"],
+    "sv39_exceptions_Zaamo_Mmode": ["sail-1793"],
+    "sv39_exceptions_Zaamo_Smode": ["sail-1793", "act-1851"],
+    "sv39_exceptions_Zaamo_Umode": ["sail-1793"],
+    "sv39_exceptions_Zalrsc_Mmode": ["sail-1793"],
+    "sv39_exceptions_Zalrsc_Smode": ["sail-1793"],
+    "sv39_exceptions_Zalrsc_Umode": ["sail-1793"],
+    "InterruptsS-00": ["act-1953", "act-1956"],
+    "S-00": ["sail-1790"],
+    "SmF-00": ["sail-1798"],
+    "Sstvecd-00": ["act-1828"],
+    "sv39_canonical_Smode": ["act-1850"],
+    "sv39_canonical_Umode": ["act-1850"],
+    "sv39_nleaf_pte_DAU_Smode": ["act-1875"],
+    "sv39_nleaf_pte_DAU_Umode": ["act-1875"],
+    "sv39_pte_reserved_field_Smode": ["act-1875"],
+    "sv39_satp_access_test": ["sail-1809"],
+    "sv39_svnapot_not_supported_Smode": ["act-1875"],
+    "sv39_svpbmt_disabled_Smode": ["act-1875"],
+    "pmps_cfg_A_off": ["act-1880"],
+    "pmps_cfg_XWR": ["act-1880"],
+    "pmps_mprv_check-01": ["act-1880"],
+    "pmps_mprv_check-02": ["act-1880"],
+    "pmps_napot_legal_lxwr-01": ["act-1880"],
+    "pmps_napot_legal_lxwr-02": ["act-1880"],
+    "pmps_tor_legal_lxwr-01": ["act-1880"],
+    "pmps_tor_legal_lxwr-02": ["act-1880"],
+    "pmpu_cfg_A_off": ["act-1880"],
+    "pmpu_cfg_XWR": ["act-1880"],
+    "pmpu_mprv_check-01": ["act-1880"],
+    "pmpu_mprv_check-02": ["act-1880"],
+    "pmpu_na4_legal_lxwr": ["act-1880"],
+    "pmpu_napot_legal_lxwr-01": ["act-1880"],
+    "pmpu_napot_legal_lxwr-02": ["act-1880"],
+    "pmpu_tor_legal_lxwr-01": ["act-1880"],
+    "pmpu_tor_legal_lxwr-02": ["act-1880"],
+    "SsstrictS-00": ["act-1899"],
+    "SsstrictSm-00": ["act-1899"],
+    "SsstrictSm-01": ["act-1899"],
+    "SsstrictSm-03": ["act-1924"],
+    "SsstrictSm-04": ["act-1900"],
+    "pmpzalrsc_cfg_wr": ["act-1898"]
+  }
+}

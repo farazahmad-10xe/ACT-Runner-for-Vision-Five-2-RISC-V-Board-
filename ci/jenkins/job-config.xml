@@ -1,0 +1,13 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job">
+  <actions/>
+  <description>Weekly complete ACT privileged regression for SiFive U74: regenerate tests, run Sail/Spike references, flash and execute on VisionFive 2, and archive reports. Hardware stages contain explicit SD-card safety gates.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps">
+    <script>__JENKINSFILE__</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <disabled>false</disabled>
+</flow-definition>

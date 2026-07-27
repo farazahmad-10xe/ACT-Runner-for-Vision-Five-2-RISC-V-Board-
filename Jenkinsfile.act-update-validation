@@ -1,0 +1,66 @@
+pipeline {
+    agent {
+        node {
+            label 'built-in'
+            customWorkspace '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
+        }
+    }
+
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '12', artifactNumToKeepStr: '12'))
+        timeout(time: 8, unit: 'HOURS')
+        timestamps()
+        skipDefaultCheckout(true)
+    }
+
+    parameters {
+        string(name: 'VF2_BASE_REVISION',
+            defaultValue: '0683245155d659437be40d353cedf26fb0d56f1c',
+            description: 'Reviewed VF2 ACT commit to merge with the latest official ACT4 branch in a disposable worktree.')
+        string(name: 'OFFICIAL_BRANCH', defaultValue: 'act4',
+            description: 'Official riscv/riscv-arch-test branch to validate.')
+        booleanParam(name: 'RUN_SAIL_VALIDATION', defaultValue: true,
+            description: 'After merge and test generation, run ACT/Sail for every staged official privileged test.')
+    }
+
+    environment {
+        REPO_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
+        ACT_OFFICIAL_URL = 'https://github.com/riscv/riscv-arch-test.git'
+        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
+        SAIL_EXPECTED_VERSION = '0.13'
+        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+    }
+
+    stages {
+        stage('Fetch + Merge Official ACT Candidate') {
+            steps {
+                sh 'ci/jenkins/validate_act_update.sh merge'
+            }
+        }
+
+        stage('Generate Official Privileged Tests') {
+            steps {
+                sh 'ci/jenkins/validate_act_update.sh generate'
+            }
+        }
+
+        stage('Sail Validation') {
+            when { expression { return params.RUN_SAIL_VALIDATION } }
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'ci/jenkins/validate_act_update.sh sail'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'ci/jenkins/validate_act_update.sh finalize || true'
+            archiveArtifacts artifacts: "logs/jenkins/act-update/act_update_${env.BUILD_NUMBER}/**",
+                             allowEmptyArchive: true,
+                             fingerprint: false
+        }
+    }
+}
