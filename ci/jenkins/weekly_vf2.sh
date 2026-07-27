@@ -19,7 +19,7 @@ serial_dev="${SERIAL_DEV:-/dev/ttyUSB0}"
 capture_timeout="${CAPTURE_TIMEOUT:-10800}"
 sail_bin="${SAIL_BIN:-/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim}"
 sail_expected_version="${SAIL_EXPECTED_VERSION:-0.13}"
-act_expected_revision="${ACT_REVISION:-0683245155d659437be40d353cedf26fb0d56f1c}"
+act_expected_revision="${ACT_REVISION:-4f3b59a9e7e1e0d5b2e35158e6ad0fcec7809f3f}"
 
 all_extensions="all"
 act_root="$repo_root/external/riscv-arch-test"

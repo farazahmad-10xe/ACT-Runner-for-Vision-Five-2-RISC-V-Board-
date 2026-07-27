@@ -16,7 +16,7 @@ pipeline {
 
     parameters {
         string(name: 'VF2_BASE_REVISION',
-            defaultValue: '0683245155d659437be40d353cedf26fb0d56f1c',
+            defaultValue: '4f3b59a9e7e1e0d5b2e35158e6ad0fcec7809f3f',
             description: 'Reviewed VF2 ACT commit to merge with the latest official ACT4 branch in a disposable worktree.')
         string(name: 'OFFICIAL_BRANCH', defaultValue: 'act4',
             description: 'Official riscv/riscv-arch-test branch to validate.')

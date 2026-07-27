@@ -16,7 +16,7 @@ pipeline {
 
     parameters {
         string(name: 'ACT_REVISION',
-            defaultValue: '0683245155d659437be40d353cedf26fb0d56f1c',
+            defaultValue: '4f3b59a9e7e1e0d5b2e35158e6ad0fcec7809f3f',
             description: 'Exact reviewed VF2 ACT commit required for this hardware run. Jenkins will not pull or silently change it.')
         booleanParam(name: 'REGENERATE_TESTS', defaultValue: true,
             description: 'Regenerate testgen-backed privileged suites before ACT/Sail execution.')
