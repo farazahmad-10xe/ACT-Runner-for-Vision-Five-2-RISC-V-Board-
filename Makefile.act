@@ -112,7 +112,8 @@ PACK_LIST=$(if $(strip $(RIESCUE_LIST)),$(RIESCUE_LIST),$(ACT_LIST))
 all: $(FW_PREFIX).elf $(FW_PREFIX).bin $(FW_PREFIX).dis
 
 RUNNER_SRCS=start.S main_act.c act_core.c runner_lower_env.c runner_sbi.c runner_umode.c \
-	            runner_machine_trap.c runner_monitor.c runner_sd.c runner_sd_sdhci_k1.c act_runtime.c
+	            runner_machine_trap.c runner_monitor.c runner_sd.c runner_sd_sdhci_k1.c act_runtime.c \
+	            runner_k1_hart_wakeup.c
 ifeq ($(strip $(RUNNER_ENABLE_LOWER_MODES)),1)
   RUNNER_SRCS += runner_smode.c
 endif

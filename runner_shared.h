@@ -99,6 +99,9 @@
 #ifndef BOARD_WDT_UNLOCK_KEY
 #define BOARD_WDT_UNLOCK_KEY 0x1acce551u
 #endif
+#ifndef BOARD_K1_HART_WAKEUP_ENABLE
+#define BOARD_K1_HART_WAKEUP_ENABLE 0
+#endif
 
 #define UART_BASE       BOARD_UART_BASE
 #define UART_SIZE       BOARD_UART_SIZE
@@ -157,6 +160,7 @@
 #define RUNNER_WDT_CTRL BOARD_WDT_CTRL
 #define RUNNER_WDT_LOCK BOARD_WDT_LOCK
 #define RUNNER_WDT_UNLOCK_KEY BOARD_WDT_UNLOCK_KEY
+#define RUNNER_K1_HART_WAKEUP_ENABLE BOARD_K1_HART_WAKEUP_ENABLE
 
 #define MCAUSE_INTERRUPT_BIT (1ULL << 63)
 #define MCAUSE_SSI      (MCAUSE_INTERRUPT_BIT | 1ULL)
@@ -693,6 +697,8 @@ void emit_reg_line3(const char *n0, uint64_t v0,
                     const char *n2, uint64_t v2);
 
 void trigger_watchdog_reset(void);
+void k1_cci_init_own_cluster(void);
+void k1_wakeup_monitor_hart(void);
 void monitor_irq_enable(void);
 void monitor_irq_disable(void);
 void platform_external_irq_cleanup(void);
