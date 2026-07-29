@@ -118,7 +118,7 @@ static uint32_t g_sd_tmp_block[SD_BLOCK_SIZE / sizeof(uint32_t)];
 static uintptr_t g_sdio_base = SDIO1_BASE;
 static uint64_t g_ext_pack_start_lba = 0;
 static uint32_t g_ext_pack_num_blocks = 0;
-static uint32_t g_ext_pack_count = 0;
+uint32_t g_ext_pack_count = 0;
 static ActPackEntry g_ext_entries[MAX_PACK_TESTS];
 static uint8_t g_ext_table_buf[sizeof(ActPackHeader) + (MAX_PACK_TESTS * sizeof(ActPackEntry))];
 

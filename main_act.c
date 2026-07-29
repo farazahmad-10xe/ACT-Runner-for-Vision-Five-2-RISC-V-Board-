@@ -25,6 +25,7 @@ uint8_t g_trap_stack[TRAP_STACK_BYTES] __attribute__((aligned(4096)));
 uint8_t g_strap_stack[STRAP_STACK_BYTES] __attribute__((aligned(4096)));
 #endif
 LastTrapState g_last_trap = {0};
+FirstTrapState g_first_trap = {0};
 
 void main(void)
 {

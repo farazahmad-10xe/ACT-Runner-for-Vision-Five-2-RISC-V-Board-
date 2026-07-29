@@ -141,7 +141,8 @@ fi
 
 board_cflags=()
 for var in \
-  BOARD_UART_BASE BOARD_UART_SIZE BOARD_CLINT_MSIP_BASE \
+  BOARD_UART_BASE BOARD_UART_SIZE BOARD_PLIC_BASE BOARD_UART_PLIC_SOURCE \
+  BOARD_RUNNER_M_PLIC_CONTEXT BOARD_RUNNER_S_PLIC_CONTEXT BOARD_CLINT_MSIP_BASE \
   BOARD_CLINT_MTIMECMP_BASE BOARD_CLINT_MTIME_ADDR \
   BOARD_RUNNER_HART_ID BOARD_MONITOR_HART_ID \
   BOARD_FIXED_TOHOST_ADDR BOARD_RAM_BASE BOARD_RAM_LIMIT \
@@ -255,6 +256,10 @@ cat > "$out_dir/manifest.json" <<EOF2
   "board_ram_base": "${BOARD_RAM_BASE:-}",
   "board_ram_limit": "${BOARD_RAM_LIMIT:-}",
   "board_uart_base": "${BOARD_UART_BASE:-}",
+  "board_plic_base": "${BOARD_PLIC_BASE:-}",
+  "board_uart_plic_source": "${BOARD_UART_PLIC_SOURCE:-}",
+  "board_runner_m_plic_context": "${BOARD_RUNNER_M_PLIC_CONTEXT:-}",
+  "board_runner_s_plic_context": "${BOARD_RUNNER_S_PLIC_CONTEXT:-}",
   "board_clint_msip_base": "${BOARD_CLINT_MSIP_BASE:-}",
   "board_clint_mtime_addr": "${BOARD_CLINT_MTIME_ADDR:-}",
   "board_sdio1_base": "${BOARD_SDIO1_BASE:-}",

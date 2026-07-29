@@ -509,10 +509,47 @@ int wait_for_monitor_report(void)
     return -1;
 }
 
+/*
+ * Interrupt tests use UART0 THRE as a deterministic real PLIC source.  Keep
+ * it quiescent outside the payload and mask every inherited PLIC source for
+ * the payload hart's M/S contexts.  ACT interrupt tests intentionally write
+ * mie=-1; leaving boot-firmware device enables in the PLIC would allow an
+ * unrelated MEIP/SEIP to preempt the interrupt that the test just injected.
+ */
+void platform_external_irq_cleanup(void)
+{
+    const uint32_t source = UART_PLIC_SOURCE;
+    const uint32_t contexts[2] = {
+        RUNNER_M_PLIC_CONTEXT,
+        RUNNER_S_PLIC_CONTEXT,
+    };
+    uint8_t ier = mmio_read8(UART_BASE + UART_IER);
+
+    mmio_write8(UART_BASE + UART_IER, (uint8_t)(ier & (uint8_t)~UART_IER_THRI));
+    __asm__ volatile ("fence iorw, iorw" ::: "memory");
+
+    for (uint32_t i = 0; i < 2u; ++i) {
+        uintptr_t claim_addr = PLIC_BASE + 0x200004u + ((uintptr_t)contexts[i] * 0x1000u);
+        uint32_t claim = mmio_read32(claim_addr);
+
+        if (claim != 0u) mmio_write32(claim_addr, claim);
+        for (uint32_t word = 0; word < 5u; ++word) {
+            uintptr_t enable_addr = PLIC_BASE + 0x2000u +
+                                    ((uintptr_t)contexts[i] * 0x80u) +
+                                    ((uintptr_t)word * sizeof(uint32_t));
+            mmio_write32(enable_addr, 0u);
+        }
+    }
+
+    mmio_write32(PLIC_BASE + ((uintptr_t)source * sizeof(uint32_t)), 0u);
+    __asm__ volatile ("fence iorw, iorw" ::: "memory");
+}
+
 void monitor_hart_loop(void)
 {
     uint64_t monitor_deadline_mtime = 0;
     uint64_t monitor_saw_active = 0;
+    uint64_t timeout_disabled_notice = 0;
 
     uart_log_lock();
     uart_puts("[MON] hart2 online\n");
@@ -543,6 +580,37 @@ void monitor_hart_loop(void)
             int shared_expired = (shared_deadline != 0 && now >= shared_deadline);
             int monitor_expired = (monitor_deadline_mtime != 0 && now >= monitor_deadline_mtime);
             if (shared_expired || monitor_expired) {
+#if RUNNER_DISABLE_TEST_TIMEOUT
+                if (timeout_disabled_notice == 0) {
+                    uart_log_lock();
+                    uart_puts("[RST] test timeout disabled; monitor timeout observed");
+                    uart_puts(" shared_expired=");
+                    uart_put_hex((uint64_t)shared_expired);
+                    uart_puts(" monitor_expired=");
+                    uart_put_hex((uint64_t)monitor_expired);
+                    uart_puts(" mtime=");
+                    uart_put_hex(now);
+                    uart_puts(" shared_deadline=");
+                    uart_put_hex(shared_deadline);
+                    uart_puts("\n");
+#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
+                    dump_act_irq_timeout_context();
+#endif
+                    if (g_ext_pack_loaded) {
+                        uint32_t idx = current_external_progress_index();
+                        if (idx != FOOTER_IDX_NONE && (idx + 1u) < g_ext_pack_count) {
+                            persist_external_progress_if_needed("timeout disabled skip persist");
+                            uart_puts("[RST] timeout disabled; advancing to next external case via watchdog reset\n");
+                            g_runner_exec.runner_active = 0;
+                            g_runner_exec.reset_request_mtime = now + RESET_DELAY_TICKS;
+                        }
+                    }
+                    uart_log_unlock();
+                    timeout_disabled_notice = 1;
+                }
+                monitor_deadline_mtime = 0;
+                continue;
+#else
                 const char *name = safe_case_name((const char *)g_runner_exec.active_case_name);
                 g_runner_exec.test_tohost_value = TOHOST_TIMEOUT;
                 g_runner_exec.test_done = 1;
@@ -563,6 +631,21 @@ void monitor_hart_loop(void)
                 if (monitor_expired && !shared_expired) {
                     uart_puts("[RST] monitor-local deadline expired\n");
                 }
+                uart_puts("[TIMEOUTCSR] source=monitor_hart");
+                uart_puts(" mstatus="); uart_put_hex(read_mstatus());
+                uart_puts(" sstatus="); uart_put_hex(read_sstatus());
+                uart_puts(" mie="); uart_put_hex(read_mie());
+                uart_puts(" mip="); uart_put_hex(read_csr_mip());
+                uart_puts(" sie="); uart_put_hex(read_csr_sie());
+                uart_puts(" sip="); uart_put_hex(read_csr_sip());
+                uart_puts(" mideleg="); uart_put_hex(read_csr_mideleg());
+                uart_puts(" medeleg="); uart_put_hex(read_csr_medeleg());
+                uart_puts(" mtvec="); uart_put_hex(read_csr_mtvec());
+                uart_puts(" stvec="); uart_put_hex(read_csr_stvec());
+                uart_puts(" satp="); uart_put_hex(read_csr_satp());
+                uart_puts(" mtime="); uart_put_hex(*mtime_ptr());
+                uart_puts(" deadline="); uart_put_hex(shared_deadline);
+                uart_puts("\n");
 
                 uart_puts("[CASE] REPORT name=");
                 uart_puts(name);
@@ -588,6 +671,15 @@ void monitor_hart_loop(void)
                 uart_puts("\n");
                 emit_execution_context("TIMEOUT");
 
+#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
+                g_runner_exec.sig_dump_in_progress = 1;
+                asm volatile ("fence rw, rw" ::: "memory");
+                dump_failure_scratch_region(g_runner_image.fail_begin, g_runner_image.fail_end);
+                dump_act_failure_context();
+                asm volatile ("fence rw, rw" ::: "memory");
+                g_runner_exec.sig_dump_in_progress = 0;
+#endif
+
                 persist_external_progress_if_needed("timeout persist");
                 g_runner_exec.case_report_ready = 1;
                 g_runner_exec.monitor_report_done = 1;
@@ -599,6 +691,7 @@ void monitor_hart_loop(void)
 #else
                 g_runner_exec.reset_request_mtime = now + (RESET_DELAY_TICKS * 10ULL);
                 uart_log_unlock();
+#endif
 #endif
             }
         }
@@ -630,6 +723,7 @@ void monitor_hart_loop(void)
                 monitor_uart_grace_delay();
 
                 uart_log_lock();
+                uart_puts("\n");
                 emit_log_separator();
                 uart_puts("[MON] tohost addr="); uart_put_hex(g_runner_image.tohost_addr);
                 uart_puts(" value="); uart_put_hex(v); uart_puts("\n");
@@ -663,6 +757,10 @@ void monitor_hart_loop(void)
                 else if (v == TOHOST_TIMEOUT) emit_execution_context("TIMEOUT");
                 else emit_execution_context("FAIL");
                 emit_hart1_csr_snapshot();
+
+#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
+                if (v == 1) dump_act_irq_section_trace();
+#endif
 
 #if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_RIESCUE
                 if (v != 1 && v != TOHOST_TIMEOUT) {

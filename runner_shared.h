@@ -10,6 +10,18 @@
 #ifndef BOARD_UART_SIZE
 #define BOARD_UART_SIZE 0x1000UL
 #endif
+#ifndef BOARD_PLIC_BASE
+#define BOARD_PLIC_BASE 0x0c000000UL
+#endif
+#ifndef BOARD_UART_PLIC_SOURCE
+#define BOARD_UART_PLIC_SOURCE 32u
+#endif
+#ifndef BOARD_RUNNER_M_PLIC_CONTEXT
+#define BOARD_RUNNER_M_PLIC_CONTEXT 1u
+#endif
+#ifndef BOARD_RUNNER_S_PLIC_CONTEXT
+#define BOARD_RUNNER_S_PLIC_CONTEXT 2u
+#endif
 #ifndef BOARD_CLINT_MSIP_BASE
 #define BOARD_CLINT_MSIP_BASE 0x02000000UL
 #endif
@@ -88,9 +100,16 @@
 
 #define UART_THR        0x00
 #define UART_RBR        0x00
+#define UART_IER        0x04
 #define UART_LSR        0x14
 #define UART_LSR_DR     (1u << 0)
 #define UART_LSR_THRE   (1u << 5)
+#define UART_IER_THRI   (1u << 1)
+
+#define PLIC_BASE       BOARD_PLIC_BASE
+#define UART_PLIC_SOURCE BOARD_UART_PLIC_SOURCE
+#define RUNNER_M_PLIC_CONTEXT BOARD_RUNNER_M_PLIC_CONTEXT
+#define RUNNER_S_PLIC_CONTEXT BOARD_RUNNER_S_PLIC_CONTEXT
 
 #define CLINT_MSIP_BASE BOARD_CLINT_MSIP_BASE
 #define CLINT_MTIMECMP_BASE BOARD_CLINT_MTIMECMP_BASE
@@ -164,6 +183,9 @@
 #endif
 #ifndef RUNNER_TIMEOUT_FAST_RESET
 #define RUNNER_TIMEOUT_FAST_RESET 0
+#endif
+#ifndef RUNNER_DISABLE_TEST_TIMEOUT
+#define RUNNER_DISABLE_TEST_TIMEOUT 1
 #endif
 #define TEST_TIMEOUT_TICKS RUNNER_TEST_TIMEOUT_TICKS
 #define RESET_DELAY_TICKS RUNNER_RESET_DELAY_TICKS
@@ -317,6 +339,7 @@ extern uint32_t g_ext_next_index;
 extern uint32_t g_ext_inflight_index;
 extern uint32_t g_ext_active_index;
 extern uint32_t g_ext_progress_persisted;
+extern uint32_t g_ext_pack_count;
 extern int g_ext_pack_loaded;
 extern uint64_t g_sv39_root_page_table[512];
 extern uint64_t g_sv39_l1_page_tables[4][512];
@@ -369,6 +392,24 @@ typedef struct LastTrapState {
     uint8_t valid;
 } LastTrapState;
 
+typedef struct FirstTrapState {
+    TrapFrame frame;
+    uint64_t seq;
+    uint64_t mcause;
+    uint64_t mepc;
+    uint64_t mtval;
+    uint64_t status;
+    uint64_t mode;
+    uint64_t inst16;
+    uint64_t inst32;
+    uint64_t mtvec;
+    uint64_t stvec;
+    uint64_t medeleg;
+    uint64_t mideleg;
+    uint64_t satp;
+    uint8_t valid;
+} FirstTrapState;
+
 typedef struct RunnerSbiState {
     volatile uint64_t pending_kind;
     TrapFrame *lower_tf;
@@ -385,6 +426,7 @@ typedef struct RunnerSbiState {
 } RunnerSbiState;
 
 extern LastTrapState g_last_trap;
+extern FirstTrapState g_first_trap;
 extern RunnerSbiState g_runner_sbi;
 
 static inline void mmio_write8(uintptr_t addr, uint8_t v) { *(volatile uint8_t*)addr = v; }
@@ -433,6 +475,7 @@ static inline void sfence_vma_all(void) { __asm__ volatile ("sfence.vma x0, x0" 
 static inline uint64_t read_mstatus(void){ uint64_t x; asm volatile("csrr %0, mstatus":"=r"(x)); return x; }
 static inline uint64_t read_sstatus(void){ uint64_t x; asm volatile("csrr %0, sstatus":"=r"(x)); return x; }
 static inline uint64_t read_csr_mtvec(void){ uint64_t x; asm volatile("csrr %0, mtvec":"=r"(x)); return x; }
+static inline uint64_t read_csr_stvec(void){ uint64_t x; asm volatile("csrr %0, stvec":"=r"(x)); return x; }
 static inline uint64_t read_csr_medeleg(void){ uint64_t x; asm volatile("csrr %0, medeleg":"=r"(x)); return x; }
 static inline uint64_t read_csr_mideleg(void){ uint64_t x; asm volatile("csrr %0, mideleg":"=r"(x)); return x; }
 static inline uint64_t read_csr_satp(void){ uint64_t x; asm volatile("csrr %0, satp":"=r"(x)); return x; }
@@ -442,6 +485,9 @@ static inline uint64_t read_marchid(void){ uint64_t x; asm volatile("csrr %0, ma
 static inline uint64_t read_mimpid(void){ uint64_t x; asm volatile("csrr %0, mimpid":"=r"(x)); return x; }
 static inline void write_mstatus(uint64_t x){ asm volatile("csrw mstatus, %0"::"r"(x)); }
 static inline uint64_t read_mie(void){ uint64_t x; asm volatile("csrr %0, mie":"=r"(x)); return x; }
+static inline uint64_t read_csr_mip(void){ uint64_t x; asm volatile("csrr %0, mip":"=r"(x)); return x; }
+static inline uint64_t read_csr_sie(void){ uint64_t x; asm volatile("csrr %0, sie":"=r"(x)); return x; }
+static inline uint64_t read_csr_sip(void){ uint64_t x; asm volatile("csrr %0, sip":"=r"(x)); return x; }
 static inline void write_mie(uint64_t x){ asm volatile("csrw mie, %0"::"r"(x)); }
 static inline uint64_t read_fflags(void){ uint64_t x; asm volatile("csrr %0, fflags":"=r"(x)); return x; }
 static inline uint64_t read_frm(void){ uint64_t x; asm volatile("csrr %0, frm":"=r"(x)); return x; }
@@ -641,6 +687,7 @@ void emit_reg_line3(const char *n0, uint64_t v0,
 void trigger_watchdog_reset(void);
 void monitor_irq_enable(void);
 void monitor_irq_disable(void);
+void platform_external_irq_cleanup(void);
 void enable_fpu_set_fs_only(void);
 void enable_fpu_try_clear_fcsr(void);
 const char *exec_mode_name(uint64_t mode);
@@ -671,6 +718,10 @@ void capture_last_trap_in_mode(const TrapFrame *tf, uint64_t mcause, uint64_t me
                                uint64_t mtval, uint64_t mstatus, uint64_t trap_mode);
 void capture_last_trap(const TrapFrame *tf, uint64_t mcause, uint64_t mepc,
                        uint64_t mtval, uint64_t mstatus);
+void reset_first_trap_state(void);
+void capture_first_trap_in_mode(const TrapFrame *tf, uint64_t mcause, uint64_t pc,
+                                uint64_t tval, uint64_t status, uint64_t trap_mode);
+void emit_first_trap_state(const char *tag);
 const char *trap_reason_name(uint64_t mcause);
 uint32_t read_insn_word(uint64_t pc, int *valid_out);
 void find_signature_range(const uint8_t *blob, size_t blob_size, const Elf64_Ehdr *eh,
@@ -680,6 +731,8 @@ void find_failure_scratch_range(const uint8_t *blob, size_t blob_size, const Elf
 void dump_signature_region(uint64_t begin, uint64_t end);
 void dump_failure_scratch_region(uint64_t begin, uint64_t end);
 void dump_act_failure_context(void);
+void dump_act_irq_timeout_context(void);
+void dump_act_irq_section_trace(void);
 int load_elf_blob(const uint8_t *blob, size_t blob_size, uint64_t *entry_out);
 int load_pack_from_sd_tail(void);
 int persist_footer_progress(uint32_t next_index, uint32_t inflight_index_or_none);

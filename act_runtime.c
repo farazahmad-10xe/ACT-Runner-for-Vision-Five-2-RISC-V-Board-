@@ -21,7 +21,11 @@ uint64_t run_loaded_entry(uint64_t entry)
     g_runner_exec.reset_request_mtime = 0;
     g_runner_exec.case_report_ready = 0;
     g_runner_exec.monitor_report_done = 0;
+#if RUNNER_DISABLE_TEST_TIMEOUT
+    g_runner_exec.test_deadline_mtime = 0;
+#else
     g_runner_exec.test_deadline_mtime = *mtime_ptr() + TEST_TIMEOUT_TICKS;
+#endif
     g_runner_exec.hart1_csr_snapshot_valid = 0;
     g_runner_exec.hart1_csr_snapshot_reason = 0;
     g_runner_exec.hart1_mhartid = 0;
@@ -42,9 +46,11 @@ uint64_t run_loaded_entry(uint64_t entry)
     g_last_trap.mtval = 0;
     g_last_trap.mstatus = 0;
     g_last_trap.mode = EXEC_MODE_M;
+    reset_first_trap_state();
     g_lower_state.active_exec_mode = EXEC_MODE_M;
     reset_lower_mode_state();
     runner_reset_sbi_state();
+    platform_external_irq_cleanup();
     memset_local(&g_last_trap.frame, 0, sizeof(g_last_trap.frame));
 #if RUNNER_VERBOSE_FLOW
     uart_log_lock();
@@ -95,12 +101,18 @@ uint64_t run_loaded_entry(uint64_t entry)
     monitor_irq_enable();
     g_runner_exec.runner_active = 1;
     asm volatile ("fence rw, rw" ::: "memory");
+#if RUNNER_DISABLE_TEST_TIMEOUT
+    *mtimecmp_ptr(0) = ~0ULL;
+    *mtimecmp_ptr(1) = ~0ULL;
+    *mtimecmp_ptr(2) = ~0ULL;
+#else
     {
         uint64_t deadline = *mtime_ptr() + TEST_TIMEOUT_TICKS;
         *mtimecmp_ptr(0) = deadline;
         *mtimecmp_ptr(1) = deadline;
         *mtimecmp_ptr(2) = deadline;
     }
+#endif
     asm volatile ("fence rw, rw" ::: "memory");
 
     if (g_runner_image.tohost_ptr) *g_runner_image.tohost_ptr = 0;
@@ -151,6 +163,7 @@ resume_from_test:
     *mtimecmp_ptr(1) = ~0ULL;
     *mtimecmp_ptr(2) = ~0ULL;
     asm volatile ("fence rw, rw" ::: "memory");
+    platform_external_irq_cleanup();
     g_runner_exec.runner_active = 0;
     g_lower_state.active_exec_mode = EXEC_MODE_M;
     g_runner_exec.test_deadline_mtime = 0;
@@ -248,6 +261,9 @@ int run_one_blob(const char *name, const uint8_t *blob, size_t blob_size, TestRe
     if (out->status == CASE_STATUS_PASS) emit_execution_context("PASS");
     else if (out->status == CASE_STATUS_TIMEOUT) emit_execution_context("TIMEOUT");
     else emit_execution_context("FAIL");
+#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
+    if (out->status == CASE_STATUS_PASS) dump_act_irq_section_trace();
+#endif
     if (out->status != CASE_STATUS_PASS) {
 #if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
         g_runner_exec.sig_dump_in_progress = 1;

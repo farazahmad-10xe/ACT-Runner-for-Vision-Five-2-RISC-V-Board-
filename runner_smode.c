@@ -212,6 +212,7 @@ uint64_t s_trap_c(uint64_t scause, uint64_t sepc, uint64_t stval, uint64_t sstat
         return sepc;
     }
 
+    capture_first_trap_in_mode(tf, scause, sepc, stval, sstatus, EXEC_MODE_S);
     capture_last_trap_in_mode(tf, scause, sepc, stval, sstatus, EXEC_MODE_S);
     g_lower_state.uflow_marker = 4;
 

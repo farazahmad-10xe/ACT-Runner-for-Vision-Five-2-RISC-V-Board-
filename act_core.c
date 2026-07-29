@@ -744,6 +744,78 @@ void capture_last_trap(const TrapFrame *tf, uint64_t mcause, uint64_t mepc,
     capture_last_trap_in_mode(tf, mcause, mepc, mtval, mstatus, EXEC_MODE_M);
 }
 
+static uint64_t read_insn_halfword_for_log(uint64_t pc, int *valid_out)
+{
+    if (valid_out) *valid_out = 0;
+    if ((pc & 0x1ULL) != 0) return 0;
+    if (!is_valid_ddr_addr(pc) || !is_valid_ddr_addr(pc + 1ULL)) return 0;
+    if (valid_out) *valid_out = 1;
+    return (uint64_t)(*(volatile const uint16_t *)(uintptr_t)pc);
+}
+
+void reset_first_trap_state(void)
+{
+    memset_local(&g_first_trap, 0, sizeof(g_first_trap));
+}
+
+void emit_first_trap_state(const char *tag)
+{
+    const char *name = tag ? tag : "[TRAP_FIRST]";
+
+    dbg_puts(name);
+    dbg_puts(" valid=");
+    dbg_puts(g_first_trap.valid ? "1" : "0");
+    if (!g_first_trap.valid) {
+        dbg_nl();
+        return;
+    }
+    dbg_puts(" seq=0x"); dbg_hex_u64(g_first_trap.seq);
+    dbg_puts(" mode=");
+    dbg_puts(exec_mode_name(g_first_trap.mode));
+    dbg_puts(" mcause=0x"); dbg_hex_u64(g_first_trap.mcause);
+    dbg_puts(" pc=0x"); dbg_hex_u64(g_first_trap.mepc);
+    dbg_puts(" tval=0x"); dbg_hex_u64(g_first_trap.mtval);
+    dbg_puts(" status=0x"); dbg_hex_u64(g_first_trap.status);
+    dbg_puts(" inst16=0x"); dbg_hex_u64(g_first_trap.inst16);
+    dbg_puts(" inst32=0x"); dbg_hex_u64(g_first_trap.inst32);
+    dbg_puts(" mtvec=0x"); dbg_hex_u64(g_first_trap.mtvec);
+    dbg_puts(" stvec=0x"); dbg_hex_u64(g_first_trap.stvec);
+    dbg_puts(" medeleg=0x"); dbg_hex_u64(g_first_trap.medeleg);
+    dbg_puts(" mideleg=0x"); dbg_hex_u64(g_first_trap.mideleg);
+    dbg_puts(" satp=0x"); dbg_hex_u64(g_first_trap.satp);
+    dbg_nl();
+}
+
+void capture_first_trap_in_mode(const TrapFrame *tf, uint64_t mcause, uint64_t pc,
+                                uint64_t tval, uint64_t status, uint64_t trap_mode)
+{
+    int have16 = 0;
+    int have32 = 0;
+
+    if (g_first_trap.valid) return;
+
+    if (tf) g_first_trap.frame = *tf;
+    else memset_local(&g_first_trap.frame, 0, sizeof(g_first_trap.frame));
+    g_first_trap.seq = 1;
+    g_first_trap.mcause = mcause;
+    g_first_trap.mepc = pc;
+    g_first_trap.mtval = tval;
+    g_first_trap.status = status;
+    g_first_trap.mode = trap_mode;
+    g_first_trap.inst16 = read_insn_halfword_for_log(pc, &have16);
+    if (!have16) g_first_trap.inst16 = 0;
+    g_first_trap.inst32 = (uint64_t)read_insn_word(pc, &have32);
+    if (!have32) g_first_trap.inst32 = 0;
+    g_first_trap.mtvec = read_csr_mtvec();
+    g_first_trap.stvec = read_csr_stvec_local();
+    g_first_trap.medeleg = read_csr_medeleg();
+    g_first_trap.mideleg = read_csr_mideleg();
+    g_first_trap.satp = read_csr_satp_local();
+    g_first_trap.valid = 1u;
+
+    emit_first_trap_state("[TRAP_FIRST]");
+}
+
 const char *trap_reason_name(uint64_t mcause)
 {
     if (mcause & MCAUSE_INTERRUPT_BIT) {
@@ -825,6 +897,31 @@ void dump_signature_region(uint64_t begin, uint64_t end)
     dbg_puts("[SIG] begin=0x"); dbg_hex_u64(begin);
     dbg_puts(" end=0x"); dbg_hex_u64(end);
     dbg_puts(" bytes=0x"); dbg_hex_u64(bytes); dbg_nl();
+
+    volatile uint8_t *p = (volatile uint8_t *)(uintptr_t)begin;
+    uint64_t qwords = bytes / 8;
+    uint64_t tail = bytes % 8;
+
+    for (uint64_t i = 0; i < qwords; i++) {
+        uint64_t a = begin + (i * 8);
+        uint64_t v = 0;
+        for (uint64_t j = 0; j < 8; j++) {
+            v |= ((uint64_t)p[(i * 8) + j]) << (j * 8);
+        }
+        dbg_puts("[SIGQ] 0x"); dbg_hex_u64(a);
+        dbg_puts(" : 0x"); dbg_hex_u64(v);
+        dbg_nl();
+    }
+
+    for (uint64_t i = 0; i < tail; i++) {
+        uint64_t a = begin + (qwords * 8) + i;
+        uint8_t b = p[(qwords * 8) + i];
+        dbg_puts("[SIGB] 0x"); dbg_hex_u64(a);
+        dbg_puts(" : 0x");
+        dbg_putc("0123456789abcdef"[(b >> 4) & 0xf]);
+        dbg_putc("0123456789abcdef"[b & 0xf]);
+        dbg_nl();
+    }
 }
 
 void dump_failure_scratch_region(uint64_t begin, uint64_t end)
@@ -1015,6 +1112,127 @@ static void dump_act_named_u64(const char *tag, const char *name)
     dbg_nl();
 }
 
+void dump_act_irq_section_trace(void)
+{
+    const uint64_t record_qwords = 8ULL;
+    const uint64_t record_bytes = record_qwords * sizeof(uint64_t);
+    const uint64_t max_records = 128ULL;
+    uint64_t count = 0;
+    uint64_t trace_addr = 0;
+
+    if (read_loaded_symbol_u64("irqdbg_trace_count", &count, 0) != 0 ||
+        lookup_loaded_symbol_addr("irqdbg_trace", &trace_addr) != 0) {
+        return;
+    }
+
+    if (count > max_records) count = max_records;
+    dbg_puts("[IRQSEC] records=0x"); dbg_hex_u64(count);
+    dbg_puts(" base=0x"); dbg_hex_u64(trace_addr);
+    dbg_nl();
+
+    for (uint64_t i = 0; i < count; ++i) {
+        uint64_t record[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+        uint64_t addr = trace_addr + (i * record_bytes);
+        SymbolInfo sym;
+        int valid = 1;
+
+        for (uint64_t word = 0; word < record_qwords; ++word) {
+            if (read_u64_from_addr(addr + (word * sizeof(uint64_t)), &record[word]) != 0) {
+                valid = 0;
+                break;
+            }
+        }
+
+        dbg_puts("[IRQSEC] index=0x"); dbg_hex_u64(i);
+        if (!valid) {
+            dbg_puts(" valid=0\n");
+            continue;
+        }
+
+        dbg_puts(" stage=0x"); dbg_hex_u64(record[0]);
+        dbg_puts(" phase=");
+        if ((record[0] & 0xfULL) == 0) dbg_puts("configured");
+        else if ((record[0] & 0xfULL) == 1) dbg_puts("asserted");
+        else if ((record[0] & 0xfULL) == 2) dbg_puts("returned");
+        else dbg_puts("unknown");
+        dbg_puts(" case_pc=0x"); dbg_hex_u64(record[1]);
+        if (g_runner_image.loaded_blob &&
+            find_symbol_for_addr(g_runner_image.loaded_blob,
+                                 g_runner_image.loaded_blob_size,
+                                 record[1], &sym) == 0 &&
+            sym.name) {
+            dbg_puts(" case="); dbg_puts(sym.name);
+        }
+        dbg_puts(" mideleg=0x"); dbg_hex_u64(record[2]);
+        dbg_puts(" mie=0x"); dbg_hex_u64(record[3]);
+        dbg_puts(" mip=0x"); dbg_hex_u64(record[4]);
+        dbg_puts(" mstatus=0x"); dbg_hex_u64(record[5]);
+        dbg_puts(" sip=0x"); dbg_hex_u64(record[6]);
+        dbg_puts(" sie=0x"); dbg_hex_u64(record[7]);
+        dbg_nl();
+    }
+}
+
+void dump_act_irq_timeout_context(void)
+{
+    dbg_puts("[IRQTIMEOUT] live payload snapshot\n");
+    dump_act_named_u64("[IRQTIMEOUT]", "rvmodel_boot_hartid");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_stage");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_pre_mideleg");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_pre_mie");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_pre_mip");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_pre_mstatus");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_pre_sip");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_pre_sie");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_pre_stvec");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_pre_s_trap_count");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_s_count");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_s_scause");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_s_sepc");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_s_stvec");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_s_sstatus");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_s_sscratch");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_s_sp");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_uart_ier");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_plic_pending");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_plic_m_enable");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_plic_s_enable");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_valid");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_mode");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_xepc");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_xcause");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_xtval");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_xstatus");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_mideleg");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_mip");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_mie");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_sip");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqdbg_first_sie");
+    dump_act_named_u64("[IRQTIMEOUT]", "rvmodel_last_plic_claim");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_count");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_pre_sp");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_pre_mscratch");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_pre_saved_sp");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_pre_mepc");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_pre_mcause");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_post_sp");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_post_mscratch");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_post_saved_sp");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_post_mepc");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_mext_post_mcause");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_count");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_entry_sp");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_entry_mscratch");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_entry_mepc");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_entry_mstatus");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_final_sp");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_final_mscratch");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_final_t2");
+    dump_act_named_u64("[IRQTIMEOUT]", "irqret_gotom_final_t4");
+    dump_act_irq_section_trace();
+    dump_act_handler_trace();
+}
+
 static void dump_act_hart_csr_snapshot(void)
 {
     static const char *const names[] = {
@@ -1088,11 +1306,139 @@ static void dump_act_trap_sig_window(uint64_t current_ptr)
     }
 }
 
+static void dump_act_signature_flow(uint64_t current_ptr,
+                                    uint64_t saved_mepc,
+                                    uint64_t saved_mcause,
+                                    uint64_t saved_mtval,
+                                    uint64_t saved_mstatus)
+{
+    uint64_t trap_sigptr = 0;
+    uint64_t compare_slot = current_ptr;
+    uint64_t prev_exception_slot = 0;
+    uint64_t compare_slot_word_index = ~0ULL;
+    uint64_t prev_exception_word_index = ~0ULL;
+    uint64_t expected_signature_word = 0;
+    uint64_t actual_signature_word = 0;
+    uint64_t trap_diag_expected = 0;
+    uint64_t trap_diag_actual = 0;
+    uint64_t scratch_expected = 0;
+    uint64_t scratch_actual = 0;
+    int expected_valid = 0;
+    int actual_valid = 0;
+
+    (void)lookup_loaded_symbol_addr("trap_sigptr", &trap_sigptr);
+
+    if (current_ptr >= 4ULL * sizeof(uint64_t)) {
+        prev_exception_slot = current_ptr - (4ULL * sizeof(uint64_t));
+    }
+
+    if (trap_sigptr != 0 && current_ptr >= trap_sigptr) {
+        compare_slot_word_index = (current_ptr - trap_sigptr) / 8ULL;
+    }
+    if (trap_sigptr != 0 && prev_exception_slot >= trap_sigptr) {
+        prev_exception_word_index = (prev_exception_slot - trap_sigptr) / 8ULL;
+    }
+
+    if (compare_slot != 0 &&
+        is_valid_ddr_addr(compare_slot + sizeof(uint64_t)) &&
+        read_u64_from_addr(compare_slot + sizeof(uint64_t), &actual_signature_word) == 0) {
+        actual_valid = 1;
+    } else if (read_loaded_symbol_u64("failing_value", &scratch_actual, 0) == 0) {
+        actual_signature_word = scratch_actual;
+        actual_valid = 1;
+    } else if (read_loaded_symbol_u64("trap_diag_actual_value", &trap_diag_actual, 0) == 0) {
+        actual_signature_word = trap_diag_actual;
+        actual_valid = 1;
+    }
+
+    if (read_loaded_symbol_u64("expected_value", &scratch_expected, 0) == 0) {
+        expected_signature_word = scratch_expected;
+        expected_valid = 1;
+    } else if (read_loaded_symbol_u64("trap_diag_expected_value", &trap_diag_expected, 0) == 0) {
+        expected_signature_word = trap_diag_expected;
+        expected_valid = 1;
+    }
+
+    dbg_puts("[ACTFLOW] trap_sigptr_base=0x"); dbg_hex_u64(trap_sigptr);
+    dbg_puts(" trap_sigptr_before=0x"); dbg_hex_u64(prev_exception_slot);
+    dbg_puts(" trap_sigptr_after=0x"); dbg_hex_u64(compare_slot);
+    dbg_puts(" compare_slot=0x"); dbg_hex_u64(compare_slot);
+    dbg_puts(" prev_exception_slot=0x"); dbg_hex_u64(prev_exception_slot);
+    dbg_puts(" saved_mepc=0x"); dbg_hex_u64(saved_mepc);
+    dbg_puts(" saved_mcause=0x"); dbg_hex_u64(saved_mcause);
+    dbg_puts(" saved_mtval=0x"); dbg_hex_u64(saved_mtval);
+    dbg_puts(" saved_mstatus=0x"); dbg_hex_u64(saved_mstatus);
+    dbg_puts(" compare_slot_word_index=");
+    if (compare_slot_word_index == ~0ULL) {
+        dbg_puts("unavailable");
+    } else {
+        dbg_puts("0x"); dbg_hex_u64(compare_slot_word_index);
+    }
+    dbg_puts(" signature_word_index=");
+    if (compare_slot_word_index == ~0ULL) {
+        dbg_puts("unavailable");
+    } else {
+        dbg_puts("0x"); dbg_hex_u64(compare_slot_word_index);
+    }
+    dbg_puts(" prev_exception_word_index=");
+    if (prev_exception_word_index == ~0ULL) {
+        dbg_puts("unavailable");
+    } else {
+        dbg_puts("0x"); dbg_hex_u64(prev_exception_word_index);
+    }
+    dbg_puts(" expected_signature_word=");
+    if (expected_valid) {
+        dbg_puts("0x"); dbg_hex_u64(expected_signature_word);
+    } else {
+        dbg_puts("unavailable");
+    }
+    dbg_puts(" actual_signature_word=");
+    if (actual_valid) {
+        dbg_puts("0x"); dbg_hex_u64(actual_signature_word);
+    } else {
+        dbg_puts("unavailable");
+    }
+    dbg_nl();
+
+    for (unsigned slot = 0; slot < 2; ++slot) {
+        uint64_t addr = slot == 0 ? compare_slot : prev_exception_slot;
+        uint64_t word[4] = {0, 0, 0, 0};
+        int valid = 1;
+
+        if (addr == 0 || !is_valid_ddr_range(addr, addr + 4ULL * sizeof(uint64_t))) {
+            valid = 0;
+        } else {
+            for (unsigned i = 0; i < 4; ++i) {
+                if (read_u64_from_addr(addr + (uint64_t)i * sizeof(uint64_t), &word[i]) != 0) {
+                    valid = 0;
+                    break;
+                }
+            }
+        }
+
+        dbg_puts(slot == 0 ? "[ACTFLOW_SLOT] kind=compare" : "[ACTFLOW_SLOT] kind=prev_exception");
+        dbg_puts(" addr=0x"); dbg_hex_u64(addr);
+        if (trap_sigptr != 0 && addr >= trap_sigptr) {
+            dbg_puts(" off=0x"); dbg_hex_u64(addr - trap_sigptr);
+        }
+        if (!valid) {
+            dbg_puts(" valid=0\n");
+            continue;
+        }
+        dbg_puts(" valid=1 word0=0x"); dbg_hex_u64(word[0]);
+        dbg_puts(" xcause=0x"); dbg_hex_u64(word[1]);
+        dbg_puts(" xepc=0x"); dbg_hex_u64(word[2]);
+        dbg_puts(" xtval=0x"); dbg_hex_u64(word[3]);
+        dbg_nl();
+    }
+}
+
 void dump_act_failure_context(void)
 {
     uint64_t begin = g_runner_image.fail_begin;
     uint64_t end = g_runner_image.fail_end;
     uint64_t saved_mepc = 0, saved_mcause = 0, saved_mtval = 0, saved_mstatus = 0;
+    uint64_t failing_addr = 0;
     uint64_t monitor_current_hartid = read_csr_mhartid();
     uint64_t monitor_current_mtvec = read_csr_mtvec();
     uint64_t monitor_current_stvec = read_csr_stvec_local();
@@ -1130,6 +1476,83 @@ void dump_act_failure_context(void)
     dump_act_named_u64("[ACTFAIL]", "failure_string_ptr");
     dump_act_named_u64("[ACTTRAP]", "trap_diag_actual_value");
     dump_act_named_u64("[ACTTRAP]", "trap_diag_expected_value");
+    dump_act_named_u64("[ACTCMP]", "trap_compare_link_reg");
+    dump_act_named_u64("[ACTCMP]", "trap_compare_sigptr");
+    dump_act_named_u64("[ACTCMP]", "trap_compare_actual_reg");
+    dump_act_named_u64("[ACTCMP]", "trap_compare_expected_reg");
+    dump_act_named_u64("[ACTCMP]", "trap_compare_live_mepc");
+    dump_act_named_u64("[ACTCMP]", "trap_compare_live_mcause");
+    dump_act_named_u64("[ACTCMP]", "trap_compare_live_mtval");
+    dump_act_named_u64("[ACTCMP]", "trap_compare_live_mstatus");
+    dump_act_named_u64("[ACTSLOT]", "dbg_trap_slot_t1");
+    dump_act_named_u64("[ACTSLOT]", "dbg_trap_slot_t4");
+    dump_act_named_u64("[ACTSLOT]", "dbg_trap_entry_size");
+    dump_act_named_u64("[ACTSLOT]", "dbg_trap_xepc");
+    dump_act_named_u64("[ACTSLOT]", "dbg_trap_xcause");
+    dump_act_named_u64("[ACTSLOT]", "dbg_trap_xtval");
+    dump_act_named_u64("[ACTSLOT]", "rvmodel_last_plic_claim");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mcause_sigptr");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mcause_actual");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mcause_expected");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mcause_live_xepc");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mcause_live_xcause");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mcause_live_xtval");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mepc_sigptr");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mepc_actual");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mepc_expected");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mepc_live_xepc");
+    dump_act_named_u64("[ACTSLOT]", "dbg_mepc_live_xcause");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_stage");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_pre_mideleg");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_pre_mie");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_pre_mip");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_pre_mstatus");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_pre_sip");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_pre_sie");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_pre_stvec");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_pre_s_trap_count");
+    dump_act_named_u64("[IRQDBG]", "irqret_s_count");
+    dump_act_named_u64("[IRQDBG]", "irqret_s_scause");
+    dump_act_named_u64("[IRQDBG]", "irqret_s_sepc");
+    dump_act_named_u64("[IRQDBG]", "irqret_s_stvec");
+    dump_act_named_u64("[IRQDBG]", "irqret_s_sstatus");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_uart_ier");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_plic_pending");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_plic_m_enable");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_plic_s_enable");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_valid");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_mode");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_xepc");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_xcause");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_xtval");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_xstatus");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_mideleg");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_mip");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_mie");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_sip");
+    dump_act_named_u64("[IRQDBG]", "irqdbg_first_sie");
+    dump_act_named_u64("[IRQRET]", "rvmodel_boot_hartid");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_count");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_pre_sp");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_pre_mscratch");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_pre_saved_sp");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_pre_mepc");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_pre_mcause");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_post_sp");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_post_mscratch");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_post_saved_sp");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_post_mepc");
+    dump_act_named_u64("[IRQRET]", "irqret_mext_post_mcause");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_count");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_entry_sp");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_entry_mscratch");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_entry_mepc");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_entry_mstatus");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_final_sp");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_final_mscratch");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_final_t2");
+    dump_act_named_u64("[IRQRET]", "irqret_gotom_final_t4");
+    dump_act_irq_section_trace();
     dump_act_trap_sig_window(act_x6_trap_sig_ptr);
     dump_act_handler_trace();
     dump_act_mmode_mtvec();
@@ -1139,7 +1562,10 @@ void dump_act_failure_context(void)
     (void)read_loaded_symbol_u64("saved_mcause", &saved_mcause, 0);
     (void)read_loaded_symbol_u64("saved_mtval", &saved_mtval, 0);
     (void)read_loaded_symbol_u64("saved_mstatus", &saved_mstatus, 0);
+    (void)read_loaded_symbol_u64("failing_addr", &failing_addr, 0);
     uint64_t saved_mstatus_mpp = (saved_mstatus >> 11) & 3ULL;
+
+    dump_act_signature_flow(act_x6_trap_sig_ptr, saved_mepc, saved_mcause, saved_mtval, saved_mstatus);
 
     dbg_puts("[ACTCSR] monitor_current_hartid=0x"); dbg_hex_u64(monitor_current_hartid);
     dbg_puts(" saved_mepc=0x"); dbg_hex_u64(saved_mepc);
@@ -1160,6 +1586,39 @@ void dump_act_failure_context(void)
         dbg_hex_u64((monitor_current_medeleg >> saved_mcause) & 1ULL);
     } else {
         dbg_puts(" monitor_medeleg_saved_mcause_bit=unavailable");
+    }
+    dbg_nl();
+
+    emit_first_trap_state("[TRAP_FIRST_SUMMARY]");
+    dbg_puts("[FAILSCR_PROV] first_valid=");
+    dbg_puts(g_first_trap.valid ? "1" : "0");
+    dbg_puts(" saved_matches_first=");
+    if (g_first_trap.valid &&
+        saved_mepc == g_first_trap.mepc &&
+        saved_mcause == g_first_trap.mcause &&
+        saved_mtval == g_first_trap.mtval) {
+        dbg_puts("1");
+    } else {
+        dbg_puts("0");
+    }
+    dbg_puts(" saved_mepc=0x"); dbg_hex_u64(saved_mepc);
+    dbg_puts(" first_pc=0x"); dbg_hex_u64(g_first_trap.mepc);
+    dbg_puts(" saved_mcause=0x"); dbg_hex_u64(saved_mcause);
+    dbg_puts(" first_mcause=0x"); dbg_hex_u64(g_first_trap.mcause);
+    dbg_puts(" saved_mtval=0x"); dbg_hex_u64(saved_mtval);
+    dbg_puts(" first_tval=0x"); dbg_hex_u64(g_first_trap.mtval);
+    dbg_puts(" failing_addr=0x"); dbg_hex_u64(failing_addr);
+    dbg_puts(" source=");
+    if (!g_first_trap.valid) {
+        dbg_puts("unknown_no_first_trap");
+    } else if (saved_mepc == g_first_trap.mepc &&
+               saved_mcause == g_first_trap.mcause &&
+               saved_mtval == g_first_trap.mtval) {
+        dbg_puts("first_trap");
+    } else if (failing_addr == g_first_trap.mepc) {
+        dbg_puts("first_trap_pc_only");
+    } else {
+        dbg_puts("not_first_trap_or_mixed");
     }
     dbg_nl();
 

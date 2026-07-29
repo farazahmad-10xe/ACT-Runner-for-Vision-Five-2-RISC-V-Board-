@@ -281,19 +281,52 @@ static void emit_trap_entry_log(uint64_t mcause, uint64_t mepc,
     }
 }
 
+static uint64_t emit_trap_return_log(uint64_t mcause, uint64_t mepc,
+                                     uint64_t mtval, uint64_t mstatus,
+                                     uint64_t return_pc,
+                                     const char *reason)
+{
+    uart_puts("[ACTRET] mcause=");
+    uart_put_hex(mcause);
+    uart_puts(" mepc=");
+    uart_put_hex(mepc);
+    uart_puts(" mtval=");
+    uart_put_hex(mtval);
+    uart_puts(" mstatus=");
+    uart_put_hex(mstatus);
+    uart_puts(" return_pc=");
+    uart_put_hex(return_pc);
+    uart_puts(" runner_active=");
+    uart_put_hex(g_runner_exec.runner_active ? 1ULL : 0ULL);
+    uart_puts(" test_done=");
+    uart_put_hex(g_runner_exec.test_done ? 1ULL : 0ULL);
+    uart_puts(" reason=");
+    uart_puts(reason);
+    uart_puts("\n");
+    return return_pc;
+}
+
 uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus,
                 TrapFrame *tf)
 {
+#if !RUNNER_DISABLE_TEST_TIMEOUT
     if (g_runner_exec.runner_active &&
         g_runner_exec.test_deadline_mtime != 0 &&
         *mtime_ptr() >= g_runner_exec.test_deadline_mtime) {
         g_runner_exec.test_tohost_value = TOHOST_TIMEOUT;
         g_runner_exec.test_done = 1;
-        return g_runner_exec.test_resume_pc;
+        return emit_trap_return_log(mcause, mepc, mtval, mstatus,
+                                    g_runner_exec.test_resume_pc, "timeout");
     }
+#endif
 
     if (g_runner_exec.runner_active && g_runner_exec.test_done) {
-        return g_runner_exec.test_resume_pc;
+        return emit_trap_return_log(mcause, mepc, mtval, mstatus,
+                                    g_runner_exec.test_resume_pc, "already_done");
+    }
+
+    if (g_runner_exec.runner_active) {
+        capture_first_trap_in_mode(tf, mcause, mepc, mtval, mstatus, EXEC_MODE_M);
     }
 
     if (mcause == MCAUSE_MSI) {
@@ -304,9 +337,10 @@ uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus
         if (g_runner_exec.runner_active && g_runner_exec.monitor_seen_tohost) {
             capture_hart1_csr_snapshot(1, mcause, mepc, mtval, mstatus);
             g_runner_exec.test_done = 1;
-            return g_runner_exec.test_resume_pc;
+            return emit_trap_return_log(mcause, mepc, mtval, mstatus,
+                                        g_runner_exec.test_resume_pc, "msi_tohost");
         }
-        return mepc;
+        return emit_trap_return_log(mcause, mepc, mtval, mstatus, mepc, "msi");
     }
 
     if (mcause == MCAUSE_MTI) {
@@ -316,11 +350,16 @@ uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus
         *mtimecmp_ptr(2) = ~0ULL;
         asm volatile ("fence rw, rw" ::: "memory");
         if (g_runner_exec.runner_active) {
+#if RUNNER_DISABLE_TEST_TIMEOUT
+            return emit_trap_return_log(mcause, mepc, mtval, mstatus, mepc, "timer_ignored");
+#else
             g_runner_exec.test_tohost_value = TOHOST_TIMEOUT;
             g_runner_exec.test_done = 1;
-            return g_runner_exec.test_resume_pc;
+            return emit_trap_return_log(mcause, mepc, mtval, mstatus,
+                                        g_runner_exec.test_resume_pc, "timer_timeout");
+#endif
         }
-        return mepc;
+        return emit_trap_return_log(mcause, mepc, mtval, mstatus, mepc, "timer");
     }
 
     if (mcause == MCAUSE_ECALL_S &&
@@ -329,11 +368,11 @@ uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus
         uint64_t next_pc = 0;
         if (runner_handle_tsbi(tf, mepc, EXEC_MODE_M, &next_pc)) {
             g_lower_state.smode_trap_bridge_to_m = 0;
-            return next_pc;
+            return emit_trap_return_log(mcause, mepc, mtval, mstatus, next_pc, "tsbi_s");
         }
         if (runner_handle_test_sbi(tf, mepc, EXEC_MODE_M, &next_pc)) {
             g_lower_state.smode_trap_bridge_to_m = 0;
-            return next_pc;
+            return emit_trap_return_log(mcause, mepc, mtval, mstatus, next_pc, "test_sbi_s");
         }
     }
 
@@ -344,7 +383,7 @@ uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus
         if (tf) {
             uint64_t next_pc = 0;
             if (runner_handle_tsbi(tf, mepc, EXEC_MODE_M, &next_pc)) {
-                return next_pc;
+                return emit_trap_return_log(mcause, mepc, mtval, mstatus, next_pc, "tsbi");
             }
         }
         if (g_runner_exec.runner_active &&
@@ -354,21 +393,23 @@ uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus
                 g_runner_exec.test_tohost_value = *g_runner_image.tohost_ptr;
             }
             g_runner_exec.test_done = 1;
-            return g_runner_exec.test_resume_pc;
+            return emit_trap_return_log(mcause, mepc, mtval, mstatus,
+                                        g_runner_exec.test_resume_pc, "ecall_m_tohost");
         }
         if (tf) {
             uint64_t next_pc = 0;
             if (runner_handle_test_sbi(tf, mepc, EXEC_MODE_M, &next_pc)) {
-                return next_pc;
+                return emit_trap_return_log(mcause, mepc, mtval, mstatus, next_pc, "test_sbi");
             }
         }
         if (g_runner_exec.runner_active &&
             (mcause == MCAUSE_ECALL_S || mcause == MCAUSE_ECALL_M) &&
             handle_test_ecall(tf, mepc)) {
-            return mepc + 4ULL;
+            return emit_trap_return_log(mcause, mepc, mtval, mstatus, mepc + 4ULL, "test_ecall");
         }
         g_runner_exec.test_done = 1;
-        return g_runner_exec.test_resume_pc;
+        return emit_trap_return_log(mcause, mepc, mtval, mstatus,
+                                    g_runner_exec.test_resume_pc, "ecall_done");
     }
 
     if (g_runner_exec.runner_active &&
@@ -380,7 +421,8 @@ uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus
             g_runner_exec.fault_reported = 1;
         }
         handle_fatal_test_trap(tf, mcause, mepc, mtval, mstatus);
-        return g_runner_exec.test_resume_pc;
+        return emit_trap_return_log(mcause, mepc, mtval, mstatus,
+                                    g_runner_exec.test_resume_pc, "fatal_misaligned");
     }
 
     if (g_runner_exec.runner_active && ((mcause & MCAUSE_INTERRUPT_BIT) == 0)) {
@@ -389,7 +431,8 @@ uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus
             g_runner_exec.fault_reported = 1;
         }
         handle_fatal_test_trap(tf, mcause, mepc, mtval, mstatus);
-        return g_runner_exec.test_resume_pc;
+        return emit_trap_return_log(mcause, mepc, mtval, mstatus,
+                                    g_runner_exec.test_resume_pc, "fatal_sync_exception");
     }
 
     uart_puts("\n[TRAP] mcause=");
