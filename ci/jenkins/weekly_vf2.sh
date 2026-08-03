@@ -24,6 +24,8 @@ priv_source_roots="$state_root/priv_source_roots.txt"
 sd_dev="${SD_DEV:-/dev/sda}"
 serial_dev="${SERIAL_DEV:-/dev/ttyUSB0}"
 capture_timeout="${CAPTURE_TIMEOUT:-10800}"
+sd_flash_attempts="${SD_FLASH_ATTEMPTS:-3}"
+sd_flash_retry_delay="${SD_FLASH_RETRY_DELAY:-10}"
 sail_bin="${SAIL_BIN:-/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim}"
 sail_expected_version="${SAIL_EXPECTED_VERSION:-0.13}"
 act_remote_url="${ACT_REMOTE_URL:-https://github.com/Arshia2564/riscv-arch-test.git}"
@@ -52,6 +54,12 @@ requested_generator_extensions="${PRIV_GENERATOR_EXTENSIONS:-}"
 include_static_priv_suites="${INCLUDE_STATIC_PRIV_SUITES:-true}"
 expected_test_names="${EXPECTED_TEST_NAMES:-}"
 runner_resolution_file="${RUNNER_RESOLUTION_FILE:-}"
+
+if [[ ! "$sd_flash_attempts" =~ ^[1-9][0-9]*$ ]] ||
+   [[ ! "$sd_flash_retry_delay" =~ ^[0-9]+$ ]]; then
+  echo "SD_FLASH_ATTEMPTS must be positive and SD_FLASH_RETRY_DELAY must be non-negative." >&2
+  exit 2
+fi
 
 mkdir -p "$state_root"
 
@@ -370,18 +378,42 @@ PY
 
   flash)
     load_state
-    test -b "$sd_dev"
     test -f "$HARDWARE_ARTIFACTS/boot_image.bin"
     test -f "$HARDWARE_ARTIFACTS/act_pack.bin"
     test -x "$privileged_helper_root/vf2_act_flash.sh"
     test -x "$privileged_helper_root/write_pack_to_sd_tail.sh"
-    # These two fixed helpers are the only passwordless hardware operations
-    # granted to the Jenkins service account by the installer.
-    sudo "$privileged_helper_root/vf2_act_flash.sh" \
-      --image "$HARDWARE_ARTIFACTS/boot_image.bin" \
-      --sd-dev "$sd_dev"
-    sudo "$privileged_helper_root/write_pack_to_sd_tail.sh" \
-      "$HARDWARE_ARTIFACTS/act_pack.bin" "$sd_dev"
+    flash_complete=false
+    for ((attempt = 1; attempt <= sd_flash_attempts; attempt++)); do
+      if [[ ! -b "$sd_dev" ]]; then
+        echo "[FLASH] attempt $attempt/$sd_flash_attempts: $sd_dev is not available as a block device." >&2
+      else
+        echo "[FLASH] attempt $attempt/$sd_flash_attempts: found $sd_dev; writing boot image and ACT pack."
+        # These two fixed helpers are the only passwordless hardware operations
+        # granted to the Jenkins service account by the installer.
+        if sudo "$privileged_helper_root/vf2_act_flash.sh" \
+             --image "$HARDWARE_ARTIFACTS/boot_image.bin" \
+             --sd-dev "$sd_dev" &&
+           sudo "$privileged_helper_root/write_pack_to_sd_tail.sh" \
+             "$HARDWARE_ARTIFACTS/act_pack.bin" "$sd_dev"; then
+          flash_complete=true
+          echo "[FLASH] completed successfully on attempt $attempt/$sd_flash_attempts."
+          break
+        fi
+        if [[ -b "$sd_dev" ]]; then
+          echo "[FLASH] write failed while $sd_dev is still present; refusing to hide a real flash error." >&2
+          exit 1
+        fi
+        echo "[FLASH] $sd_dev disappeared during the write; it may be retried." >&2
+      fi
+      if (( attempt < sd_flash_attempts )); then
+        echo "[FLASH] waiting ${sd_flash_retry_delay}s before the next availability check."
+        sleep "$sd_flash_retry_delay"
+      fi
+    done
+    if [[ "$flash_complete" != true ]]; then
+      echo "[FLASH] giving up after $sd_flash_attempts attempts: $sd_dev is unavailable." >&2
+      exit 1
+    fi
     ;;
 
   run)

@@ -46,6 +46,8 @@ pipeline {
         VF2_PRIVILEGED_HELPER_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
         ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
         REGENERATE_TESTS = 'true'
+        SD_FLASH_ATTEMPTS = '3'
+        SD_FLASH_RETRY_DELAY = '10'
         SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
         SAIL_EXPECTED_VERSION = '0.13'
         PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'

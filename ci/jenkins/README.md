@@ -32,7 +32,9 @@ ELF is missing. The SD-card movement still has the same two explicit operator
 gates as the weekly hardware job. Passwordless flashing continues to execute
 the trusted helper scripts from the development checkout; sudoers permits only
 the exact sanity artifact paths and `/dev/sda`, not arbitrary commands or
-workspace scripts.
+workspace scripts. If the configured SD device is absent, the flash stage makes
+three availability attempts ten seconds apart. A write failure while the card
+is still present is treated as a real error and is not retried.
 
 `RUNNER_REVISION_OVERRIDE` and `ACT_REVISION_OVERRIDE` allow an older pair of
 exact commits to be reproduced. With both overrides empty, the job tests the
