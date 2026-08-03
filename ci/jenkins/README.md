@@ -8,6 +8,12 @@ the complete weekly regression. It runs in the dedicated disposable workspace
 checks out, or modifies the developer workspace. On every build it first
 fetches `RUNNER_BRANCH` from the firmware GitHub repository, resolves one exact
 runner SHA, checks it out detached, and initializes the ACT submodule. It then
+restores the machine-local ignored `tools/` tree from
+`/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools` and validates the
+runtime helpers required by the job. This copy occurs after every workspace
+cleanup because those tools are intentionally not committed to the firmware
+repository. The local source path and copied file count are recorded with the
+runner resolution. It then
 fetches and resolves the latest requested `sifive_u74` branch head, checks that
 ACT SHA out detached, and freshly generates exactly these five tests:
 

@@ -42,6 +42,7 @@ pipeline {
         REPO_ROOT = '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity'
         RUNNER_REMOTE_URL = 'https://github.com/farazahmad-10xe/ACT-Runner-for-Vision-Five-2-RISC-V-Board-.git'
         RUNNER_RESOLUTION_FILE = '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity/.jenkins_runner_resolution.txt'
+        LOCAL_TOOLS_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools'
         ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
         REGENERATE_TESTS = 'true'
         SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
@@ -75,6 +76,13 @@ pipeline {
                     fi
                     git checkout --detach "$resolved_runner_revision"
                     git submodule update --init external/riscv-arch-test
+                    test -d "$LOCAL_TOOLS_SOURCE"
+                    mkdir -p tools
+                    cp -a "$LOCAL_TOOLS_SOURCE/." tools/
+                    test -x tools/act_agent/run_vf2_pack.py
+                    test -f tools/act_agent/run_reference_elf.py
+                    test -f tools/act_agent/collect_uart_run.py
+                    test -f tools/act_triage/parse_rvcp_log.py
                     actual_runner_revision="$(git rev-parse HEAD)"
                     [[ "$actual_runner_revision" == "$resolved_runner_revision" ]]
                     ! git symbolic-ref -q HEAD >/dev/null
@@ -85,6 +93,8 @@ pipeline {
                       echo "Selected source:         $runner_source"
                       echo "Selected runner SHA:     $resolved_runner_revision"
                       echo "Checkout mode:           detached"
+                      echo "Local tools source:      $LOCAL_TOOLS_SOURCE"
+                      echo "Local tools files:       $(find tools -type f | wc -l | tr -d ' ')"
                     } | tee "$RUNNER_RESOLUTION_FILE"
                     test -x ci/jenkins/sanity_vf2.sh
                 '''
