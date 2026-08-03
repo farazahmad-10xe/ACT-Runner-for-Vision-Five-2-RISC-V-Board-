@@ -76,6 +76,11 @@
 #ifndef BOARD_SD_ENABLE
 #define BOARD_SD_ENABLE 1
 #endif
+#define RUNNER_SD_BACKEND_DWMCI       1
+#define RUNNER_SD_BACKEND_K1_SDHCI    2
+#ifndef BOARD_SD_BACKEND
+#define BOARD_SD_BACKEND RUNNER_SD_BACKEND_DWMCI
+#endif
 #ifndef BOARD_WDT_ENABLE
 #define BOARD_WDT_ENABLE 1
 #endif
@@ -93,6 +98,9 @@
 #endif
 #ifndef BOARD_WDT_UNLOCK_KEY
 #define BOARD_WDT_UNLOCK_KEY 0x1acce551u
+#endif
+#ifndef BOARD_K1_HART_WAKEUP_ENABLE
+#define BOARD_K1_HART_WAKEUP_ENABLE 0
 #endif
 
 #define UART_BASE       BOARD_UART_BASE
@@ -145,12 +153,14 @@
 #define SDIO1_BASE      BOARD_SDIO1_BASE
 #define SD_BLOCK_SIZE   BOARD_SD_BLOCK_SIZE
 #define RUNNER_SD_ENABLE BOARD_SD_ENABLE
+#define RUNNER_SD_BACKEND BOARD_SD_BACKEND
 #define RUNNER_WDT_ENABLE BOARD_WDT_ENABLE
 #define RUNNER_WDT_BASE BOARD_WDT_BASE
 #define RUNNER_WDT_LOAD BOARD_WDT_LOAD
 #define RUNNER_WDT_CTRL BOARD_WDT_CTRL
 #define RUNNER_WDT_LOCK BOARD_WDT_LOCK
 #define RUNNER_WDT_UNLOCK_KEY BOARD_WDT_UNLOCK_KEY
+#define RUNNER_K1_HART_WAKEUP_ENABLE BOARD_K1_HART_WAKEUP_ENABLE
 
 #define MCAUSE_INTERRUPT_BIT (1ULL << 63)
 #define MCAUSE_SSI      (MCAUSE_INTERRUPT_BIT | 1ULL)
@@ -431,6 +441,8 @@ extern RunnerSbiState g_runner_sbi;
 
 static inline void mmio_write8(uintptr_t addr, uint8_t v) { *(volatile uint8_t*)addr = v; }
 static inline uint8_t mmio_read8(uintptr_t addr) { return *(volatile uint8_t*)addr; }
+static inline void mmio_write16(uintptr_t addr, uint16_t v) { *(volatile uint16_t*)addr = v; }
+static inline uint16_t mmio_read16(uintptr_t addr) { return *(volatile uint16_t*)addr; }
 static inline void mmio_write32(uintptr_t addr, uint32_t v) { *(volatile uint32_t*)addr = v; }
 static inline uint32_t mmio_read32(uintptr_t addr) { return *(volatile uint32_t*)addr; }
 
@@ -685,6 +697,8 @@ void emit_reg_line3(const char *n0, uint64_t v0,
                     const char *n2, uint64_t v2);
 
 void trigger_watchdog_reset(void);
+void k1_cci_init_own_cluster(void);
+void k1_wakeup_monitor_hart(void);
 void monitor_irq_enable(void);
 void monitor_irq_disable(void);
 void platform_external_irq_cleanup(void);

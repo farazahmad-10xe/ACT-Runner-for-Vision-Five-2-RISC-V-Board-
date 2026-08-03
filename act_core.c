@@ -62,7 +62,6 @@ static void uart_putc_raw(char c)
 void uart_log_lock(void)
 {
     uint64_t hart = read_csr_mhartid();
-    uint32_t spins = 0;
 
     if (g_uart_log_owner == hart) {
         g_uart_log_depth++;
@@ -70,12 +69,6 @@ void uart_log_lock(void)
     }
 
     while (__sync_lock_test_and_set(&g_uart_log_lock, 1u) != 0u) {
-        if (++spins > 10000000u) {
-            g_uart_log_owner = hart;
-            g_uart_log_depth = 1u;
-            asm volatile ("fence rw, rw" ::: "memory");
-            return;
-        }
         cpu_relax();
     }
     g_uart_log_owner = hart;

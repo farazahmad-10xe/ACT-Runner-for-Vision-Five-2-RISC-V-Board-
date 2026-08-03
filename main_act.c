@@ -48,6 +48,8 @@ void main(void)
     write_csr_mtvec((uint64_t)(uintptr_t)trap_entry);
     write_csr_mscratch((uint64_t)(uintptr_t)(g_trap_stack + sizeof(g_trap_stack)));
     *msip_ptr(RUNNER_HART_ID) = 0;
+    k1_cci_init_own_cluster();
+    k1_wakeup_monitor_hart();
     g_lower_state.requested_exec_mode = select_default_exec_mode();
     g_lower_state.active_exec_mode = EXEC_MODE_M;
     platform_prepare_exec_env(g_lower_state.requested_exec_mode);
