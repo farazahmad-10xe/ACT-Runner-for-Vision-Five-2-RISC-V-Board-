@@ -43,6 +43,7 @@ pipeline {
         RUNNER_REMOTE_URL = 'https://github.com/farazahmad-10xe/ACT-Runner-for-Vision-Five-2-RISC-V-Board-.git'
         RUNNER_RESOLUTION_FILE = '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity/.jenkins_runner_resolution.txt'
         LOCAL_TOOLS_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools'
+        LOCAL_TUYA_DEVICES_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/devices.json'
         VF2_PRIVILEGED_HELPER_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
         ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
         REGENERATE_TESTS = 'true'
@@ -86,6 +87,28 @@ pipeline {
                     test -f tools/act_agent/run_reference_elf.py
                     test -f tools/act_agent/collect_uart_run.py
                     test -f tools/act_triage/parse_rvcp_log.py
+                    test -f "$LOCAL_TUYA_DEVICES_SOURCE"
+                    install -m 0600 "$LOCAL_TUYA_DEVICES_SOURCE" devices.json
+                    python3 - <<'PY'
+import json
+from pathlib import Path
+
+data = json.loads(Path("devices.json").read_text())
+if isinstance(data, list):
+    devices = data
+elif isinstance(data, dict) and {"id", "ip", "key"} <= set(data):
+    devices = [data]
+elif isinstance(data, dict):
+    devices = list(data.values())
+else:
+    devices = []
+if not any(
+    isinstance(device, dict) and all(device.get(field) for field in ("id", "ip", "key"))
+    for device in devices
+):
+    raise SystemExit("Local Tuya devices file has no complete id/ip/key entry")
+print("Validated local Tuya device configuration without displaying credentials.")
+PY
                     actual_runner_revision="$(git rev-parse HEAD)"
                     [[ "$actual_runner_revision" == "$resolved_runner_revision" ]]
                     ! git symbolic-ref -q HEAD >/dev/null
@@ -98,6 +121,7 @@ pipeline {
                       echo "Checkout mode:           detached"
                       echo "Local tools source:      $LOCAL_TOOLS_SOURCE"
                       echo "Local tools files:       $(find tools -type f | wc -l | tr -d ' ')"
+                      echo "Local Tuya config:       restored with mode 0600"
                     } | tee "$RUNNER_RESOLUTION_FILE"
                     test -x ci/jenkins/sanity_vf2.sh
                 '''

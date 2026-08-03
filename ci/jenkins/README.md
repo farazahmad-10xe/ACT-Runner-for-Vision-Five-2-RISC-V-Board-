@@ -12,7 +12,10 @@ restores the machine-local ignored `tools/` tree from
 `/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools` and validates the
 runtime helpers required by the job. This copy occurs after every workspace
 cleanup because those tools are intentionally not committed to the firmware
-repository. The local source path and copied file count are recorded with the
+repository. It also restores the ignored local `devices.json` as mode `0600`
+and validates that a complete Tuya device entry exists without printing its
+credentials. Neither local source is included in Git or the archived artifact
+patterns. The tools source path and copied file count are recorded with the
 runner resolution. It then
 fetches and resolves the latest requested `sifive_u74` branch head, checks that
 ACT SHA out detached, and freshly generates exactly these five tests:
