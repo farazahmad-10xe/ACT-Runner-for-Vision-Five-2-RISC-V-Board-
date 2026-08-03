@@ -15,9 +15,12 @@ pipeline {
     }
 
     parameters {
-        string(name: 'ACT_REVISION',
-            defaultValue: '4f3b59a9e7e1e0d5b2e35158e6ad0fcec7809f3f',
-            description: 'Exact reviewed VF2 ACT commit required for this hardware run. Jenkins will not pull or silently change it.')
+        string(name: 'ACT_BRANCH',
+            defaultValue: 'sifive_u74',
+            description: 'Arshia2564/riscv-arch-test branch resolved once at the beginning of each weekly run.')
+        string(name: 'ACT_REVISION_OVERRIDE',
+            defaultValue: '',
+            description: 'Optional exact ACT commit for reproducing an older run. Leave empty to use the latest ACT_BRANCH head.')
         booleanParam(name: 'REGENERATE_TESTS', defaultValue: true,
             description: 'Regenerate testgen-backed privileged suites before ACT/Sail execution.')
         booleanParam(name: 'RUN_SPIKE', defaultValue: true,
@@ -31,6 +34,7 @@ pipeline {
 
     environment {
         REPO_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
+        ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
         SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
         SAIL_EXPECTED_VERSION = '0.13'
         PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'

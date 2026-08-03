@@ -1,0 +1,171 @@
+pipeline {
+    agent {
+        node {
+            label 'built-in'
+            // This directory is Jenkins-owned and disposable. Never point it
+            // at the developer's firmware checkout.
+            customWorkspace '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity'
+        }
+    }
+
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
+        timeout(time: 3, unit: 'HOURS')
+        timestamps()
+        skipDefaultCheckout(true)
+    }
+
+    parameters {
+        string(name: 'RUNNER_BRANCH',
+            defaultValue: 'main',
+            description: 'Firmware/runner branch resolved once at the start of this sanity run.')
+        string(name: 'RUNNER_REVISION_OVERRIDE',
+            defaultValue: '',
+            description: 'Optional exact firmware commit. Leave empty to test the latest RUNNER_BRANCH head.')
+        string(name: 'ACT_BRANCH',
+            defaultValue: 'sifive_u74',
+            description: 'ACT branch resolved once at the start of this sanity run.')
+        string(name: 'ACT_REVISION_OVERRIDE',
+            defaultValue: '',
+            description: 'Optional exact ACT commit. Leave empty to test the latest ACT_BRANCH head.')
+        booleanParam(name: 'RUN_SPIKE', defaultValue: true,
+            description: 'Run the five freshly generated hardware ELFs on Spike before VF2.')
+        booleanParam(name: 'RUN_HARDWARE', defaultValue: true,
+            description: 'Flash and execute the five-test pack on VF2.')
+        string(name: 'SD_DEV', defaultValue: '/dev/sda', description: 'Dedicated VF2 SD-card device.')
+        string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0', description: 'VF2 UART device.')
+        string(name: 'CAPTURE_TIMEOUT', defaultValue: '1800', description: 'Maximum VF2 UART capture time in seconds.')
+    }
+
+    environment {
+        REPO_ROOT = '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity'
+        RUNNER_REMOTE_URL = 'https://github.com/farazahmad-10xe/ACT-Runner-for-Vision-Five-2-RISC-V-Board-.git'
+        RUNNER_RESOLUTION_FILE = '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity/.jenkins_runner_resolution.txt'
+        ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
+        REGENERATE_TESTS = 'true'
+        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
+        SAIL_EXPECTED_VERSION = '0.13'
+        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+    }
+
+    stages {
+        stage('Clean Firmware Checkout') {
+            steps {
+                // deleteDir is constrained by customWorkspace above; it never
+                // touches the developer's firmware checkout.
+                deleteDir()
+                sh '''#!/usr/bin/env bash
+                    set -euo pipefail
+                    git check-ref-format --branch "$RUNNER_BRANCH" >/dev/null
+                    git init .
+                    git remote add origin "$RUNNER_REMOTE_URL"
+                    runner_ref="refs/remotes/origin/$RUNNER_BRANCH"
+                    git fetch --force --prune origin \
+                      "+refs/heads/$RUNNER_BRANCH:$runner_ref"
+                    fetched_runner_revision="$(git rev-parse --verify "${runner_ref}^{commit}")"
+                    if [[ -n "$RUNNER_REVISION_OVERRIDE" ]]; then
+                      resolved_runner_revision="$(git rev-parse --verify "${RUNNER_REVISION_OVERRIDE}^{commit}")"
+                      runner_source="override"
+                    else
+                      resolved_runner_revision="$fetched_runner_revision"
+                      runner_source="latest-branch-head"
+                    fi
+                    git checkout --detach "$resolved_runner_revision"
+                    git submodule update --init external/riscv-arch-test
+                    actual_runner_revision="$(git rev-parse HEAD)"
+                    [[ "$actual_runner_revision" == "$resolved_runner_revision" ]]
+                    ! git symbolic-ref -q HEAD >/dev/null
+                    {
+                      echo "Runner repository:       $RUNNER_REMOTE_URL"
+                      echo "Runner branch:           $RUNNER_BRANCH"
+                      echo "Fetched branch SHA:      $fetched_runner_revision"
+                      echo "Selected source:         $runner_source"
+                      echo "Selected runner SHA:     $resolved_runner_revision"
+                      echo "Checkout mode:           detached"
+                    } | tee "$RUNNER_RESOLUTION_FILE"
+                    test -x ci/jenkins/sanity_vf2.sh
+                '''
+            }
+        }
+
+        stage('Resolve Latest ACT + Preflight') {
+            steps {
+                sh 'ci/jenkins/sanity_vf2.sh preflight'
+            }
+        }
+
+        stage('Generate Five + Sail + Package') {
+            steps {
+                sh 'ci/jenkins/sanity_vf2.sh prepare'
+            }
+        }
+
+        stage('Spike Reference') {
+            when { expression { return params.RUN_SPIKE } }
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'ci/jenkins/sanity_vf2.sh spike'
+                }
+            }
+        }
+
+        stage('Attach SD Card') {
+            when { expression { return params.RUN_HARDWARE } }
+            steps {
+                input message: "Attach the dedicated VF2 SD card as ${params.SD_DEV}. The next stage overwrites its VF2 boot slot and ACT tail pack.",
+                      ok: 'SD card is attached'
+            }
+        }
+
+        stage('Flash Fresh Five-Test Pack') {
+            when { expression { return params.RUN_HARDWARE } }
+            steps {
+                sh 'ci/jenkins/sanity_vf2.sh flash'
+            }
+        }
+
+        stage('Move SD Card to VF2') {
+            when { expression { return params.RUN_HARDWARE } }
+            steps {
+                input message: 'Move the SD card to VF2 and confirm UART and smart-plug control are connected.',
+                      ok: 'VF2 is ready'
+            }
+        }
+
+        stage('VF2 Execute + Report') {
+            when { expression { return params.RUN_HARDWARE } }
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'ci/jenkins/sanity_vf2.sh run'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                if (fileExists('ci/jenkins/sanity_vf2.sh')) {
+                    sh 'ci/jenkins/sanity_vf2.sh finalize || true'
+                }
+                def descriptionFile = "logs/jenkins/sanity/jenkins_sanity_${env.BUILD_NUMBER}/build_description.txt"
+                if (fileExists(descriptionFile)) {
+                    currentBuild.description = readFile(descriptionFile).trim()
+                }
+            }
+            archiveArtifacts artifacts: "logs/jenkins/sanity/jenkins_sanity_${env.BUILD_NUMBER}/**, logs/runs/jenkins_sanity_${env.BUILD_NUMBER}/summary.md, logs/runs/jenkins_sanity_${env.BUILD_NUMBER}/cases.csv, logs/runs/jenkins_sanity_${env.BUILD_NUMBER}/cases.json, logs/runs/jenkins_sanity_${env.BUILD_NUMBER}/collection.json, logs/runs/jenkins_sanity_${env.BUILD_NUMBER}/uart*.log, logs/runs/jenkins_sanity_${env.BUILD_NUMBER}/per_case/**, logs/reference-model-runs/jenkins_sanity_${env.BUILD_NUMBER}/**, external/riscv-arch-test/work-vf2-jenkins-sanity-priv/visionfive2-rv64gc/build/priv/**/*.sig.log, external/riscv-arch-test/work-vf2-jenkins-sanity-priv/visionfive2-rv64gc/build/priv/**/*.results",
+                             allowEmptyArchive: true,
+                             fingerprint: false
+            publishHTML target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: false,
+                keepAll: true,
+                reportDir: "logs/jenkins/sanity/jenkins_sanity_${env.BUILD_NUMBER}/site",
+                reportFiles: 'index.html',
+                reportName: 'Sanity Result Summary',
+                reportTitles: 'VF2 Five-Test Sanity Results'
+            ]
+        }
+    }
+}

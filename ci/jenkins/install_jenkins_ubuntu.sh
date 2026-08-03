@@ -99,20 +99,33 @@ visudo -cf /etc/sudoers.d/jenkins-vf2-hardware
 
 systemctl daemon-reload
 
-python3 - "$repo_root/Jenkinsfile" "$repo_root/ci/jenkins/job-config.xml" /tmp/vf2-weekly-job.xml <<'PY'
+python3 - \
+  "$repo_root/Jenkinsfile.sanity" \
+  "$repo_root/ci/jenkins/job-config-sanity.xml" \
+  /tmp/vf2-sanity-job.xml \
+  "$repo_root/Jenkinsfile" \
+  "$repo_root/ci/jenkins/job-config.xml" \
+  /tmp/vf2-weekly-job.xml <<'PY'
 import html
 import pathlib
 import sys
 import xml.etree.ElementTree as ET
 
-jenkinsfile = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
-template = pathlib.Path(sys.argv[2]).read_text(encoding="utf-8")
-rendered = template.replace("__JENKINSFILE__", html.escape(jenkinsfile))
-ET.fromstring(rendered)
-pathlib.Path(sys.argv[3]).write_text(rendered, encoding="utf-8")
+for jenkins_path, template_path, output_path in (
+    (sys.argv[1], sys.argv[2], sys.argv[3]),
+    (sys.argv[4], sys.argv[5], sys.argv[6]),
+):
+    jenkinsfile = pathlib.Path(jenkins_path).read_text(encoding="utf-8")
+    template = pathlib.Path(template_path).read_text(encoding="utf-8")
+    rendered = template.replace("__JENKINSFILE__", html.escape(jenkinsfile))
+    ET.fromstring(rendered)
+    pathlib.Path(output_path).write_text(rendered, encoding="utf-8")
 PY
 
+install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-privileged-sanity"
 install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-privileged-weekly"
+install -o lpt-10xe -g lpt-10xe -m 0644 \
+  /tmp/vf2-sanity-job.xml "$jenkins_home/jobs/vf2-privileged-sanity/config.xml"
 install -o lpt-10xe -g lpt-10xe -m 0644 \
   /tmp/vf2-weekly-job.xml "$jenkins_home/jobs/vf2-privileged-weekly/config.xml"
 rm -f "$jenkins_home/secrets/cli-auth"
@@ -134,9 +147,11 @@ if [[ "$ready" != true ]]; then
 fi
 
 test -f "$jenkins_home/secrets/vf2AdminPassword"
+test -f "$jenkins_home/jobs/vf2-privileged-sanity/config.xml"
 test -f "$jenkins_home/jobs/vf2-privileged-weekly/config.xml"
 
 echo "Jenkins is running at $jenkins_public_url"
+echo "Job: vf2-privileged-sanity"
 echo "Job: vf2-privileged-weekly"
 echo "Admin user: vf2admin"
 echo "Read the password locally with: sudo cat $jenkins_home/secrets/vf2AdminPassword"

@@ -1,5 +1,46 @@
 # VF2 weekly Jenkins pipeline
 
+## Five-test sanity job
+
+The `vf2-privileged-sanity` Pipeline is the short hardware gate to run before
+the complete weekly regression. It runs in the dedicated disposable workspace
+`/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity`; it never cleans,
+checks out, or modifies the developer workspace. On every build it first
+fetches `RUNNER_BRANCH` from the firmware GitHub repository, resolves one exact
+runner SHA, checks it out detached, and initializes the ACT submodule. It then
+fetches and resolves the latest requested `sifive_u74` branch head, checks that
+ACT SHA out detached, and freshly generates exactly these five tests:
+
+- `ExceptionsF-00`
+- `ExceptionsS-00`
+- `ExceptionsSm-00`
+- `ExceptionsU-00`
+- `ExceptionsZc-00`
+
+The job then runs Sail, verifies that the hardware pack contains exactly those
+five names, optionally runs Spike, builds and flashes the VF2 runner, executes
+all five cases across persistent SD progress/reboots, and publishes a separate
+`Sanity Result Summary`. A stale ELF cannot enter this job: generation is
+mandatory and preparation fails if a requested generator or expected hardware
+ELF is missing. The SD-card movement still has the same two explicit operator
+gates as the weekly hardware job.
+
+`RUNNER_REVISION_OVERRIDE` and `ACT_REVISION_OVERRIDE` allow an older pair of
+exact commits to be reproduced. With both overrides empty, the job tests the
+latest firmware `main` and ACT `sifive_u74` heads available when preflight
+starts. The resolved runner and ACT commits are stored in the archived
+provenance and resolution files.
+
+The sanity implementation is a constrained wrapper around
+`ci/jenkins/weekly_vf2.sh`, so ACT resolution, Sail validation, packaging,
+flashing, execution, evidence collection, and final reporting use the same
+code as the weekly job. Its outputs are isolated under
+`logs/jenkins/sanity/jenkins_sanity_<build>/`,
+`logs/runs/jenkins_sanity_<build>/`, and the ACT workdir
+`work-vf2-jenkins-sanity-priv`.
+
+## Complete weekly job
+
 The `vf2-privileged-weekly` Pipeline is started manually from Jenkins and has
 no automatic timer trigger. It regenerates every testgen-backed
 privileged suite, stages all official generator-backed and ACT-tracked static
@@ -13,12 +54,11 @@ The current job is pinned to Sail RISC-V `0.13`; preflight verifies both the
 resolved executable and the absolute reference-model path in the ACT config
 before any tests are generated.
 
-The hardware job is also pinned to the reviewed ACT commit supplied by its
-`ACT_REVISION` parameter. Preflight resolves that commit, requires the ACT
-checkout's `HEAD` to match it exactly, and rejects any tracked ACT worktree or
+The hardware jobs resolve `ACT_BRANCH` once at preflight and use that exact
+detached commit for the rest of the run. `ACT_REVISION_OVERRIDE` can select an
+older exact commit for reproduction. Preflight rejects tracked ACT worktree or
 index changes. Untracked build/debug directories may remain in the checkout,
-but the official-only staging rules ensure that they cannot enter the
-regression.
+but the official-only staging rules ensure that they cannot enter a run.
 
 Updating ACT is intentionally a separate operation. The
 `vf2-act-update-validation` job fetches the requested branch directly from
@@ -120,7 +160,7 @@ changes to the already-provisioned job with:
 sudo bash ci/jenkins/apply_job_updates.sh
 ```
 
-When plugins are already installed and only the two job definitions changed,
+When plugins are already installed and only the job definitions changed,
 they can be installed without restarting Jenkins or using `sudo`:
 
 ```sh

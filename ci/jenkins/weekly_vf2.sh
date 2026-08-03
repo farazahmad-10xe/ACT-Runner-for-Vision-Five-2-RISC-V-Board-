@@ -6,8 +6,15 @@ cd "$repo_root"
 
 stage="${1:-}"
 build_number="${BUILD_NUMBER:-manual}"
-run_id="jenkins_weekly_${build_number}"
-state_root="$repo_root/logs/jenkins/weekly/$run_id"
+run_kind="${VF2_RUN_KIND:-weekly}"
+run_id_prefix="${VF2_RUN_ID_PREFIX:-jenkins_${run_kind}}"
+if [[ ! "$run_kind" =~ ^[a-z0-9][a-z0-9_-]*$ ]] ||
+   [[ ! "$run_id_prefix" =~ ^[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]]; then
+  echo "Invalid VF2_RUN_KIND or VF2_RUN_ID_PREFIX." >&2
+  exit 2
+fi
+run_id="${run_id_prefix}_${build_number}"
+state_root="$repo_root/logs/jenkins/$run_kind/$run_id"
 state_file="$state_root/state.env"
 priv_test_dir="$state_root/all_priv_tests"
 generated_test_root="$state_root/generated_tests"
@@ -19,19 +26,31 @@ serial_dev="${SERIAL_DEV:-/dev/ttyUSB0}"
 capture_timeout="${CAPTURE_TIMEOUT:-10800}"
 sail_bin="${SAIL_BIN:-/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim}"
 sail_expected_version="${SAIL_EXPECTED_VERSION:-0.13}"
-act_expected_revision="${ACT_REVISION:-4f3b59a9e7e1e0d5b2e35158e6ad0fcec7809f3f}"
+act_remote_url="${ACT_REMOTE_URL:-https://github.com/Arshia2564/riscv-arch-test.git}"
+act_branch="${ACT_BRANCH:-sifive_u74}"
+act_revision_override="${ACT_REVISION_OVERRIDE:-}"
+act_revision_file="$state_root/resolved_act_revision.txt"
+act_expected_revision="$act_revision_override"
 
-all_extensions="all"
+if [[ "$stage" != "preflight" && -s "$act_revision_file" ]]; then
+  act_expected_revision="$(tr -d '[:space:]' < "$act_revision_file")"
+fi
+
+all_extensions="${ACT_EXTENSIONS:-all}"
 act_root="$repo_root/external/riscv-arch-test"
 act_config="config/cores/sifive_u74/test_config.local.yaml"
 u74_yaml="$act_root/config/cores/sifive_u74/visionfive2-rv64gc.yaml"
 u74_sail_json="$act_root/config/cores/sifive_u74/sail.json"
-act_workdir="work-vf2-jenkins-all-priv"
+act_workdir="${ACT_WORKDIR_NAME:-work-vf2-jenkins-all-priv}"
 dut_name="visionfive2-rv64gc"
 artifact_root="$act_root/$act_workdir/$dut_name/build/priv"
 reference_root="$repo_root/logs/reference-model-runs/$run_id"
 pack_list="$repo_root/logs/runs/$run_id/act_elfs.list"
 hardware_artifacts="$repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack"
+requested_generator_extensions="${PRIV_GENERATOR_EXTENSIONS:-}"
+include_static_priv_suites="${INCLUDE_STATIC_PRIV_SUITES:-true}"
+expected_test_names="${EXPECTED_TEST_NAMES:-}"
+runner_resolution_file="${RUNNER_RESOLUTION_FILE:-}"
 
 mkdir -p "$state_root"
 
@@ -42,6 +61,7 @@ write_state() {
   fi
   {
     printf 'RUN_ID=%q\n' "$run_id"
+    printf 'RUN_KIND=%q\n' "$run_kind"
     printf 'ACT_WORKDIR=%q\n' "$act_workdir"
     printf 'ACT_CONFIG=%q\n' "$act_config"
     printf 'U74_YAML=%q\n' "$u74_yaml"
@@ -55,6 +75,9 @@ write_state() {
     printf 'REFERENCE_STATUS=%q\n' "$reference_status"
     printf 'PRIV_SOURCE_ROOTS=%q\n' "$priv_source_roots"
     printf 'EXPECTED_CASES=%q\n' "$expected_cases"
+    printf 'EXPECTED_TEST_NAMES=%q\n' "$expected_test_names"
+    printf 'ACT_REMOTE_URL=%q\n' "$act_remote_url"
+    printf 'ACT_BRANCH=%q\n' "$act_branch"
     printf 'ACT_REVISION=%q\n' "$act_expected_revision"
   } > "$state_file"
 }
@@ -68,6 +91,59 @@ load_state() {
 case "$stage" in
   preflight)
     test -f Jenkinsfile
+    git check-ref-format --branch "$act_branch" >/dev/null
+    if ! git -C "$act_root" diff --quiet --ignore-submodules -- ||
+       ! git -C "$act_root" diff --cached --quiet --ignore-submodules --; then
+      echo "Tracked ACT files differ from the current checkout." >&2
+      echo "Commit/revert those changes before Jenkins resolves $act_branch." >&2
+      git -C "$act_root" status --short --untracked-files=no >&2
+      exit 1
+    fi
+
+    jenkins_act_ref="refs/remotes/jenkins/$act_branch"
+    git -C "$act_root" fetch --force "$act_remote_url" \
+      "+refs/heads/$act_branch:$jenkins_act_ref"
+
+    fetched_act_revision="$(
+      git -C "$act_root" rev-parse --verify "${jenkins_act_ref}^{commit}"
+    )"
+    if [[ -n "$act_revision_override" ]]; then
+      if ! resolved_act_revision="$(
+        git -C "$act_root" rev-parse --verify "${act_revision_override}^{commit}" 2>/dev/null
+      )"; then
+        echo "ACT_REVISION_OVERRIDE is not available after fetching $act_branch: $act_revision_override" >&2
+        exit 1
+      fi
+      act_expected_revision="$resolved_act_revision"
+      act_source="override"
+    else
+      resolved_act_revision="$fetched_act_revision"
+      act_expected_revision="$resolved_act_revision"
+      act_source="latest-branch-head"
+    fi
+
+    git -C "$act_root" checkout --detach "$resolved_act_revision"
+    actual_act_revision="$(git -C "$act_root" rev-parse HEAD)"
+    if git -C "$act_root" symbolic-ref -q HEAD >/dev/null; then
+      echo "ACT checkout is still attached to a branch; refusing the run." >&2
+      exit 1
+    fi
+    if [[ "$actual_act_revision" != "$resolved_act_revision" ]]; then
+      echo "ACT checkout does not match the resolved revision." >&2
+      echo "Resolved: $resolved_act_revision" >&2
+      echo "HEAD:     $actual_act_revision" >&2
+      exit 1
+    fi
+    printf '%s\n' "$resolved_act_revision" > "$act_revision_file"
+    {
+      echo "ACT repository:       $act_remote_url"
+      echo "ACT branch:           $act_branch"
+      echo "Fetched branch SHA:   $fetched_act_revision"
+      echo "Selected source:      $act_source"
+      echo "Selected ACT SHA:     $resolved_act_revision"
+      echo "Checkout mode:        detached"
+    } | tee "$state_root/act_resolution.txt"
+
     test -f ci/jenkins/stage_priv_tests.py
     test -f "$act_root/$act_config"
     test -f "$u74_yaml"
@@ -82,25 +158,6 @@ case "$stage" in
     command -v curl
     command -v riscv64-unknown-elf-gcc
     test -x "$sail_bin"
-    if ! resolved_act_revision="$(git -C "$act_root" rev-parse --verify "${act_expected_revision}^{commit}" 2>/dev/null)"; then
-      echo "Configured ACT_REVISION is not available locally: $act_expected_revision" >&2
-      echo "Run the ACT update-validation job or fetch the reviewed VF2 branch before starting hardware execution." >&2
-      exit 1
-    fi
-    actual_act_revision="$(git -C "$act_root" rev-parse HEAD)"
-    if [[ "$actual_act_revision" != "$resolved_act_revision" ]]; then
-      echo "ACT revision mismatch; refusing a non-reproducible hardware run." >&2
-      echo "Expected: $resolved_act_revision" >&2
-      echo "Actual:   $actual_act_revision" >&2
-      exit 1
-    fi
-    if ! git -C "$act_root" diff --quiet --ignore-submodules -- ||
-       ! git -C "$act_root" diff --cached --quiet --ignore-submodules --; then
-      echo "Tracked ACT files differ from commit $actual_act_revision." >&2
-      echo "Commit/revert those changes and review a new ACT_REVISION before running hardware." >&2
-      git -C "$act_root" status --short --untracked-files=no >&2
-      exit 1
-    fi
     resolved_sail="$(command -v sail_riscv_sim)"
     if [[ "$(readlink -f "$resolved_sail")" != "$(readlink -f "$sail_bin")" ]]; then
       echo "Jenkins PATH resolves Sail to $resolved_sail, expected $sail_bin" >&2
@@ -138,6 +195,9 @@ case "$stage" in
       --state-root "$state_root" \
       --phase preflight \
       --expected-act-revision "$resolved_act_revision"
+    if [[ -n "$runner_resolution_file" && -f "$runner_resolution_file" ]]; then
+      cp -f "$runner_resolution_file" "$state_root/runner_resolution.txt"
+    fi
     echo "Preflight passed for $run_id"
     ;;
 
@@ -148,11 +208,24 @@ case "$stage" in
       find "$act_root/$act_workdir" -depth -delete
     fi
 
-    priv_generator_extensions="$(
+    registered_priv_generator_extensions="$(
       cd "$act_root"
       uv run python -c \
         'from testgen.priv import get_priv_test_extensions; print(",".join(sorted(get_priv_test_extensions())))'
     )"
+    if [[ -n "$requested_generator_extensions" ]]; then
+      priv_generator_extensions="$requested_generator_extensions"
+      IFS=',' read -r -a requested_extensions <<< "$priv_generator_extensions"
+      for extension in "${requested_extensions[@]}"; do
+        if [[ -z "$extension" ]] ||
+           [[ ",$registered_priv_generator_extensions," != *",$extension,"* ]]; then
+          echo "Requested privileged generator is unavailable: '$extension'" >&2
+          exit 1
+        fi
+      done
+    else
+      priv_generator_extensions="$registered_priv_generator_extensions"
+    fi
     if [[ "${REGENERATE_TESTS:-true}" == "true" ]]; then
       if [[ -d "$generated_test_root" ]]; then
         find "$generated_test_root" -depth -delete
@@ -166,11 +239,18 @@ case "$stage" in
       find "$generated_test_root" -depth -delete
     fi
 
-    static_priv_suites="$(
-      git -C "$act_root" ls-tree -d --name-only HEAD:tests/priv | paste -sd, -
-    )"
-    official_priv_suites="${priv_generator_extensions},${static_priv_suites}"
-    printf '%s\n' "$official_priv_suites" | tr ',' '\n' > "$priv_source_roots"
+    static_priv_suites=""
+    if [[ "$include_static_priv_suites" == "true" ]]; then
+      static_priv_suites="$(
+        git -C "$act_root" ls-tree -d --name-only HEAD:tests/priv | paste -sd, -
+      )"
+    fi
+    {
+      printf '%s\n' "$priv_generator_extensions" | tr ',' '\n'
+      if [[ -n "$static_priv_suites" ]]; then
+        printf '%s\n' "$static_priv_suites" | tr ',' '\n'
+      fi
+    } > "$priv_source_roots"
 
     python3 ci/jenkins/stage_priv_tests.py \
       --source "$act_root/tests" \
@@ -196,6 +276,27 @@ case "$stage" in
       --skip-triage \
       --skip-final-snapshot \
       --expected-cases 0
+
+    if [[ -n "$expected_test_names" ]]; then
+      python3 - "$pack_list" "$expected_test_names" <<'PY'
+from pathlib import Path
+import sys
+
+pack_list = Path(sys.argv[1])
+expected = sorted(name.strip() for name in sys.argv[2].split(",") if name.strip())
+actual = sorted(
+    Path(line.strip()).stem
+    for line in pack_list.read_text().splitlines()
+    if line.strip() and not line.lstrip().startswith("#")
+)
+if actual != expected:
+    print("Sanity pack does not contain the exact requested test set.", file=sys.stderr)
+    print(f"Expected ({len(expected)}): {expected}", file=sys.stderr)
+    print(f"Actual   ({len(actual)}): {actual}", file=sys.stderr)
+    raise SystemExit(1)
+print(f"Validated exact hardware pack: {len(actual)} tests: {', '.join(actual)}")
+PY
+    fi
 
     python3 - "$artifact_root" "$pack_list" "$missing_report" "$reference_status" <<'PY'
 from pathlib import Path
@@ -342,16 +443,16 @@ PY
       --run-root "$repo_root/logs/runs/$run_id" \
       --artifact-root "$artifact_root" \
       --build-url "${BUILD_URL:-}"
-    zip_inputs=("logs/jenkins/weekly/$run_id")
+    zip_inputs=("logs/jenkins/$run_kind/$run_id")
     if [[ -d "$repo_root/logs/runs/$run_id" ]]; then
       zip_inputs+=("logs/runs/$run_id")
     fi
     (
       cd "$repo_root"
-      zip -rq "logs/jenkins/weekly/${run_id}-complete.zip" "${zip_inputs[@]}"
+      zip -rq "logs/jenkins/$run_kind/${run_id}-complete.zip" "${zip_inputs[@]}"
     )
     mkdir -p "$state_root/site/downloads"
-    cp -f "$repo_root/logs/jenkins/weekly/${run_id}-complete.zip" \
+    cp -f "$repo_root/logs/jenkins/$run_kind/${run_id}-complete.zip" \
       "$state_root/site/downloads/${run_id}-complete.zip"
     ;;
 

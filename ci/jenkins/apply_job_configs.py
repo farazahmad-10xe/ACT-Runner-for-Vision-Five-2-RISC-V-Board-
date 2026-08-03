@@ -18,6 +18,11 @@ from pathlib import Path
 
 JOBS = (
     (
+        "vf2-privileged-sanity",
+        "Jenkinsfile.sanity",
+        "ci/jenkins/job-config-sanity.xml",
+    ),
+    (
         "vf2-privileged-weekly",
         "Jenkinsfile",
         "ci/jenkins/job-config.xml",

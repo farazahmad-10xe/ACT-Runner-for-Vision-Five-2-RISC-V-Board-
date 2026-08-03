@@ -24,6 +24,9 @@ java -jar "$plugin_manager_jar" \
   --plugin-download-directory "$jenkins_home/plugins"
 
 python3 - \
+  "$repo_root/Jenkinsfile.sanity" \
+  "$repo_root/ci/jenkins/job-config-sanity.xml" \
+  /tmp/vf2-sanity-job.xml \
   "$repo_root/Jenkinsfile" \
   "$repo_root/ci/jenkins/job-config.xml" \
   /tmp/vf2-weekly-job.xml \
@@ -38,6 +41,7 @@ import xml.etree.ElementTree as ET
 for jenkins_path, template_path, output_path in (
     (sys.argv[1], sys.argv[2], sys.argv[3]),
     (sys.argv[4], sys.argv[5], sys.argv[6]),
+    (sys.argv[7], sys.argv[8], sys.argv[9]),
 ):
     jenkinsfile = pathlib.Path(jenkins_path).read_text(encoding="utf-8")
     template = pathlib.Path(template_path).read_text(encoding="utf-8")
@@ -46,8 +50,11 @@ for jenkins_path, template_path, output_path in (
     pathlib.Path(output_path).write_text(rendered, encoding="utf-8")
 PY
 
+install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-privileged-sanity"
 install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-privileged-weekly"
 install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-act-update-validation"
+install -o lpt-10xe -g lpt-10xe -m 0644 \
+  /tmp/vf2-sanity-job.xml "$jenkins_home/jobs/vf2-privileged-sanity/config.xml"
 install -o lpt-10xe -g lpt-10xe -m 0644 \
   /tmp/vf2-weekly-job.xml "$jenkins_home/jobs/vf2-privileged-weekly/config.xml"
 install -o lpt-10xe -g lpt-10xe -m 0644 \
@@ -58,7 +65,7 @@ systemctl start jenkins
 trap - EXIT
 for _ in $(seq 1 90); do
   if curl -fsS http://127.0.0.1:8080/login >/dev/null 2>&1; then
-    echo "Jenkins hardware and ACT update-validation jobs updated successfully."
+    echo "Jenkins sanity, weekly hardware, and ACT update-validation jobs updated successfully."
     echo "The next build will show the Result Summary link and downloadable artifacts."
     exit 0
   fi
