@@ -51,7 +51,9 @@ flashing, execution, evidence collection, and final reporting use the same
 code as the weekly job. Its outputs are isolated under
 `logs/jenkins/sanity/jenkins_sanity_<build>/`,
 `logs/runs/jenkins_sanity_<build>/`, and the ACT workdir
-`work-vf2-jenkins-sanity-priv`.
+`work-vf2-jenkins-sanity-priv`. The wrapper derives `REPO_ROOT` and its runner
+resolution path from its own checked-out location, so Jenkins workspace suffixes
+such as `@2` cannot redirect a build into another build's checkout.
 
 ## Complete weekly job
 

@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_root="${REPO_ROOT:-/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified}"
+script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+script_repo_root="$(CDPATH= cd -- "$script_dir/../.." && pwd)"
+repo_root="${REPO_ROOT:-$script_repo_root}"
 cd "$repo_root"
 
 stage="${1:-}"

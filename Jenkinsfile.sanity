@@ -39,9 +39,7 @@ pipeline {
     }
 
     environment {
-        REPO_ROOT = '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity'
         RUNNER_REMOTE_URL = 'https://github.com/farazahmad-10xe/ACT-Runner-for-Vision-Five-2-RISC-V-Board-.git'
-        RUNNER_RESOLUTION_FILE = '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity/.jenkins_runner_resolution.txt'
         LOCAL_TOOLS_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools'
         LOCAL_TUYA_DEVICES_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/devices.json'
         VF2_PRIVILEGED_HELPER_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
@@ -122,7 +120,7 @@ PY
                       echo "Local tools source:      $LOCAL_TOOLS_SOURCE"
                       echo "Local tools files:       $(find tools -type f | wc -l | tr -d ' ')"
                       echo "Local Tuya config:       restored with mode 0600"
-                    } | tee "$RUNNER_RESOLUTION_FILE"
+                    } | tee .jenkins_runner_resolution.txt
                     test -x ci/jenkins/sanity_vf2.sh
                 '''
             }
