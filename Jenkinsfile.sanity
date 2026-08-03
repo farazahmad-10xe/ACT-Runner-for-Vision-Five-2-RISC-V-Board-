@@ -57,15 +57,17 @@ pipeline {
                 deleteDir()
                 sh '''#!/usr/bin/env bash
                     set -euo pipefail
-                    git check-ref-format --branch "$RUNNER_BRANCH" >/dev/null
+                    runner_branch="${RUNNER_BRANCH:-main}"
+                    runner_revision_override="${RUNNER_REVISION_OVERRIDE:-}"
+                    git check-ref-format --branch "$runner_branch" >/dev/null
                     git init .
                     git remote add origin "$RUNNER_REMOTE_URL"
-                    runner_ref="refs/remotes/origin/$RUNNER_BRANCH"
+                    runner_ref="refs/remotes/origin/$runner_branch"
                     git fetch --force --prune origin \
-                      "+refs/heads/$RUNNER_BRANCH:$runner_ref"
+                      "+refs/heads/$runner_branch:$runner_ref"
                     fetched_runner_revision="$(git rev-parse --verify "${runner_ref}^{commit}")"
-                    if [[ -n "$RUNNER_REVISION_OVERRIDE" ]]; then
-                      resolved_runner_revision="$(git rev-parse --verify "${RUNNER_REVISION_OVERRIDE}^{commit}")"
+                    if [[ -n "$runner_revision_override" ]]; then
+                      resolved_runner_revision="$(git rev-parse --verify "${runner_revision_override}^{commit}")"
                       runner_source="override"
                     else
                       resolved_runner_revision="$fetched_runner_revision"
@@ -78,7 +80,7 @@ pipeline {
                     ! git symbolic-ref -q HEAD >/dev/null
                     {
                       echo "Runner repository:       $RUNNER_REMOTE_URL"
-                      echo "Runner branch:           $RUNNER_BRANCH"
+                      echo "Runner branch:           $runner_branch"
                       echo "Fetched branch SHA:      $fetched_runner_revision"
                       echo "Selected source:         $runner_source"
                       echo "Selected runner SHA:     $resolved_runner_revision"
