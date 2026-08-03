@@ -47,6 +47,7 @@ artifact_root="$act_root/$act_workdir/$dut_name/build/priv"
 reference_root="$repo_root/logs/reference-model-runs/$run_id"
 pack_list="$repo_root/logs/runs/$run_id/act_elfs.list"
 hardware_artifacts="$repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack"
+privileged_helper_root="${VF2_PRIVILEGED_HELPER_ROOT:-$repo_root}"
 requested_generator_extensions="${PRIV_GENERATOR_EXTENSIONS:-}"
 include_static_priv_suites="${INCLUDE_STATIC_PRIV_SUITES:-true}"
 expected_test_names="${EXPECTED_TEST_NAMES:-}"
@@ -372,12 +373,14 @@ PY
     test -b "$sd_dev"
     test -f "$HARDWARE_ARTIFACTS/boot_image.bin"
     test -f "$HARDWARE_ARTIFACTS/act_pack.bin"
+    test -x "$privileged_helper_root/vf2_act_flash.sh"
+    test -x "$privileged_helper_root/write_pack_to_sd_tail.sh"
     # These two fixed helpers are the only passwordless hardware operations
     # granted to the Jenkins service account by the installer.
-    sudo "$repo_root/vf2_act_flash.sh" \
+    sudo "$privileged_helper_root/vf2_act_flash.sh" \
       --image "$HARDWARE_ARTIFACTS/boot_image.bin" \
       --sd-dev "$sd_dev"
-    sudo "$repo_root/write_pack_to_sd_tail.sh" \
+    sudo "$privileged_helper_root/write_pack_to_sd_tail.sh" \
       "$HARDWARE_ARTIFACTS/act_pack.bin" "$sd_dev"
     ;;
 

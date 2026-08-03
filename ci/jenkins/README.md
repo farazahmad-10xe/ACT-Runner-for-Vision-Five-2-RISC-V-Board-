@@ -29,7 +29,10 @@ all five cases across persistent SD progress/reboots, and publishes a separate
 `Sanity Result Summary`. A stale ELF cannot enter this job: generation is
 mandatory and preparation fails if a requested generator or expected hardware
 ELF is missing. The SD-card movement still has the same two explicit operator
-gates as the weekly hardware job.
+gates as the weekly hardware job. Passwordless flashing continues to execute
+the trusted helper scripts from the development checkout; sudoers permits only
+the exact sanity artifact paths and `/dev/sda`, not arbitrary commands or
+workspace scripts.
 
 `RUNNER_REVISION_OVERRIDE` and `ACT_REVISION_OVERRIDE` allow an older pair of
 exact commits to be reproduced. With both overrides empty, the job tests the
