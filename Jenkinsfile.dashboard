@@ -1,0 +1,76 @@
+pipeline {
+    agent {
+        node {
+            label 'built-in'
+            customWorkspace '/home/lpt-10xe/jenkins-workspaces/vf2-validation-dashboard'
+        }
+    }
+
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '30', artifactNumToKeepStr: '10'))
+        timeout(time: 15, unit: 'MINUTES')
+        timestamps()
+        skipDefaultCheckout(true)
+    }
+
+    triggers {
+        cron('H/15 * * * *')
+    }
+
+    environment {
+        RUNNER_REMOTE_URL = 'https://github.com/farazahmad-10xe/ACT-Runner-for-Vision-Five-2-RISC-V-Board-.git'
+        RUNNER_BRANCH = 'main'
+        JENKINS_DATA_HOME = '/home/lpt-10xe/.jenkins-vf2'
+        PORTAL_DATA_ROOT = '/home/lpt-10xe/jenkins-dashboard-data'
+        JENKINS_PUBLIC_URL = 'http://192.168.101.34:8080'
+    }
+
+    stages {
+        stage('Clean Checkout') {
+            steps {
+                deleteDir()
+                sh '''#!/usr/bin/env bash
+                    set -euo pipefail
+                    git init .
+                    git remote add origin "$RUNNER_REMOTE_URL"
+                    ref="refs/remotes/origin/$RUNNER_BRANCH"
+                    git fetch --force --prune origin \
+                      "+refs/heads/$RUNNER_BRANCH:$ref"
+                    revision="$(git rev-parse --verify "${ref}^{commit}")"
+                    git checkout --detach "$revision"
+                    ! git symbolic-ref -q HEAD >/dev/null
+                    echo "Portal generator revision: $revision"
+                '''
+            }
+        }
+
+        stage('Index Results + Build Portal') {
+            steps {
+                sh '''#!/usr/bin/env bash
+                    set -euo pipefail
+                    python3 ci/jenkins/build_validation_portal.py \
+                      --jenkins-home "$JENKINS_DATA_HOME" \
+                      --data-root "$PORTAL_DATA_ROOT" \
+                      --site-root "$WORKSPACE/site" \
+                      --jenkins-url "$JENKINS_PUBLIC_URL"
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'site/**', allowEmptyArchive: true, fingerprint: false
+            publishHTML target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: false,
+                reportDir: 'site',
+                reportFiles: 'index.html',
+                reportName: 'VF2 Validation Dashboard',
+                reportTitles: 'VF2 Cross-Job Validation Status'
+            ]
+        }
+    }
+}

@@ -1,5 +1,29 @@
 # VF2 weekly Jenkins pipeline
 
+## Cross-job validation portal
+
+The `vf2-validation-dashboard` job provides one filterable portal across the
+sanity, weekly and ACT-update jobs. It refreshes automatically every 15 minutes
+and can also be run manually. The portal shows each job's build result, trigger,
+start time, duration, Sail version, runner and ACT revisions, VF2 pass/fail
+totals, and links to the original Jenkins dashboard, artifacts and console. Its
+test table can be filtered by job, VF2 status, Sail status, test, suite or
+failure category.
+
+The portal reads retained Jenkins build metadata and archived `cases.json`
+files, then stores normalized records under
+`/home/lpt-10xe/jenkins-dashboard-data/records`. Those compact records are not
+inside a disposable Jenkins workspace and are not removed by source-job build
+retention. Completed records are immutable and cached, so after the initial
+backfill normal refreshes inspect only new or still-running builds. The portal
+does not copy ELFs, signatures, UART logs or credentials; it links back to the
+source build for detailed evidence while that build's artifacts remain
+retained.
+
+The stable published report is available from the Jenkins project page under
+**VF2 Validation Dashboard**. `alwaysLinkToLastBuild` keeps that project-level
+link pointed at the newest successful portal publication.
+
 ## Five-test sanity job
 
 The `vf2-privileged-sanity` Pipeline is the short hardware gate to run before

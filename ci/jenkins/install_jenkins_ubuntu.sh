@@ -100,7 +100,13 @@ python3 - \
   /tmp/vf2-sanity-job.xml \
   "$repo_root/Jenkinsfile" \
   "$repo_root/ci/jenkins/job-config.xml" \
-  /tmp/vf2-weekly-job.xml <<'PY'
+  /tmp/vf2-weekly-job.xml \
+  "$repo_root/Jenkinsfile.act-update-validation" \
+  "$repo_root/ci/jenkins/job-config-act-update.xml" \
+  /tmp/vf2-act-update-job.xml \
+  "$repo_root/Jenkinsfile.dashboard" \
+  "$repo_root/ci/jenkins/job-config-dashboard.xml" \
+  /tmp/vf2-dashboard-job.xml <<'PY'
 import html
 import pathlib
 import sys
@@ -109,6 +115,8 @@ import xml.etree.ElementTree as ET
 for jenkins_path, template_path, output_path in (
     (sys.argv[1], sys.argv[2], sys.argv[3]),
     (sys.argv[4], sys.argv[5], sys.argv[6]),
+    (sys.argv[7], sys.argv[8], sys.argv[9]),
+    (sys.argv[10], sys.argv[11], sys.argv[12]),
 ):
     jenkinsfile = pathlib.Path(jenkins_path).read_text(encoding="utf-8")
     template = pathlib.Path(template_path).read_text(encoding="utf-8")
@@ -119,10 +127,16 @@ PY
 
 install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-privileged-sanity"
 install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-privileged-weekly"
+install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-act-update-validation"
+install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-validation-dashboard"
 install -o lpt-10xe -g lpt-10xe -m 0644 \
   /tmp/vf2-sanity-job.xml "$jenkins_home/jobs/vf2-privileged-sanity/config.xml"
 install -o lpt-10xe -g lpt-10xe -m 0644 \
   /tmp/vf2-weekly-job.xml "$jenkins_home/jobs/vf2-privileged-weekly/config.xml"
+install -o lpt-10xe -g lpt-10xe -m 0644 \
+  /tmp/vf2-act-update-job.xml "$jenkins_home/jobs/vf2-act-update-validation/config.xml"
+install -o lpt-10xe -g lpt-10xe -m 0644 \
+  /tmp/vf2-dashboard-job.xml "$jenkins_home/jobs/vf2-validation-dashboard/config.xml"
 rm -f "$jenkins_home/secrets/cli-auth"
 
 systemctl enable --now jenkins
@@ -144,9 +158,13 @@ fi
 test -f "$jenkins_home/secrets/vf2AdminPassword"
 test -f "$jenkins_home/jobs/vf2-privileged-sanity/config.xml"
 test -f "$jenkins_home/jobs/vf2-privileged-weekly/config.xml"
+test -f "$jenkins_home/jobs/vf2-act-update-validation/config.xml"
+test -f "$jenkins_home/jobs/vf2-validation-dashboard/config.xml"
 
 echo "Jenkins is running at $jenkins_public_url"
 echo "Job: vf2-privileged-sanity"
 echo "Job: vf2-privileged-weekly"
+echo "Job: vf2-act-update-validation"
+echo "Job: vf2-validation-dashboard"
 echo "Admin user: vf2admin"
 echo "Read the password locally with: sudo cat $jenkins_home/secrets/vf2AdminPassword"

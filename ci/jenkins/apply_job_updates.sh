@@ -34,7 +34,10 @@ python3 - \
   /tmp/vf2-weekly-job.xml \
   "$repo_root/Jenkinsfile.act-update-validation" \
   "$repo_root/ci/jenkins/job-config-act-update.xml" \
-  /tmp/vf2-act-update-job.xml <<'PY'
+  /tmp/vf2-act-update-job.xml \
+  "$repo_root/Jenkinsfile.dashboard" \
+  "$repo_root/ci/jenkins/job-config-dashboard.xml" \
+  /tmp/vf2-dashboard-job.xml <<'PY'
 import html
 import pathlib
 import sys
@@ -44,6 +47,7 @@ for jenkins_path, template_path, output_path in (
     (sys.argv[1], sys.argv[2], sys.argv[3]),
     (sys.argv[4], sys.argv[5], sys.argv[6]),
     (sys.argv[7], sys.argv[8], sys.argv[9]),
+    (sys.argv[10], sys.argv[11], sys.argv[12]),
 ):
     jenkinsfile = pathlib.Path(jenkins_path).read_text(encoding="utf-8")
     template = pathlib.Path(template_path).read_text(encoding="utf-8")
@@ -55,19 +59,22 @@ PY
 install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-privileged-sanity"
 install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-privileged-weekly"
 install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-act-update-validation"
+install -d -o lpt-10xe -g lpt-10xe -m 0755 "$jenkins_home/jobs/vf2-validation-dashboard"
 install -o lpt-10xe -g lpt-10xe -m 0644 \
   /tmp/vf2-sanity-job.xml "$jenkins_home/jobs/vf2-privileged-sanity/config.xml"
 install -o lpt-10xe -g lpt-10xe -m 0644 \
   /tmp/vf2-weekly-job.xml "$jenkins_home/jobs/vf2-privileged-weekly/config.xml"
 install -o lpt-10xe -g lpt-10xe -m 0644 \
   /tmp/vf2-act-update-job.xml "$jenkins_home/jobs/vf2-act-update-validation/config.xml"
+install -o lpt-10xe -g lpt-10xe -m 0644 \
+  /tmp/vf2-dashboard-job.xml "$jenkins_home/jobs/vf2-validation-dashboard/config.xml"
 chown -R lpt-10xe:lpt-10xe "$jenkins_home/plugins"
 
 systemctl start jenkins
 trap - EXIT
 for _ in $(seq 1 90); do
   if curl -fsS http://127.0.0.1:8080/login >/dev/null 2>&1; then
-    echo "Jenkins sanity, weekly hardware, and ACT update-validation jobs updated successfully."
+    echo "Jenkins sanity, weekly, ACT update-validation, and dashboard jobs updated successfully."
     echo "The next build will show the Result Summary link and downloadable artifacts."
     exit 0
   fi
