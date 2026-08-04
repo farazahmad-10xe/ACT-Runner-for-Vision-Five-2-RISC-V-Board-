@@ -13,5 +13,6 @@ export ACT_WORKDIR_NAME="work-vf2-jenkins-sanity-priv"
 export PRIV_GENERATOR_EXTENSIONS="ExceptionsF,ExceptionsS,ExceptionsSm,ExceptionsU,ExceptionsZc"
 export INCLUDE_STATIC_PRIV_SUITES="false"
 export EXPECTED_TEST_NAMES="ExceptionsF-00,ExceptionsS-00,ExceptionsSm-00,ExceptionsU-00,ExceptionsZc-00"
+export HTML_REPORT_SLUG="Sanity_20Result_20Summary"
 
 exec "$script_dir/weekly_vf2.sh" "$@"

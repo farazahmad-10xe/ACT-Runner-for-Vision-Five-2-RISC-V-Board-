@@ -120,6 +120,23 @@ archived in the run provenance. Because both weekly source trees are created
 after `deleteDir()`, neither tracked nor untracked files from an earlier weekly
 build can enter a new run.
 
+## Banana Pi BPI-F3 weekly job
+
+The `bpif3-privileged-weekly` Pipeline uses the Banana Pi BPI-F3 / SpacemiT K1
+configuration in `config/cores/bpif3/bpif3-rva22s64` from the latest fetched
+`sifive_u74` branch. It has an automatic weekly trigger and, by default,
+regenerates privileged tests, runs the Sail 0.13 references, optionally checks
+the packed ELFs with Spike, and builds the BPI-F3 OpenSBI FIT plus SD-tail pack.
+Each build records the exact detached runner and ACT commits used.
+
+Scheduled builds leave `RUN_HARDWARE=false`. To execute on the board, start a
+parameterized build with `RUN_HARDWARE=true` after connecting the dedicated
+BPI-F3 SD card, UART, and smart plug. The job then pauses at separate SD-card
+and board-connection gates. Hardware UART results use a board-neutral collector;
+failed cases are retained for platform-specific triage rather than being
+classified with VF2/U74 assumptions. The job publishes a **BPI-F3 Result
+Summary** and contributes its retained build data to the validation portal.
+
 Updating ACT is intentionally a separate operation. The
 `vf2-act-update-validation` job fetches the requested branch directly from
 `https://github.com/riscv/riscv-arch-test.git`, merges it with the reviewed VF2

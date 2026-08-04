@@ -42,21 +42,30 @@ fi
 
 all_extensions="${ACT_EXTENSIONS:-all}"
 act_root="$repo_root/external/riscv-arch-test"
-act_config="config/cores/sifive_u74/test_config.local.yaml"
-u74_yaml="$act_root/config/cores/sifive_u74/visionfive2-rv64gc.yaml"
-u74_sail_json="$act_root/config/cores/sifive_u74/sail.json"
+act_config="${ACT_CONFIG_PATH:-config/cores/sifive_u74/test_config.local.yaml}"
+dut_yaml_relative="${ACT_DUT_YAML_PATH:-config/cores/sifive_u74/visionfive2-rv64gc.yaml}"
+sail_json_relative="${ACT_SAIL_JSON_PATH:-config/cores/sifive_u74/sail.json}"
+dut_macros_relative="${ACT_DUT_MACROS_PATH:-config/cores/sifive_u74/rvmodel_macros.h}"
+dut_yaml="$act_root/$dut_yaml_relative"
+sail_json="$act_root/$sail_json_relative"
 act_workdir="${ACT_WORKDIR_NAME:-work-vf2-jenkins-all-priv}"
-dut_name="visionfive2-rv64gc"
+dut_name="${ACT_DUT_NAME:-visionfive2-rv64gc}"
 artifact_root="$act_root/$act_workdir/$dut_name/build/priv"
 reference_root="$repo_root/logs/reference-model-runs/$run_id"
 pack_list="$repo_root/logs/runs/$run_id/act_elfs.list"
-hardware_artifacts="$repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack"
+hardware_board="${HARDWARE_BOARD:-vf2_jh7110}"
+hardware_profile="${HARDWARE_PROFILE:-ACT_PRIV_M_OWN_ENV}"
+hardware_artifacts="${HARDWARE_ARTIFACTS:-$repo_root/cert_harness/build/$hardware_board/$hardware_profile/sd_tail_pack}"
+platform_label="${HARDWARE_PLATFORM_LABEL:-VF2/U74}"
+hardware_collector="${HARDWARE_COLLECTOR:-vf2_agent}"
 privileged_helper_root="${VF2_PRIVILEGED_HELPER_ROOT:-$repo_root}"
+flash_helper="${PRIVILEGED_FLASH_HELPER:-$privileged_helper_root/vf2_act_flash.sh}"
 flash_staging_root="${VF2_FLASH_STAGING_ROOT:-}"
 requested_generator_extensions="${PRIV_GENERATOR_EXTENSIONS:-}"
 include_static_priv_suites="${INCLUDE_STATIC_PRIV_SUITES:-true}"
 expected_test_names="${EXPECTED_TEST_NAMES:-}"
 runner_resolution_file="${RUNNER_RESOLUTION_FILE:-$repo_root/.jenkins_runner_resolution.txt}"
+html_report_slug="${HTML_REPORT_SLUG:-Result_20Summary}"
 
 if [[ ! "$sd_flash_attempts" =~ ^[1-9][0-9]*$ ]] ||
    [[ ! "$sd_flash_retry_delay" =~ ^[0-9]+$ ]]; then
@@ -76,8 +85,11 @@ write_state() {
     printf 'RUN_KIND=%q\n' "$run_kind"
     printf 'ACT_WORKDIR=%q\n' "$act_workdir"
     printf 'ACT_CONFIG=%q\n' "$act_config"
-    printf 'U74_YAML=%q\n' "$u74_yaml"
-    printf 'U74_SAIL_JSON=%q\n' "$u74_sail_json"
+    printf 'DUT_YAML=%q\n' "$dut_yaml"
+    printf 'SAIL_JSON=%q\n' "$sail_json"
+    printf 'DUT_NAME=%q\n' "$dut_name"
+    printf 'HARDWARE_BOARD=%q\n' "$hardware_board"
+    printf 'HARDWARE_PLATFORM_LABEL=%q\n' "$platform_label"
     printf 'ARTIFACT_ROOT=%q\n' "$artifact_root"
     printf 'REFERENCE_ROOT=%q\n' "$reference_root"
     printf 'PACK_LIST=%q\n' "$pack_list"
@@ -158,8 +170,8 @@ case "$stage" in
 
     test -f ci/jenkins/stage_priv_tests.py
     test -f "$act_root/$act_config"
-    test -f "$u74_yaml"
-    test -f "$u74_sail_json"
+    test -f "$dut_yaml"
+    test -f "$sail_json"
     test -x tools/act_agent/run_vf2_pack.py
     test -f tools/act_agent/run_reference_elf.py
     test -x cert_harness/tools/run_profile.sh
@@ -189,9 +201,19 @@ case "$stage" in
       echo "Update riscv-arch-test to a Sail-$sail_expected_version-compatible revision before starting the job." >&2
       exit 1
     fi
-    configured_sail="$(awk -F': *' '/^ref_model_exe:/ {print $2; exit}' "$act_root/$act_config" | awk '{print $1}')"
-    if [[ "$(readlink -f "$configured_sail")" != "$(readlink -f "$sail_bin")" ]]; then
-      echo "ACT config uses $configured_sail, expected $sail_bin" >&2
+    configured_sail_entry="$(awk -F': *' '/^ref_model_exe:/ {print $2; exit}' "$act_root/$act_config" | awk '{print $1}')"
+    if [[ "$configured_sail_entry" == */* ]]; then
+      if [[ "$configured_sail_entry" == /* ]]; then
+        configured_sail="$configured_sail_entry"
+      else
+        configured_sail="$act_root/$configured_sail_entry"
+      fi
+    else
+      configured_sail="$(command -v "$configured_sail_entry" || true)"
+    fi
+    if [[ -z "$configured_sail" ]] ||
+       [[ "$(readlink -f "$configured_sail")" != "$(readlink -f "$sail_bin")" ]]; then
+      echo "ACT config uses $configured_sail_entry (resolved: ${configured_sail:-unavailable}), expected $sail_bin" >&2
       exit 1
     fi
     command -v spike
@@ -206,7 +228,11 @@ case "$stage" in
       --act-root "$act_root" \
       --state-root "$state_root" \
       --phase preflight \
-      --expected-act-revision "$resolved_act_revision"
+      --expected-act-revision "$resolved_act_revision" \
+      --act-input "$act_config" \
+      --act-input "$dut_yaml_relative" \
+      --act-input "$sail_json_relative" \
+      --act-input "$dut_macros_relative"
     if [[ -n "$runner_resolution_file" && -f "$runner_resolution_file" ]]; then
       cp -f "$runner_resolution_file" "$state_root/runner_resolution.txt"
     fi
@@ -276,6 +302,7 @@ case "$stage" in
       --run-id "$run_id" \
       --act-config "$act_config" \
       --act-workdir "$act_workdir" \
+      --dut-name "$dut_name" \
       --extensions "$all_extensions" \
       --test-dir "$priv_test_dir" \
       --build-act-artifacts \
@@ -331,7 +358,7 @@ rows = ["test_name\tsail_status\thardware_elf\n"]
 rows.extend(f"{name}\tPASS\tyes\n" for name in sorted(packed))
 rows.extend(f"{name}\tFAIL_OR_BLOCKED\tno\n" for name in missing)
 Path(sys.argv[4]).write_text("".join(rows))
-print(f"U74/Sail eligibility: reference_attempted={len(referenced)} runnable={len(packed)} reference_failed={len(missing)}")
+print(f"Sail eligibility: reference_attempted={len(referenced)} runnable={len(packed)} reference_failed={len(missing)}")
 if missing:
     print("Sail did not produce self-checking hardware ELFs for:")
     for name in missing:
@@ -339,8 +366,8 @@ if missing:
 PY
 
     bash cert_harness/tools/build_profile.sh \
-      --board vf2_jh7110 \
-      --profile ACT_PRIV_M_OWN_ENV \
+      --board "$hardware_board" \
+      --profile "$hardware_profile" \
       --act-list "$pack_list" \
       --keep-make-outputs
 
@@ -383,7 +410,7 @@ PY
     load_state
     test -f "$HARDWARE_ARTIFACTS/boot_image.bin"
     test -f "$HARDWARE_ARTIFACTS/act_pack.bin"
-    test -x "$privileged_helper_root/vf2_act_flash.sh"
+    test -x "$flash_helper"
     test -x "$privileged_helper_root/write_pack_to_sd_tail.sh"
     flash_boot_image="$HARDWARE_ARTIFACTS/boot_image.bin"
     flash_act_pack="$HARDWARE_ARTIFACTS/act_pack.bin"
@@ -409,7 +436,7 @@ PY
         echo "[FLASH] attempt $attempt/$sd_flash_attempts: found $sd_dev; writing boot image and ACT pack."
         # These two fixed helpers are the only passwordless hardware operations
         # granted to the Jenkins service account by the installer.
-        if sudo "$privileged_helper_root/vf2_act_flash.sh" \
+        if sudo "$flash_helper" \
              --image "$flash_boot_image" \
              --sd-dev "$sd_dev" &&
            sudo "$privileged_helper_root/write_pack_to_sd_tail.sh" \
@@ -438,24 +465,56 @@ PY
   run)
     load_state
     test -e "$serial_dev"
-    python3 tools/act_agent/run_vf2_pack.py \
-      --run-id "$RUN_ID" \
-      --act-workdir "$ACT_WORKDIR" \
-      --artifact-root "$ARTIFACT_ROOT" \
-      --reference-root "$REFERENCE_ROOT" \
-      --extensions "$all_extensions" \
-      --test-dir "$PRIV_TEST_DIR" \
-      --pack-list "$PACK_LIST" \
-      --pack-file "$HARDWARE_ARTIFACTS/act_pack.bin" \
-      --pack-elf-kind elf \
-      --skip-build \
-      --skip-sd-write \
-      --serial-dev "$serial_dev" \
-      --serial-timeout "$capture_timeout" \
-      --expected-cases "$EXPECTED_CASES" \
-      --yes
+    if [[ "$hardware_collector" == "generic_uart" ]]; then
+      uart_log="$repo_root/logs/runs/$RUN_ID/uart_capture.log"
+      mkdir -p "$(dirname "$uart_log")"
+      serial_cmd=(
+        "$repo_root/serial_auto_rebooter.sh"
+        --serial-dev "$serial_dev"
+        --log "$uart_log"
+        --start-cycle
+        --stop-on-suite-complete
+      )
+      if [[ "$EXPECTED_CASES" != "0" ]]; then
+        serial_cmd+=(--stop-after-cases "$EXPECTED_CASES")
+      fi
+      set +e
+      if [[ "$capture_timeout" == "0" ]]; then
+        "${serial_cmd[@]}"
+      else
+        timeout "$capture_timeout" "${serial_cmd[@]}"
+      fi
+      serial_rc=$?
+      set -e
+      if [[ "$serial_rc" -ne 0 && "$serial_rc" -ne 124 ]]; then
+        exit "$serial_rc"
+      fi
+      python3 ci/jenkins/collect_board_uart.py \
+        --uart "$uart_log" \
+        --run-id "$RUN_ID" \
+        --platform "$platform_label" \
+        --sail-status "$REFERENCE_STATUS" \
+        --expected-cases "$EXPECTED_CASES"
+    else
+      python3 tools/act_agent/run_vf2_pack.py \
+        --run-id "$RUN_ID" \
+        --act-workdir "$ACT_WORKDIR" \
+        --artifact-root "$ARTIFACT_ROOT" \
+        --reference-root "$REFERENCE_ROOT" \
+        --extensions "$all_extensions" \
+        --test-dir "$PRIV_TEST_DIR" \
+        --pack-list "$PACK_LIST" \
+        --pack-file "$HARDWARE_ARTIFACTS/act_pack.bin" \
+        --pack-elf-kind elf \
+        --skip-build \
+        --skip-sd-write \
+        --serial-dev "$serial_dev" \
+        --serial-timeout "$capture_timeout" \
+        --expected-cases "$EXPECTED_CASES" \
+        --yes
+    fi
     if [[ -s "$MISSING_REPORT" ]]; then
-      echo "Board run completed, but some U74-selected privileged tests were not runnable because their Sail reference failed:" >&2
+      echo "$platform_label run completed, but some selected privileged tests were not runnable because their Sail reference failed:" >&2
       sed 's/^/  /' "$MISSING_REPORT" >&2
       exit 3
     fi
@@ -496,7 +555,8 @@ PY
       --state-root "$state_root" \
       --run-root "$repo_root/logs/runs/$run_id" \
       --artifact-root "$artifact_root" \
-      --build-url "${BUILD_URL:-}"
+      --build-url "${BUILD_URL:-}" \
+      --report-url-name "$html_report_slug"
     zip_inputs=("logs/jenkins/$run_kind/$run_id")
     if [[ -d "$repo_root/logs/runs/$run_id" ]]; then
       zip_inputs+=("logs/runs/$run_id")

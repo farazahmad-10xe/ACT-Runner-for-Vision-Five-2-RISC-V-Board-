@@ -33,6 +33,11 @@ JOBS = (
         "ci/jenkins/job-config.xml",
     ),
     (
+        "bpif3-privileged-weekly",
+        "Jenkinsfile.bpif3-weekly",
+        "ci/jenkins/job-config-bpif3.xml",
+    ),
+    (
         "vf2-act-update-validation",
         "Jenkinsfile.act-update-validation",
         "ci/jenkins/job-config-act-update.xml",

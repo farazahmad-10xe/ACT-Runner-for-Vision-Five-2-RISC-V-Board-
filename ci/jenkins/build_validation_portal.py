@@ -20,6 +20,7 @@ from urllib.parse import quote
 JOB_TYPES = {
     "vf2-privileged-sanity": ("Sanity", "sanity", "jenkins_sanity_", "Sanity_20Result_20Summary"),
     "vf2-privileged-weekly": ("Weekly", "weekly", "jenkins_weekly_", "Result_20Summary"),
+    "bpif3-privileged-weekly": ("BPI-F3 Weekly", "bpif3-weekly", "jenkins_bpif3_weekly_", "BPI-F3_20Result_20Summary"),
     "vf2-act-update-validation": ("ACT Update", "act-update", "act_update_", ""),
 }
 
@@ -203,7 +204,7 @@ def parse_build(job: str, directory: Path, base_url: str, existing: dict) -> dic
         "runner_revision": runner.get("selected_runner_sha", manifest.get("git_head", existing.get("runner_revision", ""))),
         "act_branch": values.get("ACT_BRANCH", act.get("act_branch", manifest.get("official_branch", ""))),
         "act_revision": act.get("selected_act_sha", manifest.get("act_git_head", manifest.get("official_revision", existing.get("act_revision", "")))),
-        "platform": "vf2_u74" if kind != "act-update" else "ACT/Sail",
+        "platform": "bpif3_k1" if kind == "bpif3-weekly" else "vf2_u74" if kind != "act-update" else "ACT/Sail",
         "counts": counts,
         "tests": tests,
         "urls": {

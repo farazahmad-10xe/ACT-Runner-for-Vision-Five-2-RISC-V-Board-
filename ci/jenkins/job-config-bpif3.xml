@@ -1,0 +1,13 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job">
+  <actions/>
+  <description>Weekly ACT privileged generation, Sail/Spike validation, packaging, and optional hardware execution for Banana Pi BPI-F3 / SpacemiT K1.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps">
+    <script>__JENKINSFILE__</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <disabled>false</disabled>
+</flow-definition>

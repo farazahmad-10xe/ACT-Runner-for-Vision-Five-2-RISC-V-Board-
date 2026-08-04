@@ -23,6 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-root", type=Path, required=True)
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--build-url", default="")
+    parser.add_argument("--report-url-name", default="Result_20Summary")
     return parser.parse_args()
 
 
@@ -70,7 +71,7 @@ def main() -> int:
     downloads_root.mkdir(exist_ok=True)
 
     build_url = args.build_url.rstrip("/")
-    report_url = f"{build_url}/Result_20Summary" if build_url else ""
+    report_url = f"{build_url}/{args.report_url_name}" if build_url else ""
     manifest = read_manifest(state_root / "jenkins_manifest.txt")
     sail_version = manifest.get("sail_version", "") or "unknown"
 

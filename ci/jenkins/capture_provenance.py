@@ -118,13 +118,16 @@ def write_git_evidence(repo: Path, prefix: str, destination: Path) -> None:
     )
 
 
-def copy_control_snapshot(repo_root: Path, act_root: Path, destination: Path) -> None:
+def copy_control_snapshot(
+    repo_root: Path, act_root: Path, destination: Path, act_inputs: list[str]
+) -> None:
     if destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True)
 
     control_paths = [
         repo_root / "Jenkinsfile",
+        repo_root / "Jenkinsfile.bpif3-weekly",
         repo_root / "Jenkinsfile.act-update-validation",
         repo_root / "ci" / "jenkins",
     ]
@@ -142,14 +145,7 @@ def copy_control_snapshot(repo_root: Path, act_root: Path, destination: Path) ->
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
 
-    act_inputs = [
-        "config/cores/sifive_u74/sail.json",
-        "config/cores/sifive_u74/visionfive2-rv64gc.yaml",
-        "config/cores/sifive_u74/test_config.local.yaml",
-        "config/cores/sifive_u74/rvmodel_macros.h",
-        "framework/src/act/config.py",
-    ]
-    for relative in act_inputs:
+    for relative in [*act_inputs, "framework/src/act/config.py"]:
         source = act_root / relative
         if source.is_file():
             target = destination / "external/riscv-arch-test" / relative
@@ -248,7 +244,7 @@ def preflight(args: argparse.Namespace, provenance: Path) -> None:
         break
 
     snapshot = provenance / "control_snapshot"
-    copy_control_snapshot(repo_root, act_root, snapshot)
+    copy_control_snapshot(repo_root, act_root, snapshot, args.act_input)
     hash_tree(snapshot, provenance / "control_snapshot.sha256")
 
 
@@ -301,6 +297,7 @@ def main() -> int:
     parser.add_argument("--test-root", type=Path)
     parser.add_argument("--pack-list", type=Path)
     parser.add_argument("--hardware-artifacts", type=Path)
+    parser.add_argument("--act-input", action="append", default=[])
     args = parser.parse_args()
 
     provenance = args.state_root.resolve() / "provenance"
