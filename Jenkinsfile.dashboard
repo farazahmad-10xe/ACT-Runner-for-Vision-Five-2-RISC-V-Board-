@@ -27,18 +27,22 @@ pipeline {
     }
 
     stages {
-        stage('Clean Checkout') {
+        stage('Update Portal Source') {
             steps {
-                deleteDir()
                 sh '''#!/usr/bin/env bash
                     set -euo pipefail
-                    git init .
-                    git remote add origin "$RUNNER_REMOTE_URL"
+                    if [[ ! -d .git ]]; then
+                      git init .
+                      git remote add origin "$RUNNER_REMOTE_URL"
+                    else
+                      git remote set-url origin "$RUNNER_REMOTE_URL"
+                    fi
                     ref="refs/remotes/origin/$RUNNER_BRANCH"
-                    git fetch --force --prune origin \
+                    git fetch --depth=1 --force --prune origin \
                       "+refs/heads/$RUNNER_BRANCH:$ref"
                     revision="$(git rev-parse --verify "${ref}^{commit}")"
-                    git checkout --detach "$revision"
+                    git checkout --force --detach "$revision"
+                    git clean -fdx
                     ! git symbolic-ref -q HEAD >/dev/null
                     echo "Portal generator revision: $revision"
                 '''

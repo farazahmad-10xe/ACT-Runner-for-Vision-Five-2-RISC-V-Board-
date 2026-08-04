@@ -15,8 +15,11 @@ files, then stores normalized records under
 `/home/lpt-10xe/jenkins-dashboard-data/records`. Those compact records are not
 inside a disposable Jenkins workspace and are not removed by source-job build
 retention. Completed records are immutable and cached, so after the initial
-backfill normal refreshes inspect only new or still-running builds. The portal
-does not copy ELFs, signatures, UART logs or credentials; it links back to the
+backfill normal refreshes inspect only new or still-running builds. Its
+dedicated workspace retains the Git object cache between refreshes while
+force-checking out the latest firmware `main`, avoiding a full repository
+download every 15 minutes. The portal does not copy ELFs, signatures, UART
+logs or credentials; it links back to the
 source build for detailed evidence while that build's artifacts remain
 retained.
 
