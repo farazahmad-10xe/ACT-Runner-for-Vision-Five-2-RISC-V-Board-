@@ -2,7 +2,9 @@ pipeline {
     agent {
         node {
             label 'built-in'
-            customWorkspace '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
+            // Jenkins owns and may delete this directory. Never point it at
+            // the developer's firmware checkout.
+            customWorkspace '/home/lpt-10xe/jenkins-workspaces/vf2-privileged-weekly'
         }
     }
 
@@ -15,6 +17,12 @@ pipeline {
     }
 
     parameters {
+        string(name: 'RUNNER_BRANCH',
+            defaultValue: 'main',
+            description: 'Firmware/runner branch resolved once at the start of this weekly run.')
+        string(name: 'RUNNER_REVISION_OVERRIDE',
+            defaultValue: '',
+            description: 'Optional exact firmware commit. Leave empty to test the latest RUNNER_BRANCH head.')
         string(name: 'ACT_BRANCH',
             defaultValue: 'sifive_u74',
             description: 'Arshia2564/riscv-arch-test branch resolved once at the beginning of each weekly run.')
@@ -33,14 +41,93 @@ pipeline {
     }
 
     environment {
-        REPO_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
+        RUNNER_REMOTE_URL = 'https://github.com/farazahmad-10xe/ACT-Runner-for-Vision-Five-2-RISC-V-Board-.git'
+        LOCAL_TOOLS_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools'
+        LOCAL_TUYA_DEVICES_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/devices.json'
+        VF2_PRIVILEGED_HELPER_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
+        VF2_FLASH_STAGING_ROOT = '/home/lpt-10xe/jenkins-hardware-staging/vf2-privileged-weekly'
         ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
+        SD_FLASH_ATTEMPTS = '3'
+        SD_FLASH_RETRY_DELAY = '10'
         SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
         SAIL_EXPECTED_VERSION = '0.13'
         PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
     }
 
     stages {
+        stage('Clean Firmware Checkout') {
+            steps {
+                // deleteDir is constrained by customWorkspace above; it never
+                // touches the developer's firmware checkout.
+                deleteDir()
+                sh '''#!/usr/bin/env bash
+                    set -euo pipefail
+                    runner_branch="${RUNNER_BRANCH:-main}"
+                    runner_revision_override="${RUNNER_REVISION_OVERRIDE:-}"
+                    git check-ref-format --branch "$runner_branch" >/dev/null
+                    git init .
+                    git remote add origin "$RUNNER_REMOTE_URL"
+                    runner_ref="refs/remotes/origin/$runner_branch"
+                    git fetch --force --prune origin \
+                      "+refs/heads/$runner_branch:$runner_ref"
+                    fetched_runner_revision="$(git rev-parse --verify "${runner_ref}^{commit}")"
+                    if [[ -n "$runner_revision_override" ]]; then
+                      resolved_runner_revision="$(git rev-parse --verify "${runner_revision_override}^{commit}")"
+                      runner_source="override"
+                    else
+                      resolved_runner_revision="$fetched_runner_revision"
+                      runner_source="latest-branch-head"
+                    fi
+                    git checkout --detach "$resolved_runner_revision"
+                    git submodule update --init external/riscv-arch-test
+                    test -d "$LOCAL_TOOLS_SOURCE"
+                    mkdir -p tools
+                    cp -a "$LOCAL_TOOLS_SOURCE/." tools/
+                    test -x tools/act_agent/run_vf2_pack.py
+                    test -f tools/act_agent/run_reference_elf.py
+                    test -f tools/act_agent/collect_uart_run.py
+                    test -f tools/act_triage/parse_rvcp_log.py
+                    test -f "$LOCAL_TUYA_DEVICES_SOURCE"
+                    install -m 0600 "$LOCAL_TUYA_DEVICES_SOURCE" devices.json
+                    python3 - <<'PY'
+import json
+from pathlib import Path
+
+data = json.loads(Path("devices.json").read_text())
+if isinstance(data, list):
+    devices = data
+elif isinstance(data, dict) and {"id", "ip", "key"} <= set(data):
+    devices = [data]
+elif isinstance(data, dict):
+    devices = list(data.values())
+else:
+    devices = []
+if not any(
+    isinstance(device, dict) and all(device.get(field) for field in ("id", "ip", "key"))
+    for device in devices
+):
+    raise SystemExit("Local Tuya devices file has no complete id/ip/key entry")
+print("Validated local Tuya device configuration without displaying credentials.")
+PY
+                    actual_runner_revision="$(git rev-parse HEAD)"
+                    [[ "$actual_runner_revision" == "$resolved_runner_revision" ]]
+                    ! git symbolic-ref -q HEAD >/dev/null
+                    {
+                      echo "Runner repository:       $RUNNER_REMOTE_URL"
+                      echo "Runner branch:           $runner_branch"
+                      echo "Fetched branch SHA:      $fetched_runner_revision"
+                      echo "Selected source:         $runner_source"
+                      echo "Selected runner SHA:     $resolved_runner_revision"
+                      echo "Checkout mode:           detached"
+                      echo "Local tools source:      $LOCAL_TOOLS_SOURCE"
+                      echo "Local tools files:       $(find tools -type f | wc -l | tr -d ' ')"
+                      echo "Local Tuya config:       restored with mode 0600"
+                    } | tee .jenkins_runner_resolution.txt
+                    test -x ci/jenkins/weekly_vf2.sh
+                '''
+            }
+        }
+
         stage('Preflight') {
             steps {
                 sh 'ci/jenkins/weekly_vf2.sh preflight'

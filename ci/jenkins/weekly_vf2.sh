@@ -56,7 +56,7 @@ flash_staging_root="${VF2_FLASH_STAGING_ROOT:-}"
 requested_generator_extensions="${PRIV_GENERATOR_EXTENSIONS:-}"
 include_static_priv_suites="${INCLUDE_STATIC_PRIV_SUITES:-true}"
 expected_test_names="${EXPECTED_TEST_NAMES:-}"
-runner_resolution_file="${RUNNER_RESOLUTION_FILE:-}"
+runner_resolution_file="${RUNNER_RESOLUTION_FILE:-$repo_root/.jenkins_runner_resolution.txt}"
 
 if [[ ! "$sd_flash_attempts" =~ ^[1-9][0-9]*$ ]] ||
    [[ ! "$sd_flash_retry_delay" =~ ^[0-9]+$ ]]; then

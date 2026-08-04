@@ -68,7 +68,14 @@ such as `@2` cannot redirect a build into another build's checkout.
 ## Complete weekly job
 
 The `vf2-privileged-weekly` Pipeline is started manually from Jenkins and has
-no automatic timer trigger. It regenerates every testgen-backed
+no automatic timer trigger. It runs in the dedicated disposable workspace
+`/home/lpt-10xe/jenkins-workspaces/vf2-privileged-weekly`; it never cleans or
+modifies the developer checkout. Every build fetches `RUNNER_BRANCH`, resolves
+one exact firmware SHA, checks it out detached, and restores the same ignored
+machine-local `tools/` and `devices.json` inputs used by the sanity job. It then
+fetches `ACT_BRANCH`, resolves one exact ACT SHA, and checks that revision out
+detached. `RUNNER_REVISION_OVERRIDE` and `ACT_REVISION_OVERRIDE` reproduce an
+older pair when required. The job regenerates every testgen-backed
 privileged suite, stages all official generator-backed and ACT-tracked static
 privileged suites from clean source trees, and lets the SiFive U74 YAML/UDB
 configuration select the applicable tests. Local untracked debug/probe files
@@ -80,11 +87,11 @@ The current job is pinned to Sail RISC-V `0.13`; preflight verifies both the
 resolved executable and the absolute reference-model path in the ACT config
 before any tests are generated.
 
-The hardware jobs resolve `ACT_BRANCH` once at preflight and use that exact
-detached commit for the rest of the run. `ACT_REVISION_OVERRIDE` can select an
-older exact commit for reproduction. Preflight rejects tracked ACT worktree or
-index changes. Untracked build/debug directories may remain in the checkout,
-but the official-only staging rules ensure that they cannot enter a run.
+The hardware jobs resolve the firmware and ACT branches once at checkout and
+use those exact detached commits for the rest of the run. The resolved SHAs are
+archived in the run provenance. Because both weekly source trees are created
+after `deleteDir()`, neither tracked nor untracked files from an earlier weekly
+build can enter a new run.
 
 Updating ACT is intentionally a separate operation. The
 `vf2-act-update-validation` job fetches the requested branch directly from
@@ -195,11 +202,11 @@ python3 ci/jenkins/apply_job_configs.py \
   --jenkins-home /home/lpt-10xe/.jenkins-vf2
 ```
 
-For safety, passwordless privilege is limited to the two existing flash helpers
-with their fixed artifact paths and `/dev/sda`. If `SD_DEV` is changed in the
-job, update `/etc/sudoers.d/jenkins-vf2-hardware` deliberately as root as well.
-
-The Pipeline still uses the existing runner workspace and does not perform
-`git clean`, reset, checkout, or pull. Runner-side local changes are captured
-as provenance evidence. In contrast, tracked ACT source changes are forbidden:
-ACT must be a reviewed, pinned commit before a hardware run can start.
+For safety, passwordless privilege is limited to the two trusted flash helpers
+from the developer checkout, fixed build-specific staging paths, and `/dev/sda`.
+Weekly artifacts are copied and byte-verified under
+`/home/lpt-10xe/jenkins-hardware-staging/vf2-privileged-weekly`, so a Jenkins
+workspace suffix such as `@2` does not affect sudo authorization. Flashing makes
+three SD-device availability attempts ten seconds apart. If `SD_DEV` or a
+staging path is changed, update `/etc/sudoers.d/jenkins-vf2-hardware`
+deliberately as root as well.
