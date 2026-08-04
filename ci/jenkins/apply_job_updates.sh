@@ -5,7 +5,6 @@ repo_root="$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
 jenkins_home="${JENKINS_HOME:-/home/lpt-10xe/.jenkins-vf2}"
 plugin_manager_version="2.13.2"
 plugin_manager_jar="/tmp/jenkins-plugin-manager-${plugin_manager_version}.jar"
-sanity_workspace="/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity"
 
 if [[ "$(id -u)" -ne 0 ]]; then
   exec sudo --preserve-env=JENKINS_HOME bash "$0" "$@"
@@ -16,14 +15,7 @@ if [[ ! -s "$plugin_manager_jar" ]]; then
     "https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/${plugin_manager_version}/jenkins-plugin-manager-${plugin_manager_version}.jar"
 fi
 
-cat > /etc/sudoers.d/jenkins-vf2-hardware <<EOF
-lpt-10xe ALL=(root) NOPASSWD: $repo_root/vf2_act_flash.sh --image $repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack/boot_image.bin --sd-dev /dev/sda
-lpt-10xe ALL=(root) NOPASSWD: $repo_root/write_pack_to_sd_tail.sh $repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack/act_pack.bin /dev/sda
-lpt-10xe ALL=(root) NOPASSWD: $repo_root/vf2_act_flash.sh --image $sanity_workspace/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack/boot_image.bin --sd-dev /dev/sda
-lpt-10xe ALL=(root) NOPASSWD: $repo_root/write_pack_to_sd_tail.sh $sanity_workspace/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack/act_pack.bin /dev/sda
-EOF
-chmod 0440 /etc/sudoers.d/jenkins-vf2-hardware
-visudo -cf /etc/sudoers.d/jenkins-vf2-hardware
+bash "$repo_root/ci/jenkins/install_vf2_sudoers.sh"
 
 systemctl stop jenkins
 trap 'systemctl start jenkins >/dev/null 2>&1 || true' EXIT

@@ -34,10 +34,20 @@ mandatory and preparation fails if a requested generator or expected hardware
 ELF is missing. The SD-card movement still has the same two explicit operator
 gates as the weekly hardware job. Passwordless flashing continues to execute
 the trusted helper scripts from the development checkout; sudoers permits only
-the exact sanity artifact paths and `/dev/sda`, not arbitrary commands or
-workspace scripts. If the configured SD device is absent, the flash stage makes
+the exact fixed staging paths under
+`/home/lpt-10xe/jenkins-hardware-staging/vf2-privileged-sanity` and `/dev/sda`,
+not arbitrary commands or workspace scripts. The job copies and byte-verifies
+each build's images into this stable location, so Jenkins workspace suffixes
+such as `@2` never affect sudo authorization. If the configured SD device is absent, the flash stage makes
 three availability attempts ten seconds apart. A write failure while the card
 is still present is treated as a real error and is not retried.
+
+Install or refresh only the exact hardware sudo rules without running the
+Jenkins plugin manager:
+
+```sh
+sudo bash ci/jenkins/install_vf2_sudoers.sh
+```
 
 `RUNNER_REVISION_OVERRIDE` and `ACT_REVISION_OVERRIDE` allow an older pair of
 exact commits to be reproduced. With both overrides empty, the job tests the

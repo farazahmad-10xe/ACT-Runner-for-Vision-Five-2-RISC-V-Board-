@@ -2,7 +2,6 @@
 set -euo pipefail
 
 repo_root="$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
-sanity_workspace="/home/lpt-10xe/jenkins-workspaces/vf2-privileged-sanity"
 jenkins_home="/home/lpt-10xe/.jenkins-vf2"
 plugin_manager_version="2.13.2"
 plugin_manager_jar="/tmp/jenkins-plugin-manager-${plugin_manager_version}.jar"
@@ -89,16 +88,9 @@ GROOVY
 chown lpt-10xe:lpt-10xe "$jenkins_home/init.groovy.d/10-vf2-bootstrap.groovy"
 chmod 0600 "$jenkins_home/init.groovy.d/10-vf2-bootstrap.groovy"
 
-# Permit only the two fixed repository flash commands against /dev/sda. Raw
-# dd, blockdev, and umount are deliberately not exposed to Jenkins.
-cat > /etc/sudoers.d/jenkins-vf2-hardware <<EOF
-lpt-10xe ALL=(root) NOPASSWD: $repo_root/vf2_act_flash.sh --image $repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack/boot_image.bin --sd-dev /dev/sda
-lpt-10xe ALL=(root) NOPASSWD: $repo_root/write_pack_to_sd_tail.sh $repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack/act_pack.bin /dev/sda
-lpt-10xe ALL=(root) NOPASSWD: $repo_root/vf2_act_flash.sh --image $sanity_workspace/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack/boot_image.bin --sd-dev /dev/sda
-lpt-10xe ALL=(root) NOPASSWD: $repo_root/write_pack_to_sd_tail.sh $sanity_workspace/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/sd_tail_pack/act_pack.bin /dev/sda
-EOF
-chmod 0440 /etc/sudoers.d/jenkins-vf2-hardware
-visudo -cf /etc/sudoers.d/jenkins-vf2-hardware
+# Permit only fixed helper, artifact, and device paths. Raw dd, blockdev, and
+# umount are deliberately not exposed to Jenkins.
+bash "$repo_root/ci/jenkins/install_vf2_sudoers.sh"
 
 systemctl daemon-reload
 

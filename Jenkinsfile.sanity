@@ -43,6 +43,7 @@ pipeline {
         LOCAL_TOOLS_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools'
         LOCAL_TUYA_DEVICES_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/devices.json'
         VF2_PRIVILEGED_HELPER_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
+        VF2_FLASH_STAGING_ROOT = '/home/lpt-10xe/jenkins-hardware-staging/vf2-privileged-sanity'
         ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
         REGENERATE_TESTS = 'true'
         SD_FLASH_ATTEMPTS = '3'
