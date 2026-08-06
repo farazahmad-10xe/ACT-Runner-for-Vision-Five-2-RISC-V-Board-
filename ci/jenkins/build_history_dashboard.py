@@ -141,7 +141,7 @@ def run_number(run_id: str, manifest: dict[str, str]) -> int | None:
     raw = manifest.get("build_number", "")
     if raw.isdigit():
         return int(raw)
-    match = re.fullmatch(r"jenkins_weekly_(\d+)", run_id)
+    match = re.fullmatch(r".+_(\d+)", run_id)
     return int(match.group(1)) if match else None
 
 
@@ -210,8 +210,10 @@ def build_history_dashboard(
     build_url: str,
     fallback_extension: Callable[[str], str],
     issue_links: Callable[[str], str],
+    archived_run_sources: list[tuple[Path, Path]] | None = None,
+    report_url_name: str = "Result_20Summary",
 ) -> dict[str, int]:
-    """Build history pages from every retained logs/jenkins/weekly run."""
+    """Build history pages from workspace and retained Jenkins run data."""
 
     history_root = site_root / "history"
     suites_root = history_root / "suites"
@@ -226,18 +228,29 @@ def build_history_dashboard(
     loaded_runs: list[dict] = []
     known_extensions: dict[str, str] = {}
 
-    state_directories = sorted(
-        (path for path in weekly_root.glob("jenkins_weekly_*") if path.is_dir()),
-        key=lambda path: path.name,
-    )
-    if state_root not in state_directories and state_root.is_dir():
-        state_directories.append(state_root)
+    # Jenkins weekly workspaces are deliberately cleaned before every build.
+    # Load archived runs first, then let current workspace paths replace them.
+    # This keeps history across clean checkouts without copying large artifacts
+    # back into the active workspace.
+    run_sources: dict[str, tuple[Path, Path]] = {}
+    for historical_state, historical_run in archived_run_sources or []:
+        if historical_state.is_dir():
+            run_sources[historical_state.name] = (historical_state, historical_run)
+    for historical_state in weekly_root.glob("jenkins_weekly_*"):
+        if historical_state.is_dir():
+            run_sources[historical_state.name] = (
+                historical_state,
+                hardware_root / historical_state.name,
+            )
+    if state_root.is_dir():
+        run_sources[state_root.name] = (state_root, hardware_root / state_root.name)
 
-    for historical_state in state_directories:
+    for historical_state, historical_run in sorted(
+        run_sources.values(), key=lambda paths: paths[0].name
+    ):
         run_id = historical_state.name
         manifest = read_manifest(historical_state / "jenkins_manifest.txt")
         run_id = manifest.get("run_id", run_id)
-        historical_run = hardware_root / run_id
         sail = read_status_tsv(historical_state / "sail_reference_status.tsv")
         spike = read_status_tsv(historical_state / "spike_status.tsv")
         cases = read_cases(historical_run / "cases.json")
@@ -312,7 +325,7 @@ def build_history_dashboard(
             links.append(f'<a href="{html.escape(local_report, quote=True)}">VF2 report</a>')
         published = build_page_url(
             run,
-            f"Result_20Summary/tests/{quote(safe_name(event['name']))}/",
+            f"{report_url_name}/tests/{quote(safe_name(event['name']))}/",
         )
         if published:
             links.append(href(published, "Run details"))
@@ -433,7 +446,7 @@ Latest recorded Sail version: <strong>{html.escape(latest_sail_version)}</strong
         for run in reversed(ordered_suite_runs):
             events = suite_run_map[run["run_id"]]
             vf2_counts = outcome_counts(events)
-            run_summary = build_page_url(run, "Result_20Summary/")
+            run_summary = build_page_url(run, f"{report_url_name}/")
             run_label = href(run_summary, run["run_id"]) if run_summary else html.escape(run["run_id"])
             suite_timeline_rows.append(
                 "<tr>"
@@ -535,7 +548,7 @@ Latest completion: {html.escape(latest_display)}</p>
             if event["run"]["run_id"] == run["run_id"]
         ]
         vf2_counts = outcome_counts(events)
-        run_summary = build_page_url(run, "Result_20Summary/")
+        run_summary = build_page_url(run, f"{report_url_name}/")
         run_label = href(run_summary, run["run_id"]) if run_summary else html.escape(run["run_id"])
         run_rows.append(
             "<tr>"

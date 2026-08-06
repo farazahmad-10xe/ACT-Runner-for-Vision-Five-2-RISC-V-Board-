@@ -154,7 +154,9 @@ the report, UART log, evidence JSON, objdump, signatures, and other archived
 files.
 
 The summary also links to an **Execution History** dashboard assembled from
-all retained `logs/jenkins/weekly/jenkins_weekly_*` results. It provides:
+the current workspace result and the retained Jenkins build archives. The
+weekly jobs retain eight builds and their artifacts, so clean detached
+checkouts do not collapse the history to the current run. It provides:
 
 - an overall Jenkins run timeline with Sail, Spike, and VF2 pass totals;
 - one history page per suite/extension, including its per-run pass totals and

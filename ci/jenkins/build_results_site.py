@@ -24,7 +24,36 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--build-url", default="")
     parser.add_argument("--report-url-name", default="Result_20Summary")
+    parser.add_argument("--jenkins-home", type=Path)
+    parser.add_argument("--jenkins-job", default="")
+    parser.add_argument("--history-run-kind", default="weekly")
+    parser.add_argument("--history-run-prefix", default="jenkins_weekly_")
     return parser.parse_args()
+
+
+def retained_jenkins_runs(
+    jenkins_home: Path | None,
+    job_name: str,
+    run_kind: str,
+    run_prefix: str,
+) -> list[tuple[Path, Path]]:
+    if jenkins_home is None or not job_name:
+        return []
+    builds_root = jenkins_home.resolve() / "jobs" / job_name / "builds"
+    if not builds_root.is_dir():
+        return []
+    sources: list[tuple[Path, Path]] = []
+    for build_root in builds_root.iterdir():
+        archive = build_root / "archive"
+        state_parent = archive / "logs" / "jenkins" / run_kind
+        if not state_parent.is_dir():
+            continue
+        for historical_state in state_parent.glob(f"{run_prefix}*"):
+            if historical_state.is_dir():
+                sources.append(
+                    (historical_state, archive / "logs" / "runs" / historical_state.name)
+                )
+    return sources
 
 
 def read_tsv(path: Path) -> list[list[str]]:
@@ -544,6 +573,13 @@ a { color: #075985; } @media (prefers-color-scheme: dark) { body { background: #
         build_url=build_url,
         fallback_extension=extension_for_test,
         issue_links=issue_links_for_test,
+        archived_run_sources=retained_jenkins_runs(
+            args.jenkins_home,
+            args.jenkins_job,
+            args.history_run_kind,
+            args.history_run_prefix,
+        ),
+        report_url_name=args.report_url_name,
     )
 
     vf2_pass = vf2_counts.get("PASS", 0)

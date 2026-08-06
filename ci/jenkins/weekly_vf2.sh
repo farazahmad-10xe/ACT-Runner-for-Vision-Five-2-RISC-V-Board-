@@ -550,13 +550,23 @@ PY
       rm -f "$tracking_sheet_csv.tmp"
       echo "WARNING: tracking-sheet refresh failed; continuing without a comparison artifact." >&2
     fi
+    history_args=()
+    if [[ -n "${JENKINS_HOME:-}" && -n "${JOB_NAME:-}" ]]; then
+      history_args+=(
+        --jenkins-home "$JENKINS_HOME"
+        --jenkins-job "$JOB_NAME"
+        --history-run-kind "$run_kind"
+        --history-run-prefix "${run_id_prefix}_"
+      )
+    fi
     python3 ci/jenkins/build_results_site.py \
       --workspace "$repo_root" \
       --state-root "$state_root" \
       --run-root "$repo_root/logs/runs/$run_id" \
       --artifact-root "$artifact_root" \
       --build-url "${BUILD_URL:-}" \
-      --report-url-name "$html_report_slug"
+      --report-url-name "$html_report_slug" \
+      "${history_args[@]}"
     zip_inputs=("logs/jenkins/$run_kind/$run_id")
     if [[ -d "$repo_root/logs/runs/$run_id" ]]; then
       zip_inputs+=("logs/runs/$run_id")
