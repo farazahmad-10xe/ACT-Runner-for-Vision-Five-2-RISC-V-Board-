@@ -416,7 +416,7 @@ void build_machine_env_config(uint64_t mode, MachineEnvConfig *cfg)
         (1ULL << MCAUSE_INST_PAGE_FAULT) |
         (1ULL << MCAUSE_LOAD_PAGE_FAULT) |
         (1ULL << MCAUSE_STORE_PAGE_FAULT);
-    const uint64_t deleg_int_base = 0;
+    const uint64_t deleg_int_base = SIE_SSIE | SIE_STIE | SIE_SEIE | SIE_LCOFIE;
 #endif
 
     if (!cfg) return;
