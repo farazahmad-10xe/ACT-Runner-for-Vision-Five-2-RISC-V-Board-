@@ -101,8 +101,8 @@
 #define FOOTER_RETRY_MASK        0x0000000fu
 #define FOOTER_PROGRESS_MAGIC    0xa0000000u
 #define FOOTER_PROGRESS_MAGIC_MASK 0xf0000000u
-#if MAX_PACK_TESTS > (FOOTER_IDX_MASK + 1u)
-#error "FOOTER_IDX_MASK is too narrow to index every entry in MAX_PACK_TESTS -- widen the SD-tail progress footer's index field (and its bit budget against FOOTER_RETRY_SHIFT/FOOTER_PROGRESS_MAGIC) before shrinking this guard"
+#if MAX_PACK_TESTS > FOOTER_IDX_MASK
+#error "FOOTER_IDX_MASK must represent the completed next_index value for MAX_PACK_TESTS entries -- widen the SD-tail progress footer's index field (and its bit budget against FOOTER_RETRY_SHIFT/FOOTER_PROGRESS_MAGIC) before increasing this limit"
 #endif
 #ifndef RUNNER_MAX_TEST_RETRIES
 #define RUNNER_MAX_TEST_RETRIES 3u

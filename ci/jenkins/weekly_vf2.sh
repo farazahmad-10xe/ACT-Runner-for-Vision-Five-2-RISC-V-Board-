@@ -18,7 +18,12 @@ fi
 run_id="${run_id_prefix}_${build_number}"
 state_root="$repo_root/logs/jenkins/$run_kind/$run_id"
 state_file="$state_root/state.env"
-priv_test_dir="$state_root/all_priv_tests"
+test_scope="${ACT_TEST_SCOPE:-priv}"
+case "$test_scope" in
+  priv) test_dir="$state_root/all_priv_tests" ;;
+  all) test_dir="$state_root/all_tests" ;;
+  *) echo "ACT_TEST_SCOPE must be 'priv' or 'all'." >&2; exit 2 ;;
+esac
 generated_test_root="$state_root/generated_tests"
 missing_report="$state_root/reference_failed_no_hardware_elf.txt"
 reference_status="$state_root/sail_reference_status.tsv"
@@ -50,7 +55,10 @@ dut_yaml="$act_root/$dut_yaml_relative"
 sail_json="$act_root/$sail_json_relative"
 act_workdir="${ACT_WORKDIR_NAME:-work-vf2-jenkins-all-priv}"
 dut_name="${ACT_DUT_NAME:-visionfive2-rv64gc}"
-artifact_root="$act_root/$act_workdir/$dut_name/build/priv"
+artifact_root="$act_root/$act_workdir/$dut_name/build"
+if [[ "$test_scope" == "priv" ]]; then
+  artifact_root="$artifact_root/priv"
+fi
 reference_root="$repo_root/logs/reference-model-runs/$run_id"
 pack_list="$repo_root/logs/runs/$run_id/act_elfs.list"
 hardware_board="${HARDWARE_BOARD:-vf2_jh7110}"
@@ -94,7 +102,10 @@ write_state() {
     printf 'REFERENCE_ROOT=%q\n' "$reference_root"
     printf 'PACK_LIST=%q\n' "$pack_list"
     printf 'HARDWARE_ARTIFACTS=%q\n' "$hardware_artifacts"
-    printf 'PRIV_TEST_DIR=%q\n' "$priv_test_dir"
+    printf 'TEST_SCOPE=%q\n' "$test_scope"
+    printf 'TEST_DIR=%q\n' "$test_dir"
+    # Retained for compatibility with older report/tooling consumers.
+    printf 'PRIV_TEST_DIR=%q\n' "$test_dir"
     printf 'MISSING_REPORT=%q\n' "$missing_report"
     printf 'REFERENCE_STATUS=%q\n' "$reference_status"
     printf 'PRIV_SOURCE_ROOTS=%q\n' "$priv_source_roots"
@@ -246,23 +257,27 @@ case "$stage" in
       find "$act_root/$act_workdir" -depth -delete
     fi
 
-    registered_priv_generator_extensions="$(
-      cd "$act_root"
-      uv run python -c \
-        'import testgen.priv as p; get_suites = getattr(p, "get_priv_test_suites", None) or p.get_priv_test_extensions; print(",".join(sorted(get_suites())))'
-    )"
-    if [[ -n "$requested_generator_extensions" ]]; then
-      priv_generator_extensions="$requested_generator_extensions"
-      IFS=',' read -r -a requested_extensions <<< "$priv_generator_extensions"
-      for extension in "${requested_extensions[@]}"; do
-        if [[ -z "$extension" ]] ||
-           [[ ",$registered_priv_generator_extensions," != *",$extension,"* ]]; then
-          echo "Requested privileged generator is unavailable: '$extension'" >&2
-          exit 1
-        fi
-      done
+    if [[ "$test_scope" == "all" ]]; then
+      generator_extensions="all"
     else
-      priv_generator_extensions="$registered_priv_generator_extensions"
+      registered_priv_generator_extensions="$(
+        cd "$act_root"
+        uv run python -c \
+          'import testgen.priv as p; get_suites = getattr(p, "get_priv_test_suites", None) or p.get_priv_test_extensions; print(",".join(sorted(get_suites())))'
+      )"
+      if [[ -n "$requested_generator_extensions" ]]; then
+        generator_extensions="$requested_generator_extensions"
+        IFS=',' read -r -a requested_extensions <<< "$generator_extensions"
+        for extension in "${requested_extensions[@]}"; do
+          if [[ -z "$extension" ]] ||
+             [[ ",$registered_priv_generator_extensions," != *",$extension,"* ]]; then
+            echo "Requested privileged generator is unavailable: '$extension'" >&2
+            exit 1
+          fi
+        done
+      else
+        generator_extensions="$registered_priv_generator_extensions"
+      fi
     fi
     if [[ "${REGENERATE_TESTS:-true}" == "true" ]]; then
       if [[ -d "$generated_test_root" ]]; then
@@ -270,41 +285,47 @@ case "$stage" in
       fi
       (
         cd "$act_root"
-        uv run testgen testplans -o "$generated_test_root" --jobs 1 \
-          --extensions "$priv_generator_extensions" --exclude ''
+        uv run testgen testplans -o "$generated_test_root" --jobs 0 \
+          --extensions "$generator_extensions" --exclude ''
       )
     elif [[ -d "$generated_test_root" ]]; then
       find "$generated_test_root" -depth -delete
     fi
 
     static_priv_suites=""
-    if [[ "$include_static_priv_suites" == "true" ]]; then
+    if [[ "$test_scope" == "priv" && "$include_static_priv_suites" == "true" ]]; then
       static_priv_suites="$(
         git -C "$act_root" ls-tree -d --name-only HEAD:tests/priv | paste -sd, -
       )"
     fi
-    {
-      printf '%s\n' "$priv_generator_extensions" | tr ',' '\n'
-      if [[ -n "$static_priv_suites" ]]; then
-        printf '%s\n' "$static_priv_suites" | tr ',' '\n'
-      fi
-    } > "$priv_source_roots"
+    if [[ "$test_scope" == "all" ]]; then
+      printf 'all\n' > "$priv_source_roots"
+    else
+      {
+        printf '%s\n' "$generator_extensions" | tr ',' '\n'
+        if [[ -n "$static_priv_suites" ]]; then
+          printf '%s\n' "$static_priv_suites" | tr ',' '\n'
+        fi
+      } > "$priv_source_roots"
+    fi
 
     python3 ci/jenkins/stage_priv_tests.py \
       --source "$act_root/tests" \
       --repository-root "$act_root" \
       --generated-source "$generated_test_root" \
-      --destination "$priv_test_dir" \
+      --destination "$test_dir" \
+      --scope "$test_scope" \
       --include-top-level "$static_priv_suites" \
-      --include-generated-top-level "$priv_generator_extensions"
+      --include-generated-top-level "$generator_extensions"
 
     python3 tools/act_agent/run_vf2_pack.py \
       --run-id "$run_id" \
       --act-config "$act_config" \
       --act-workdir "$act_workdir" \
       --dut-name "$dut_name" \
+      --artifact-root "$artifact_root" \
       --extensions "$all_extensions" \
-      --test-dir "$priv_test_dir" \
+      --test-dir "$test_dir" \
       --build-act-artifacts \
       --build-pack \
       --pack-elf-kind elf \
@@ -377,7 +398,7 @@ PY
       --state-root "$state_root" \
       --phase prepared \
       --expected-act-revision "$act_expected_revision" \
-      --test-root "$priv_test_dir" \
+      --test-root "$test_dir" \
       --pack-list "$pack_list" \
       --hardware-artifacts "$hardware_artifacts"
     write_state
@@ -502,7 +523,7 @@ PY
         --artifact-root "$ARTIFACT_ROOT" \
         --reference-root "$REFERENCE_ROOT" \
         --extensions "$all_extensions" \
-        --test-dir "$PRIV_TEST_DIR" \
+        --test-dir "$TEST_DIR" \
         --pack-list "$PACK_LIST" \
         --pack-file "$HARDWARE_ARTIFACTS/act_pack.bin" \
         --pack-elf-kind elf \
@@ -514,7 +535,7 @@ PY
         --yes
     fi
     if [[ -s "$MISSING_REPORT" ]]; then
-      echo "$platform_label run completed, but some selected privileged tests were not runnable because their Sail reference failed:" >&2
+      echo "$platform_label run completed, but some selected tests were not runnable because their Sail reference failed:" >&2
       sed 's/^/  /' "$MISSING_REPORT" >&2
       exit 3
     fi

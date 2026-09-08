@@ -147,13 +147,18 @@ def run_number(run_id: str, manifest: dict[str, str]) -> int | None:
 
 def source_extension_map(state_root: Path) -> dict[str, str]:
     result: dict[str, str] = {}
-    source_root = state_root / "all_priv_tests" / "priv"
-    if not source_root.is_dir():
-        return result
-    for source in source_root.rglob("*.S"):
-        if source.name.endswith(".orig.S"):
+    source_roots = [
+        state_root / "all_tests" / "rv64i",
+        state_root / "all_tests" / "priv",
+        state_root / "all_priv_tests" / "priv",
+    ]
+    for source_root in source_roots:
+        if not source_root.is_dir():
             continue
-        result.setdefault(source.stem, source.parent.name)
+        for source in source_root.rglob("*.S"):
+            if source.name.endswith(".orig.S"):
+                continue
+            result.setdefault(source.stem, source.parent.name)
     return result
 
 

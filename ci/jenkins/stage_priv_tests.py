@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Create a clean ACT tree containing only official privileged tests.
+"""Create a clean ACT tree containing official static and generated tests.
 
 Static tests are selected from files tracked by the ACT Git checkout. Generated
-tests are taken from a separate, freshly-created testgen output tree. This
-prevents local probes and other untracked files under ``tests/priv`` from
-leaking into Jenkins regressions.
+tests are taken from a separate, freshly-created testgen output tree. The
+default remains privileged-only for existing callers; ``--scope all`` stages
+all standard architecture roots as well. This prevents local probes and other
+untracked files under ``tests`` from leaking into Jenkins regressions.
 """
 
 from __future__ import annotations
@@ -40,12 +41,13 @@ def main() -> int:
     parser.add_argument(
         "--generated-source",
         type=Path,
-        help="Fresh testgen output root containing priv/<suite> directories",
+        help="Fresh testgen output root containing generated architecture suites",
     )
     parser.add_argument("--destination", type=Path, required=True)
+    parser.add_argument("--scope", choices=("priv", "all"), default="priv")
     parser.add_argument(
         "--include-top-level",
-        required=True,
+        default="",
         help="Comma-separated tracked suite directories below tests/priv",
     )
     parser.add_argument(
@@ -69,7 +71,7 @@ def main() -> int:
 
     tracked_suites = csv_names(args.include_top_level)
     generated_suites = csv_names(args.include_generated_top_level)
-    if not tracked_suites and not generated_suites:
+    if args.scope == "priv" and not tracked_suites and not generated_suites:
         raise SystemExit("No tracked or generated suite names were provided")
 
     missing_tracked = sorted(
@@ -90,7 +92,25 @@ def main() -> int:
     file_count = 0
     test_count = 0
     tracked_paths: list[bytes] = []
-    if available_tracked:
+    if args.scope == "all":
+        tracked_paths = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(repository_root),
+                "ls-files",
+                "-z",
+                "--",
+                "tests/rv32e",
+                "tests/rv32i",
+                "tests/rv64e",
+                "tests/rv64i",
+                "tests/priv",
+            ],
+            check=True,
+            capture_output=True,
+        ).stdout.split(b"\0")
+    elif available_tracked:
         tracked_paths = subprocess.run(
             [
                 "git",
@@ -118,31 +138,46 @@ def main() -> int:
     generated_test_count = 0
     if args.generated_source:
         generated_source = args.generated_source.resolve()
-        generated_priv = generated_source / "priv"
-        missing_generated = sorted(
-            name for name in generated_suites if not (generated_priv / name).is_dir()
-        )
-        if missing_generated:
-            print(
-                "Registered generators with no generated directory (skipped):\n  "
-                + "\n  ".join(missing_generated)
+        if args.scope == "all":
+            generated_files = sorted(
+                path
+                for path in generated_source.rglob("*")
+                if path.is_file()
+                and path.relative_to(generated_source).parts[0] != "env"
             )
-        for suite_name in sorted(generated_suites - set(missing_generated)):
-            suite = generated_priv / suite_name
-            for source_file in sorted(
-                path for path in suite.rglob("*") if path.is_file()
-            ):
-                link_file(source_file, generated_source, destination)
-                file_count += 1
-                if source_file.suffix == ".S":
-                    test_count += 1
-                    generated_test_count += 1
+        else:
+            generated_priv = generated_source / "priv"
+            missing_generated = sorted(
+                name for name in generated_suites if not (generated_priv / name).is_dir()
+            )
+            if missing_generated:
+                print(
+                    "Registered generators with no generated directory (skipped):\n  "
+                    + "\n  ".join(missing_generated)
+                )
+            generated_files = [
+                source_file
+                for suite_name in sorted(generated_suites - set(missing_generated))
+                for source_file in sorted(
+                    path
+                    for path in (generated_priv / suite_name).rglob("*")
+                    if path.is_file()
+                )
+            ]
+        for source_file in generated_files:
+            link_file(source_file, generated_source, destination)
+            file_count += 1
+            if source_file.suffix == ".S":
+                test_count += 1
+                generated_test_count += 1
 
+    staged_files = sum(1 for path in destination.rglob("*") if path.is_file())
+    staged_tests = sum(1 for path in destination.rglob("*.S") if path.is_file())
     print(
-        "Staged official privileged ACT tree: "
+        f"Staged official {args.scope} ACT tree: "
         f"tracked_suites={len(available_tracked)} "
         f"generated_suites={len(generated_suites)} "
-        f"tests={test_count} files={file_count} "
+        f"tests={staged_tests} files={staged_files} "
         f"generated_tests={generated_test_count} "
         f"destination={destination}"
     )
