@@ -249,7 +249,7 @@ case "$stage" in
     registered_priv_generator_extensions="$(
       cd "$act_root"
       uv run python -c \
-        'from testgen.priv import get_priv_test_suites; print(",".join(sorted(get_priv_test_suites())))'
+        'import testgen.priv as p; get_suites = getattr(p, "get_priv_test_suites", None) or p.get_priv_test_extensions; print(",".join(sorted(get_suites())))'
     )"
     if [[ -n "$requested_generator_extensions" ]]; then
       priv_generator_extensions="$requested_generator_extensions"
