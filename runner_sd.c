@@ -673,9 +673,7 @@ int load_pack_from_sd_tail(void)
             {
                 uint64_t start = f->start_lba;
                 uint64_t end = start + (uint64_t)f->num_blocks;
-                uint64_t total_bytes = (uint64_t)f->num_blocks * SD_BLOCK_SIZE;
                 if (start >= total_blocks || end > (uint64_t)(total_blocks - 1u) || end < start) return -303;
-                if (total_bytes > EXT_PACK_MAX_BYTES) return -304;
             }
 
             g_pack_footer_lba = total_blocks - 1u;

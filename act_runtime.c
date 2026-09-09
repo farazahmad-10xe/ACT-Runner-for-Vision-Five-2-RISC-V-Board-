@@ -230,7 +230,7 @@ int run_one_blob(const char *name, const uint8_t *blob, size_t blob_size, TestRe
     out->tohost = run_loaded_entry(entry);
     g_runner_exec.active_case_name = 0;
 
-    if (out->tohost != 0 && out->tohost != TOHOST_TIMEOUT && !g_runner_exec.monitor_report_done) {
+    if (out->tohost != 0 && !g_runner_exec.monitor_report_done) {
         (void)wait_for_monitor_report();
     }
 

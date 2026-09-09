@@ -24,6 +24,10 @@ case "$test_scope" in
   all) test_dir="$state_root/all_tests" ;;
   *) echo "ACT_TEST_SCOPE must be 'priv' or 'all'." >&2; exit 2 ;;
 esac
+act_build_args=()
+if [[ "$test_scope" == "all" ]]; then
+  act_build_args+=(--act-fast)
+fi
 generated_test_root="$state_root/generated_tests"
 missing_report="$state_root/reference_failed_no_hardware_elf.txt"
 reference_status="$state_root/sail_reference_status.tsv"
@@ -330,6 +334,7 @@ case "$stage" in
       --build-pack \
       --pack-elf-kind elf \
       --no-act-debug \
+      "${act_build_args[@]}" \
       --skip-build \
       --skip-sd-write \
       --skip-serial-run \
