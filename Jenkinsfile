@@ -69,8 +69,23 @@ pipeline {
                     git init .
                     git remote add origin "$RUNNER_REMOTE_URL"
                     runner_ref="refs/remotes/origin/$runner_branch"
-                    git fetch --force --prune origin \
-                      "+refs/heads/$runner_branch:$runner_ref"
+                    fetch_ok=false
+                    for attempt in 1 2 3 4; do
+                      echo "Runner fetch attempt ${attempt}/4"
+                      if timeout 180 git -c http.lowSpeedLimit=1 \
+                        -c http.lowSpeedTime=30 fetch --force --prune origin \
+                        "+refs/heads/$runner_branch:$runner_ref"; then
+                        fetch_ok=true
+                        break
+                      fi
+                      if [[ "$attempt" -lt 4 ]]; then
+                        sleep "$((attempt * 15))"
+                      fi
+                    done
+                    [[ "$fetch_ok" == true ]] || {
+                      echo "Unable to fetch runner branch after 4 attempts: $runner_branch" >&2
+                      exit 1
+                    }
                     fetched_runner_revision="$(git rev-parse --verify "${runner_ref}^{commit}")"
                     if [[ -n "$runner_revision_override" ]]; then
                       resolved_runner_revision="$(git rev-parse --verify "${runner_revision_override}^{commit}")"
