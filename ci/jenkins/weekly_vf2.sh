@@ -140,8 +140,24 @@ case "$stage" in
     fi
 
     jenkins_act_ref="refs/remotes/jenkins/$act_branch"
-    git -C "$act_root" fetch --force "$act_remote_url" \
-      "+refs/heads/$act_branch:$jenkins_act_ref"
+    fetch_ok=false
+    for attempt in 1 2 3 4; do
+      echo "ACT fetch attempt ${attempt}/4"
+      if timeout 180 git -C "$act_root" \
+        -c http.lowSpeedLimit=1 -c http.lowSpeedTime=30 \
+        fetch --force "$act_remote_url" \
+        "+refs/heads/$act_branch:$jenkins_act_ref"; then
+        fetch_ok=true
+        break
+      fi
+      if [[ "$attempt" -lt 4 ]]; then
+        sleep "$((attempt * 15))"
+      fi
+    done
+    [[ "$fetch_ok" == true ]] || {
+      echo "Unable to fetch ACT branch after 4 attempts: $act_branch" >&2
+      exit 1
+    }
 
     fetched_act_revision="$(
       git -C "$act_root" rev-parse --verify "${jenkins_act_ref}^{commit}"
