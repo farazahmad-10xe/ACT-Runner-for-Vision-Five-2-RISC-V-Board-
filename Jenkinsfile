@@ -24,8 +24,8 @@ pipeline {
             defaultValue: '',
             description: 'Optional exact firmware commit. Leave empty to test the latest RUNNER_BRANCH head.')
         string(name: 'ACT_BRANCH',
-            defaultValue: 'sifive_u74',
-            description: 'Arshia2564/riscv-arch-test branch resolved once at the beginning of each weekly run.')
+            defaultValue: 'sail014-act41-vf2-bpif3',
+            description: 'ACT 4.1 branch with the Sail 0.14 VF2/U74 configuration.')
         string(name: 'ACT_REVISION_OVERRIDE',
             defaultValue: '',
             description: 'Optional exact ACT commit for reproducing an older run. Leave empty to use the latest ACT_BRANCH head.')
@@ -37,7 +37,7 @@ pipeline {
             description: 'Flash the VF2 SD card, run the board, and generate ACT Agent reports.')
         string(name: 'SD_DEV', defaultValue: '/dev/sda', description: 'Dedicated VF2 SD-card device.')
         string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0', description: 'VF2 UART device.')
-        string(name: 'CAPTURE_TIMEOUT', defaultValue: '10800', description: 'Maximum VF2 UART capture time in seconds.')
+        string(name: 'CAPTURE_TIMEOUT', defaultValue: '43200', description: 'Maximum VF2 UART capture time in seconds.')
     }
 
     environment {
@@ -47,11 +47,12 @@ pipeline {
         VF2_PRIVILEGED_HELPER_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
         VF2_FLASH_STAGING_ROOT = '/home/lpt-10xe/jenkins-hardware-staging/vf2-privileged-weekly'
         ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
+        ACT_TEST_SCOPE = 'all'
         SD_FLASH_ATTEMPTS = '3'
         SD_FLASH_RETRY_DELAY = '10'
-        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
-        SAIL_EXPECTED_VERSION = '0.13'
-        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.14/bin/sail_riscv_sim'
+        SAIL_EXPECTED_VERSION = '0.14'
+        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.14/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
     }
 
     stages {

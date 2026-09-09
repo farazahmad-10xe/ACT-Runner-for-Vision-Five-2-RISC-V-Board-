@@ -501,12 +501,11 @@ void request_deferred_reset(void)
 
 int wait_for_monitor_report(void)
 {
-    uint64_t deadline = *mtime_ptr() + 600000000ULL;
-    while (*mtime_ptr() < deadline) {
+    for (;;) {
         if (g_runner_exec.monitor_report_done) return 0;
+        /* The monitor hart exclusively owns reports and reset recovery. */
         cpu_relax();
     }
-    return -1;
 }
 
 /*

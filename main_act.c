@@ -56,6 +56,7 @@ void main(void)
 
     uart_puts("\n=============================\n");
     uart_puts("M-mode (VisionFive2) payload runner\n");
+    uart_puts("[BUILD] single-monitor-uart-report-v2\n");
     uart_puts("hartid="); uart_put_hex(hart); uart_puts("\n");
     uart_puts("payload_kind="); uart_puts(payload_kind_name()); uart_puts("\n");
     uart_puts("exec_mode="); uart_puts(exec_mode_name(g_lower_state.requested_exec_mode)); uart_puts("\n");

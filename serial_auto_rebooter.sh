@@ -60,6 +60,17 @@ done
 mkdir -p "$(dirname "$log_path")"
 
 cycle_pid=""
+serial_reader_pid=""
+
+# Only one harness may consume a tty.  Multiple readers split bytes between
+# logs and make valid UART output look truncated, reordered, and interleaved.
+serial_lock_name="$(basename "$serial_dev" | tr -c 'A-Za-z0-9_.-' '_')"
+serial_lock_path="/tmp/act-uart-${serial_lock_name}.lock"
+exec 9>"$serial_lock_path"
+if ! flock -n 9; then
+  echo "ERROR: another UART monitor already owns $serial_dev (lock: $serial_lock_path)" >&2
+  exit 1
+fi
 
 cleanup() {
   trap - INT TERM EXIT
@@ -68,6 +79,11 @@ cleanup() {
     kill "$cycle_pid" 2>/dev/null || true
     wait "$cycle_pid" 2>/dev/null || true
     cycle_pid=""
+  fi
+  if [[ -n "${serial_reader_pid:-}" ]]; then
+    kill "$serial_reader_pid" 2>/dev/null || true
+    wait "$serial_reader_pid" 2>/dev/null || true
+    serial_reader_pid=""
   fi
 }
 
@@ -114,13 +130,12 @@ if [[ -z "${TUYA_DEVICE_ID:-}" || -z "${TUYA_DEVICE_IP:-}" || -z "${TUYA_LOCAL_K
   echo "[HOST] WARN: Tuya credentials are incomplete; power cycling will fail unless --start-cycle is omitted or env vars are exported." >&2
 fi
 
-stty -F "$serial_dev" 115200 cs8 -cstopb -parenb -ixon -ixoff -icanon -echo raw
-
 last_cycle_ts=0
 last_boot_cycle_ts=0
 consecutive_boot_fails=0
 case_reports_seen=0
 table_count=0
+reset_cycle_pending=0
 
 run_cycle_command() {
   if command -v setsid >/dev/null 2>&1; then
@@ -178,14 +193,35 @@ if [[ "$start_cycle" -eq 1 ]]; then
   trigger_cycle "startup"
 fi
 
-exec > >(tee -a "$log_path")
+monitor_complete=0
+while (( monitor_complete == 0 )); do
+  while [[ ! -e "$serial_dev" ]]; do
+    echo "[HOST] waiting for UART device: $serial_dev"
+    sleep 1
+  done
+  if ! stty -F "$serial_dev" 115200 cs8 -cstopb -parenb -ixon -ixoff -icanon -echo raw; then
+    echo "[HOST] UART exists but is not ready; retrying $serial_dev"
+    sleep 1
+    continue
+  fi
 
-while IFS= read -r line; do
+  # Drain the UART into the raw log with cat.  The shell parser below may do
+  # regex matching and power-control work, so it must not sit directly on the
+  # small tty receive buffer or verbose signature dumps can lose bytes.
+  log_offset=$(stat -c %s "$log_path" 2>/dev/null || echo 0)
+  cat "$serial_dev" >> "$log_path" &
+  serial_reader_pid=$!
+
+  # Follow only bytes appended by this reader.  Falling behind here delays
+  # reactions but no longer drops UART input because cat keeps draining it.
+  set +e
+  while IFS= read -r line; do
   echo "$line"
 
   # Any sign of successful boot progress resets boot-failure retry streak.
   if [[ "$line" == *"U-Boot SPL"* ]] || [[ "$line" == *"[CASE] START"* ]] || [[ "$line" == *"[SUITE] loaded external pack from SD tail"* ]]; then
     consecutive_boot_fails=0
+    reset_cycle_pending=0
   fi
 
   if [[ "$line" =~ \[SD\]\ table_count=([0-9]+) ]]; then
@@ -200,6 +236,7 @@ while IFS= read -r line; do
     next_index="${BASH_REMATCH[1]}"
     if (( stop_on_suite_complete == 1 && table_count > 0 && next_index >= table_count )); then
       echo "[HOST] suite complete next_index=${next_index} table_count=${table_count}; stopping UART monitor"
+      monitor_complete=1
       break
     fi
     # A failing or reset-prone case may emit more than one REPORT while the
@@ -207,17 +244,42 @@ while IFS= read -r line; do
     # persisted pack progress, not the raw number of REPORT lines.
     if (( stop_after_cases > 0 && next_index >= stop_after_cases )); then
       echo "[HOST] stop-after-cases reached next_index=${next_index} case_reports=${case_reports_seen}; stopping UART monitor"
+      monitor_complete=1
       break
     fi
   fi
 
-  if [[ "$line" == *"[RST] fast fail reset"* ]] || [[ "$line" == *"[RST] trigger watchdog reset"* ]]; then
-    trigger_cycle "watchdog_reset"
+  # Match the stable message body too.  A UART overrun may lose the short
+  # "[RST] " prefix, and some boards print "watchdog armed" immediately
+  # before relying on the host-side hard-cycle fallback.
+  if [[ "$line" == *"fast fail reset"* ]] || \
+     [[ "$line" == *"trigger watchdog reset"* ]] || \
+     [[ "$line" == *"watchdog armed"* ]]; then
+    if (( reset_cycle_pending == 0 )); then
+      reset_cycle_pending=1
+      trigger_cycle "watchdog_reset"
+    else
+      echo "[HOST] reset cycle already issued; ignoring duplicate reset marker"
+    fi
     continue
   fi
 
-  if [[ "$line" == *"BOOT fail,Error is 0xffffffff"* ]] || [[ "$line" == *"dwmci_s: Response Timeout."* ]]; then
+  if [[ "$line" == *"BOOT fail,Error is 0xffffffff"* ]] || [[ "$line" == *"dwmci_s: Response Timeout."* ]] || [[ "$line" == *"ci_s: Response Timeout."* ]]; then
     trigger_boot_recovery_cycle
     continue
   fi
-done < "$serial_dev"
+  done < <(tail -c "+$((log_offset + 1))" -f --pid="$serial_reader_pid" "$log_path")
+  read_rc=$?
+  if (( monitor_complete != 0 )); then
+    kill "$serial_reader_pid" 2>/dev/null || true
+  fi
+  wait "$serial_reader_pid"
+  reader_rc=$?
+  serial_reader_pid=""
+  set -e
+
+  if (( monitor_complete == 0 )); then
+    echo "[HOST] UART disconnected or reached EOF (read_rc=$read_rc reader_rc=$reader_rc); reopening $serial_dev"
+    sleep 1
+  fi
+done
