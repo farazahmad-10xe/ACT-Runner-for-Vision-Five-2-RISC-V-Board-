@@ -122,12 +122,13 @@ build can enter a new run.
 
 ## Banana Pi BPI-F3 weekly job
 
-The `bpif3-privileged-weekly` Pipeline uses the Banana Pi BPI-F3 / SpacemiT K1
-configuration in `config/cores/bpif3/bpif3-rva22s64` from the latest fetched
-`sifive_u74` branch. It has an automatic weekly trigger and, by default,
-regenerates privileged tests, runs the Sail 0.13 references, optionally checks
-the packed ELFs with Spike, and builds the BPI-F3 OpenSBI FIT plus SD-tail pack.
-Each build records the exact detached runner and ACT commits used.
+The legacy-named `bpif3-privileged-weekly` Pipeline uses the Banana Pi BPI-F3 /
+SpacemiT K1 configuration in `config/cores/bpif3/bpif3-rva22s64`. Unlike the
+VF2 privileged-only job, it stages the complete official ACT tree, regenerates
+all scalar, vector, and privileged suites, runs Sail 0.14 references, and
+builds one BPI-F3 OpenSBI FIT plus SD-tail pack containing every runnable RV64
+test selected by the DUT configuration. The firmware accepts up to 4095 pack
+entries. Each build records the exact detached runner and ACT commits used.
 
 Scheduled builds leave `RUN_HARDWARE=false`. To execute on the board, start a
 parameterized build with `RUN_HARDWARE=true` after connecting the dedicated
