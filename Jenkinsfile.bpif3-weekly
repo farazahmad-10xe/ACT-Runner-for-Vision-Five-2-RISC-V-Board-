@@ -25,8 +25,8 @@ pipeline {
             description: 'Firmware/runner branch resolved once at the start of the run.')
         string(name: 'RUNNER_REVISION_OVERRIDE', defaultValue: '',
             description: 'Optional exact firmware commit for reproduction.')
-        string(name: 'ACT_BRANCH', defaultValue: 'sail014-bpif3-20260908',
-            description: 'Sail 0.14-compatible ACT branch containing the BPI-F3 configuration.')
+        string(name: 'ACT_BRANCH', defaultValue: 'sifive_u74',
+            description: 'Merged ACT 4.1 branch containing the Sail 0.14 BPI-F3 configuration.')
         string(name: 'ACT_REVISION_OVERRIDE', defaultValue: '',
             description: 'Optional exact ACT commit for reproduction.')
         booleanParam(name: 'REGENERATE_TESTS', defaultValue: true,
@@ -66,7 +66,23 @@ pipeline {
                     git init .
                     git remote add origin "$RUNNER_REMOTE_URL"
                     ref="refs/remotes/origin/$branch"
-                    git fetch --force --prune origin "+refs/heads/$branch:$ref"
+                    fetch_ok=false
+                    for attempt in 1 2 3 4; do
+                      echo "Runner fetch attempt ${attempt}/4"
+                      if timeout 180 git -c http.lowSpeedLimit=1 \
+                        -c http.lowSpeedTime=30 fetch --force --prune origin \
+                        "+refs/heads/$branch:$ref"; then
+                        fetch_ok=true
+                        break
+                      fi
+                      if [[ "$attempt" -lt 4 ]]; then
+                        sleep "$((attempt * 15))"
+                      fi
+                    done
+                    [[ "$fetch_ok" == true ]] || {
+                      echo "Unable to fetch runner branch after 4 attempts: $branch" >&2
+                      exit 1
+                    }
                     fetched="$(git rev-parse --verify "${ref}^{commit}")"
                     revision="$fetched"
                     source="latest-branch-head"
