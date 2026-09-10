@@ -9,7 +9,7 @@ pipeline {
     options {
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '8', artifactNumToKeepStr: '8'))
-        timeout(time: 14, unit: 'HOURS')
+        timeout(time: 120, unit: 'HOURS')
         timestamps()
         skipDefaultCheckout(true)
     }
@@ -26,18 +26,18 @@ pipeline {
         string(name: 'RUNNER_REVISION_OVERRIDE', defaultValue: '',
             description: 'Optional exact firmware commit for reproduction.')
         string(name: 'ACT_BRANCH', defaultValue: 'sifive_u74',
-            description: 'ACT branch containing the BPI-F3 configuration.')
+            description: 'Merged ACT 4.1 branch containing the Sail 0.14 BPI-F3 configuration.')
         string(name: 'ACT_REVISION_OVERRIDE', defaultValue: '',
             description: 'Optional exact ACT commit for reproduction.')
         booleanParam(name: 'REGENERATE_TESTS', defaultValue: true,
-            description: 'Regenerate all testgen-backed privileged suites.')
-        booleanParam(name: 'RUN_SPIKE', defaultValue: true,
-            description: 'Run packed ELFs on Spike before optional hardware execution.')
+            description: 'Regenerate all scalar, vector, and privileged testgen suites.')
+        booleanParam(name: 'RUN_SPIKE', defaultValue: false,
+            description: 'Optional Spike screen; disabled by default because the existing Spike profile is VF2/U74-specific.')
         booleanParam(name: 'RUN_HARDWARE', defaultValue: false,
             description: 'Flash and execute on BPI-F3. Requires its SD card, UART and smart plug to be connected.')
         string(name: 'SD_DEV', defaultValue: '/dev/sda', description: 'Dedicated BPI-F3 SD-card device.')
         string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0', description: 'BPI-F3 UART device.')
-        string(name: 'CAPTURE_TIMEOUT', defaultValue: '10800', description: 'Maximum UART capture time in seconds.')
+        string(name: 'CAPTURE_TIMEOUT', defaultValue: '345600', description: 'Maximum UART capture time in seconds (default: 96 hours).')
     }
 
     environment {
@@ -49,9 +49,9 @@ pipeline {
         ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
         SD_FLASH_ATTEMPTS = '3'
         SD_FLASH_RETRY_DELAY = '10'
-        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
-        SAIL_EXPECTED_VERSION = '0.13'
-        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.14/bin/sail_riscv_sim'
+        SAIL_EXPECTED_VERSION = '0.14'
+        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.14/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/whisper/build-Linux:/home/lpt-10xe/riscv-arch-test/sail-riscv/build/c_emulator:/home/lpt-10xe/sail/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
     }
 
     stages {
@@ -66,7 +66,23 @@ pipeline {
                     git init .
                     git remote add origin "$RUNNER_REMOTE_URL"
                     ref="refs/remotes/origin/$branch"
-                    git fetch --force --prune origin "+refs/heads/$branch:$ref"
+                    fetch_ok=false
+                    for attempt in 1 2 3 4; do
+                      echo "Runner fetch attempt ${attempt}/4"
+                      if timeout 180 git -c http.lowSpeedLimit=1 \
+                        -c http.lowSpeedTime=30 fetch --force --prune origin \
+                        "+refs/heads/$branch:$ref"; then
+                        fetch_ok=true
+                        break
+                      fi
+                      if [[ "$attempt" -lt 4 ]]; then
+                        sleep "$((attempt * 15))"
+                      fi
+                    done
+                    [[ "$fetch_ok" == true ]] || {
+                      echo "Unable to fetch runner branch after 4 attempts: $branch" >&2
+                      exit 1
+                    }
                     fetched="$(git rev-parse --verify "${ref}^{commit}")"
                     revision="$fetched"
                     source="latest-branch-head"
@@ -82,7 +98,28 @@ pipeline {
                     test -f tools/act_agent/run_reference_elf.py
                     test -f tools/act_triage/parse_rvcp_log.py
                     if [[ "${RUN_HARDWARE:-false}" == "true" ]]; then
+                      test -f "$LOCAL_TUYA_DEVICES_SOURCE"
                       install -m 0600 "$LOCAL_TUYA_DEVICES_SOURCE" devices.json
+                      python3 - <<'PY'
+import json
+from pathlib import Path
+
+data = json.loads(Path("devices.json").read_text())
+if isinstance(data, list):
+    devices = data
+elif isinstance(data, dict) and {"id", "ip", "key"} <= set(data):
+    devices = [data]
+elif isinstance(data, dict):
+    devices = list(data.values())
+else:
+    devices = []
+if not any(
+    isinstance(device, dict) and all(device.get(field) for field in ("id", "ip", "key"))
+    for device in devices
+):
+    raise SystemExit("Local Tuya devices file has no complete id/ip/key entry")
+print("Validated local Tuya device configuration without displaying credentials.")
+PY
                     fi
                     {
                       echo "Runner repository:       $RUNNER_REMOTE_URL"
@@ -157,7 +194,7 @@ pipeline {
                     currentBuild.description = readFile(descriptionFile).trim()
                 }
             }
-            archiveArtifacts artifacts: "logs/jenkins/bpif3-weekly/jenkins_bpif3_weekly_${env.BUILD_NUMBER}/**, logs/runs/jenkins_bpif3_weekly_${env.BUILD_NUMBER}/**, logs/reference-model-runs/jenkins_bpif3_weekly_${env.BUILD_NUMBER}/**, external/riscv-arch-test/work-bpif3-jenkins-all-priv/bpif3-rva22s64/build/priv/**/*.sig.log, external/riscv-arch-test/work-bpif3-jenkins-all-priv/bpif3-rva22s64/build/priv/**/*.results",
+            archiveArtifacts artifacts: "logs/jenkins/bpif3-weekly/jenkins_bpif3_weekly_${env.BUILD_NUMBER}/**, logs/runs/jenkins_bpif3_weekly_${env.BUILD_NUMBER}/**, logs/reference-model-runs/jenkins_bpif3_weekly_${env.BUILD_NUMBER}/**, external/riscv-arch-test/work-bpif3-jenkins-all/bpif3-rva22s64/build/**/*.sig.log, external/riscv-arch-test/work-bpif3-jenkins-all/bpif3-rva22s64/build/**/*.results",
                              allowEmptyArchive: true, fingerprint: false
             publishHTML target: [
                 allowMissing: true,
@@ -166,7 +203,7 @@ pipeline {
                 reportDir: "logs/jenkins/bpif3-weekly/jenkins_bpif3_weekly_${env.BUILD_NUMBER}/site",
                 reportFiles: 'index.html',
                 reportName: 'BPI-F3 Result Summary',
-                reportTitles: 'BPI-F3 K1 Privileged-Test Results'
+                reportTitles: 'BPI-F3 K1 All Supported ISA Test Results'
             ]
         }
     }
