@@ -94,6 +94,12 @@ such as `@2` cannot redirect a build into another build's checkout.
 
 ## Complete weekly job
 
+The VF2 and BPI-F3 weekly jobs expose `ACT_TEST_SCOPE` as a build parameter.
+Select `priv` to generate, build, package, and run only privileged tests, or
+select `all` to include the non-privileged scalar suites. Keep
+`REGENERATE_TESTS=true` for `priv` runs so testgen-backed privileged suites are
+included alongside the static privileged sources.
+
 The `vf2-privileged-weekly` Pipeline is started manually from Jenkins and has
 no automatic timer trigger. It runs in the dedicated disposable workspace
 `/home/lpt-10xe/jenkins-workspaces/vf2-privileged-weekly`; it never cleans or

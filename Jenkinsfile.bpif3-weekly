@@ -29,8 +29,11 @@ pipeline {
             description: 'Merged ACT 4.1 branch containing the Sail 0.14 BPI-F3 configuration.')
         string(name: 'ACT_REVISION_OVERRIDE', defaultValue: '',
             description: 'Optional exact ACT commit for reproduction.')
+        choice(name: 'ACT_TEST_SCOPE',
+            choices: ['priv', 'all'],
+            description: 'priv generates and runs only privileged tests; all also includes non-privileged scalar tests.')
         booleanParam(name: 'REGENERATE_TESTS', defaultValue: true,
-            description: 'Regenerate all scalar, vector, and privileged testgen suites.')
+            description: 'Regenerate testgen suites selected by ACT_TEST_SCOPE before ACT/Sail execution.')
         booleanParam(name: 'RUN_SPIKE', defaultValue: false,
             description: 'Optional Spike screen; disabled by default because the existing Spike profile is VF2/U74-specific.')
         booleanParam(name: 'RUN_HARDWARE', defaultValue: false,

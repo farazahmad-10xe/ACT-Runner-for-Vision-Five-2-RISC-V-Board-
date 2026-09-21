@@ -29,8 +29,11 @@ pipeline {
         string(name: 'ACT_REVISION_OVERRIDE',
             defaultValue: '',
             description: 'Optional exact ACT commit for reproducing an older run. Leave empty to use the latest ACT_BRANCH head.')
+        choice(name: 'ACT_TEST_SCOPE',
+            choices: ['priv', 'all'],
+            description: 'priv generates and runs only privileged tests; all also includes non-privileged scalar tests.')
         booleanParam(name: 'REGENERATE_TESTS', defaultValue: true,
-            description: 'Regenerate testgen-backed privileged suites before ACT/Sail execution.')
+            description: 'Regenerate testgen suites selected by ACT_TEST_SCOPE before ACT/Sail execution.')
         booleanParam(name: 'RUN_SPIKE', defaultValue: true,
             description: 'Run each packed hardware ELF on Spike before the board stage.')
         booleanParam(name: 'RUN_HARDWARE', defaultValue: true,
@@ -47,7 +50,6 @@ pipeline {
         VF2_PRIVILEGED_HELPER_ROOT = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified'
         VF2_FLASH_STAGING_ROOT = '/home/lpt-10xe/jenkins-hardware-staging/vf2-privileged-weekly'
         ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
-        ACT_TEST_SCOPE = 'all'
         SD_FLASH_ATTEMPTS = '3'
         SD_FLASH_RETRY_DELAY = '10'
         SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.14/bin/sail_riscv_sim'
