@@ -263,3 +263,10 @@ workspace suffix such as `@2` does not affect sudo authorization. Flashing makes
 three SD-device availability attempts ten seconds apart. If `SD_DEV` or a
 staging path is changed, update `/etc/sudoers.d/jenkins-vf2-hardware`
 deliberately as root as well.
+## Per-build Excel report
+
+`weekly_vf2.sh finalize` invokes `build_status_workbook.py` for both VF2 and BPI-F3. It creates
+`test_status_matrix.xlsx` below the build's Jenkins state directory from Sail, Spike, hardware,
+and ACT artifact data. The existing `archiveArtifacts` rule retains the workbook with that build,
+and the HTML summary provides a direct download link. Python `openpyxl` is required and checked
+during preflight.

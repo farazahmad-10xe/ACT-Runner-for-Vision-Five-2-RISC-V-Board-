@@ -248,6 +248,10 @@ case "$stage" in
       exit 1
     fi
     command -v spike
+    python3 -c 'import openpyxl' || {
+      echo "Python package openpyxl is required to generate test_status_matrix.xlsx." >&2
+      exit 1
+    }
     free_kb="$(df -Pk "$repo_root" | awk 'NR == 2 { print $4 }')"
     if (( free_kb < 6 * 1024 * 1024 )); then
       echo "At least 6 GiB of free workspace space is required; found $((free_kb / 1024)) MiB." >&2
@@ -592,6 +596,14 @@ PY
       rm -f "$tracking_sheet_csv.tmp"
       echo "WARNING: tracking-sheet refresh failed; continuing without a comparison artifact." >&2
     fi
+    python3 ci/jenkins/build_status_workbook.py \
+      --state-root "$state_root" \
+      --run-root "$repo_root/logs/runs/$run_id" \
+      --artifact-root "$artifact_root" \
+      --platform-label "$platform_label" \
+      --run-id "$run_id" \
+      --test-scope "$test_scope" \
+      --output "$state_root/test_status_matrix.xlsx"
     history_args=()
     if [[ -n "${JENKINS_HOME:-}" && -n "${JOB_NAME:-}" ]]; then
       history_args+=(

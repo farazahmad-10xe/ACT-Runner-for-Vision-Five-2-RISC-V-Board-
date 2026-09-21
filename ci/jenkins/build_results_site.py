@@ -508,8 +508,23 @@ recorded in the sheet; it does not by itself identify which result is newer or c
         "Download tracking-sheet comparison.csv",
         force_download=True,
     )
+    workbook_link = publish_file(
+        state_root / "test_status_matrix.xlsx",
+        Path("downloads") / "test_status_matrix.xlsx",
+        "Download test_status_matrix.xlsx",
+        force_download=True,
+    )
     top_links = " &middot; ".join(
-        item for item in (complete_zip, comparison_link, summary_link, cases_csv_link, complete_uart) if item
+        item
+        for item in (
+            complete_zip,
+            workbook_link,
+            comparison_link,
+            summary_link,
+            cases_csv_link,
+            complete_uart,
+        )
+        if item
     )
 
     index_html = f"""<!doctype html>
