@@ -28,6 +28,11 @@ JOBS = (
         "ci/jenkins/job-config-sanity.xml",
     ),
     (
+        "vf2-uart-sanity",
+        "Jenkinsfile.uart-sanity",
+        "ci/jenkins/job-config-uart-sanity.xml",
+    ),
+    (
         "vf2-privileged-weekly",
         "Jenkinsfile",
         "ci/jenkins/job-config.xml",

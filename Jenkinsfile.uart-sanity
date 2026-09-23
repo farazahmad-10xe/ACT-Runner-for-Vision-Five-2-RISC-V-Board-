@@ -1,0 +1,112 @@
+pipeline {
+    agent {
+        node {
+            label 'built-in'
+            customWorkspace '/home/lpt-10xe/jenkins-workspaces/vf2-uart-sanity'
+        }
+    }
+
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
+        timeout(time: 2, unit: 'HOURS')
+        timestamps()
+        skipDefaultCheckout(true)
+    }
+
+    parameters {
+        string(name: 'RUNNER_BRANCH', defaultValue: 'main',
+            description: 'Runner branch resolved once at checkout.')
+        string(name: 'RUNNER_REVISION_OVERRIDE', defaultValue: '',
+            description: 'Optional exact runner commit.')
+        string(name: 'ACT_BRANCH', defaultValue: 'sifive_u74',
+            description: 'ACT branch resolved once at preflight.')
+        string(name: 'ACT_REVISION_OVERRIDE', defaultValue: '',
+            description: 'Optional exact ACT commit.')
+        booleanParam(name: 'RUN_SPIKE', defaultValue: true,
+            description: 'Run the generated ELFs on Spike before VF2.')
+        booleanParam(name: 'RUN_HARDWARE', defaultValue: true,
+            description: 'Send the five ELFs to the persistent UART runner.')
+        string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0',
+            description: 'VF2 USB-UART device path; prefer a local /dev/serial/by-id path when available.')
+    }
+
+    environment {
+        RUNNER_REMOTE_URL = 'https://github.com/farazahmad-10xe/ACT-Runner-for-Vision-Five-2-RISC-V-Board-.git'
+        ACT_REMOTE_URL = 'https://github.com/Arshia2564/riscv-arch-test.git'
+        LOCAL_TOOLS_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools'
+        LOCAL_TUYA_DEVICES_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/devices.json'
+        REGENERATE_TESTS = 'true'
+        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
+        SAIL_EXPECTED_VERSION = '0.13'
+        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/bin:/usr/bin:/bin'
+    }
+
+    stages {
+        stage('Clean Checkout') {
+            steps {
+                deleteDir()
+                sh '''#!/usr/bin/env bash
+                    set -euo pipefail
+                    git check-ref-format --branch "$RUNNER_BRANCH" >/dev/null
+                    git init .
+                    git remote add origin "$RUNNER_REMOTE_URL"
+                    git fetch --force --prune origin \
+                      "+refs/heads/$RUNNER_BRANCH:refs/remotes/origin/$RUNNER_BRANCH"
+                    fetched="$(git rev-parse --verify "refs/remotes/origin/$RUNNER_BRANCH^{commit}")"
+                    selected="${RUNNER_REVISION_OVERRIDE:-$fetched}"
+                    selected="$(git rev-parse --verify "$selected^{commit}")"
+                    git checkout --detach "$selected"
+                    git submodule update --init external/riscv-arch-test
+                    mkdir -p tools
+                    cp -a "$LOCAL_TOOLS_SOURCE/." tools/
+                    install -m 0600 "$LOCAL_TUYA_DEVICES_SOURCE" devices.json
+                    {
+                      echo "Runner branch: $RUNNER_BRANCH"
+                      echo "Runner SHA:    $selected"
+                      echo "Checkout:      detached"
+                    } | tee .jenkins_runner_resolution.txt
+                    test -x ci/jenkins/uart_sanity_vf2.sh
+                '''
+            }
+        }
+
+        stage('ACT Preflight') {
+            steps { sh 'ci/jenkins/uart_sanity_vf2.sh preflight' }
+        }
+
+        stage('Generate Five + Sail') {
+            steps { sh 'ci/jenkins/uart_sanity_vf2.sh prepare' }
+        }
+
+        stage('Spike Reference') {
+            when { expression { return params.RUN_SPIKE } }
+            steps { sh 'ci/jenkins/uart_sanity_vf2.sh spike' }
+        }
+
+        stage('Build Expected UART Runner') {
+            steps { sh 'ci/jenkins/uart_sanity_vf2.sh verify-runner-image' }
+        }
+
+        stage('VF2 UART Execute') {
+            when { expression { return params.RUN_HARDWARE } }
+            steps {
+                lock(resource: 'vf2-hardware') {
+                    sh 'SERIAL_DEV="$SERIAL_DEV" ci/jenkins/uart_sanity_vf2.sh run'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'test ! -x ci/jenkins/uart_sanity_vf2.sh || ci/jenkins/uart_sanity_vf2.sh finalize || true'
+            junit testResults: "logs/runs/jenkins_uart_sanity_${env.BUILD_NUMBER}/junit.xml",
+                  allowEmptyResults: true,
+                  keepLongStdio: true
+            archiveArtifacts artifacts: "logs/jenkins/uart_sanity/jenkins_uart_sanity_${env.BUILD_NUMBER}/**, logs/runs/jenkins_uart_sanity_${env.BUILD_NUMBER}/**, logs/reference-model-runs/jenkins_uart_sanity_${env.BUILD_NUMBER}/**, cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/uart_stream/manifest.json",
+                             allowEmptyArchive: true,
+                             fingerprint: true
+        }
+    }
+}

@@ -72,6 +72,7 @@ source "$board_file"
 source "$profile_file"
 
 payload_transport="${payload_transport_override:-${BOARD_PAYLOAD_TRANSPORT:-sd_tail_pack}}"
+runner_build_id="$(git rev-parse --short=12 HEAD 2>/dev/null || printf unknown)"
 RUNNER_UART_STREAM=0
 case "$payload_transport" in
   sd_tail_pack)
@@ -195,6 +196,7 @@ do
   fi
 done
 make_args+=("RUNNER_UART_STREAM=$RUNNER_UART_STREAM")
+make_args+=("RUNNER_BUILD_ID=$runner_build_id")
 
 if [[ -n "${RIESCUE_ELF+x}" ]]; then
   make_args+=("RIESCUE_ELF=$RIESCUE_ELF")
@@ -278,6 +280,7 @@ cat > "$out_dir/manifest.json" <<EOF2
   "board_ext_pack_addr": "${BOARD_EXT_PACK_ADDR:-}",
   "payload_transport": "$payload_transport",
   "runner_uart_stream": "$RUNNER_UART_STREAM",
+  "runner_build_id": "$runner_build_id",
   "profile": "$profile",
   "profile_status": "${PROFILE_STATUS:-}",
   "profile_notes": "${PROFILE_NOTES:-}",

@@ -10,10 +10,8 @@ board's existing bidirectional UART. It does not change the default
 - VF2/JH7110 is the first implementation and has been validated on-board with
   single-ELF and power-cycled multi-ELF runs.
 - The existing 128 MiB buffer at `0x88000000` is reused.
-- The target verifies the frame version, size, and CRC-32 before invoking the
-  existing ELF loader.
-- This proof of concept does not protect the runner from a malicious M-mode ELF
-  whose load segments overlap runner memory.
+- The target verifies the frame version, size, CRC-32, ELF load ranges, runner
+  memory exclusion, and staging-buffer exclusion before execution.
 
 ## Board portability
 
@@ -134,3 +132,23 @@ python3 cert_harness/uart_stream/run_elf_batch.py \
 Use `--no-power-cycle` to prompt for a manual reset before every ELF. A batch
 continues through target `FAIL` or `TIMEOUT` results, but stops on a UART or
 power-control error unless `--keep-going` is specified.
+
+The batch exits nonzero if any target case fails, times out, reports an error,
+or does not complete. It writes both `summary.json` and Jenkins-compatible
+`junit.xml`, and turns the smart outlet off on exit unless
+`--leave-power-on` is specified.
+
+## Jenkins UART sanity job
+
+`Jenkinsfile.uart-sanity` defines a separate five-test pilot job. It leaves the
+existing SD-pack sanity and weekly jobs unchanged. The SD card remains in the
+VF2 and contains the UART runner; there is no per-build SD flashing.
+
+Before the first run after a runner change, flash the UART `boot_image.bin`
+once. The job compares the build ID reported in `READY` with the exact runner
+commit used by Jenkins and rejects a stale installed image.
+
+Install or update the job definitions after installing the `junit` and
+`lockable-resources` plugins listed in `ci/jenkins/plugins.txt`. The hardware
+stage takes the shared `vf2-hardware` lock so UART and SD-pack jobs can be
+migrated to common hardware serialization without changing this transport.

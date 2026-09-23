@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import struct
 import sys
 import time
@@ -23,6 +24,14 @@ HEADER_OK_MARKER = b"[UART_STREAM] HEADER_OK"
 RX_OK_MARKER = b"[UART_STREAM] RX_OK"
 DONE_MARKER = b"[UART_STREAM] DONE"
 ERROR_MARKER = b"[UART_STREAM] ERROR"
+READY_RE = re.compile(
+    rb"\[UART_STREAM\] READY version=(\d+)[^\r\n]* "
+    rb"runner_build=([^\r\n ]+)"
+)
+DONE_RE = re.compile(
+    rb"\[UART_STREAM\] DONE name=([^\r\n ]+) "
+    rb"status=(PASS|FAIL|TIMEOUT|ERROR) tohost=(0x[0-9a-fA-F]+)"
+)
 
 
 class Capture:
@@ -137,6 +146,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--result-timeout", type=float, default=300.0)
     parser.add_argument("--chunk-size", type=int, default=4096)
     parser.add_argument(
+        "--expect-runner-build",
+        help="Require the READY line to report this runner build ID",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Validate and display the frame without opening UART",
@@ -176,7 +189,26 @@ def main() -> int:
                 "power on or reset the board now",
                 flush=True,
             )
-            read_marker_line(port, capture, READY_MARKER, args.ready_timeout)
+            ready_line = read_marker_line(port, capture, READY_MARKER, args.ready_timeout)
+            ready_match = READY_RE.search(ready_line)
+            if ready_match is None:
+                raise RuntimeError("target READY line lacks protocol/build identity")
+            protocol = int(ready_match.group(1))
+            runner_build = ready_match.group(2).decode("ascii", errors="replace")
+            if protocol != VERSION:
+                raise RuntimeError(
+                    f"runner protocol mismatch: expected {VERSION}, got {protocol}"
+                )
+            if args.expect_runner_build and runner_build != args.expect_runner_build:
+                raise RuntimeError(
+                    "runner build mismatch: "
+                    f"expected {args.expect_runner_build!r}, got {runner_build!r}"
+                )
+            print(
+                f"\n[HOST_UART_STREAM] runner_protocol={protocol} "
+                f"runner_build={runner_build}",
+                flush=True,
+            )
             written = port.write(header)
             port.flush()
             if written != len(header):
@@ -187,13 +219,17 @@ def main() -> int:
             read_marker_line(port, capture, HEADER_OK_MARKER, 10.0)
             send_payload(port, capture, payload, args.chunk_size)
             read_until(port, capture, RX_OK_MARKER, 30.0)
-            read_marker_line(port, capture, DONE_MARKER, args.result_timeout)
+            done_line = read_marker_line(port, capture, DONE_MARKER, args.result_timeout)
+            done_match = DONE_RE.search(done_line)
+            if done_match is None:
+                raise RuntimeError("target DONE line is malformed")
+            status = done_match.group(2).decode("ascii")
             drain(port, capture)
     finally:
         capture.close()
 
-    print("\n[HOST_UART_STREAM] completed", flush=True)
-    return 0
+    print(f"\n[HOST_UART_STREAM] completed status={status}", flush=True)
+    return {"PASS": 0, "FAIL": 10, "TIMEOUT": 11, "ERROR": 12}[status]
 
 
 if __name__ == "__main__":

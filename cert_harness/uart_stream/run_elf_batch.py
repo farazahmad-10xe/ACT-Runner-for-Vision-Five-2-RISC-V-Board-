@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import os
 import re
 import subprocess
 import sys
 import time
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 
@@ -34,6 +36,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--ready-timeout", type=float, default=180.0)
     parser.add_argument("--result-timeout", type=float, default=300.0)
     parser.add_argument(
+        "--expect-runner-build",
+        help="Require every boot to report this runner build ID",
+    )
+    parser.add_argument(
         "--no-power-cycle",
         action="store_true",
         help="Prompt for a manual reset before each ELF",
@@ -42,6 +48,11 @@ def parse_args() -> argparse.Namespace:
         "--keep-going",
         action="store_true",
         help="Continue after a transport error",
+    )
+    parser.add_argument(
+        "--leave-power-on",
+        action="store_true",
+        help="Do not turn the smart outlet off when the batch exits",
     )
     parser.add_argument(
         "--dry-run",
@@ -98,6 +109,36 @@ def parse_done(log_path: Path) -> tuple[str, str, str] | None:
     return tuple(part.decode("ascii", errors="replace") for part in match.groups())
 
 
+def write_junit(path: Path, results: list[dict[str, object]], elapsed: float) -> None:
+    failures = sum(result["status"] != "PASS" for result in results)
+    suite = ET.Element(
+        "testsuite",
+        name="vf2-uart-stream",
+        tests=str(len(results)),
+        failures=str(failures),
+        errors="0",
+        time=f"{elapsed:.3f}",
+    )
+    for result in results:
+        case = ET.SubElement(
+            suite,
+            "testcase",
+            classname="vf2.uart_stream",
+            name=str(result["name"]),
+            time=f'{float(result["elapsed_seconds"]):.3f}',
+        )
+        if result["status"] != "PASS":
+            failure = ET.SubElement(
+                case,
+                "failure",
+                message=f'target status {result["status"]}',
+                type="VF2TargetFailure",
+            )
+            failure.text = f'UART log: {result["uart_log"]}'
+        ET.SubElement(case, "system-out").text = f'UART log: {result["uart_log"]}'
+    ET.ElementTree(suite).write(path, encoding="utf-8", xml_declaration=True)
+
+
 def main() -> int:
     args = parse_args()
     repo_root = Path(__file__).resolve().parents[2]
@@ -121,10 +162,23 @@ def main() -> int:
 
     run_dir.mkdir(parents=True, exist_ok=True)
     power_env = None
+    power_off_registered = False
     if not args.no_power_cycle:
         power_env = load_tuya_env(args.tuya_config, args.device_name)
+        if not args.leave_power_on:
+            def power_off() -> None:
+                subprocess.run(
+                    [sys.executable, str(power_ctl), "off"],
+                    cwd=repo_root,
+                    env=power_env,
+                    check=False,
+                )
+
+            atexit.register(power_off)
+            power_off_registered = True
 
     results: list[dict[str, object]] = []
+    batch_started = time.monotonic()
     for index, elf in enumerate(elfs, 1):
         case_name = safe_name(elf)
         log_path = run_dir / f"{index:04d}_{case_name}.uart.log"
@@ -163,6 +217,8 @@ def main() -> int:
             "--result-timeout",
             str(args.result_timeout),
         ]
+        if args.expect_runner_build:
+            command.extend(["--expect-runner-build", args.expect_runner_build])
         process = subprocess.run(command, cwd=repo_root, check=False)
         elapsed = round(time.monotonic() - started, 3)
         done = parse_done(log_path) if log_path.exists() else None
@@ -185,7 +241,7 @@ def main() -> int:
             f"[UART_BATCH] RESULT index={index} name={target_name} "
             f"status={status} tohost={tohost or 'unavailable'} elapsed={elapsed}s"
         )
-        if (process.returncode != 0 or done is None) and not args.keep_going:
+        if done is None and not args.keep_going:
             print("[UART_BATCH] stopping after transport error", file=sys.stderr)
             break
 
@@ -201,9 +257,15 @@ def main() -> int:
     }
     summary_path = run_dir / "summary.json"
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    junit_path = run_dir / "junit.xml"
+    write_junit(junit_path, results, time.monotonic() - batch_started)
     print(f"\n[UART_BATCH] SUMMARY {json.dumps(counts, sort_keys=True)}")
     print(f"[UART_BATCH] summary_file={summary_path}")
-    return 1 if counts.get("TRANSPORT_ERROR", 0) else 0
+    print(f"[UART_BATCH] junit_file={junit_path}")
+    if power_off_registered:
+        power_off()
+        atexit.unregister(power_off)
+    return 0 if len(results) == len(elfs) and counts == {"PASS": len(elfs)} else 1
 
 
 if __name__ == "__main__":

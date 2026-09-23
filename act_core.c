@@ -30,6 +30,12 @@ int is_valid_ddr_range(uint64_t begin, uint64_t end)
     return 1;
 }
 
+static int ranges_overlap_u64(uint64_t a_begin, uint64_t a_end,
+                              uint64_t b_begin, uint64_t b_end)
+{
+    return a_begin < b_end && b_begin < a_end;
+}
+
 void *memcpy_local(void *dst, const void *src, size_t n)
 {
     uint8_t *d = (uint8_t *)dst;
@@ -1666,19 +1672,28 @@ int load_elf_blob(const uint8_t *blob, size_t blob_size, uint64_t *entry_out)
         if (ph[i].p_memsz < ph[i].p_filesz) return -8;
 
         uint64_t dst_addr = (ph[i].p_paddr ? ph[i].p_paddr : ph[i].p_vaddr);
+        uint64_t dst_end;
         if (dst_addr == 0) return -9;
         if (!is_valid_ddr_addr(dst_addr)) return -10;
-        if (ph[i].p_memsz > 0 && !is_valid_ddr_addr(dst_addr + ph[i].p_memsz - 1)) return -11;
+        if (ph[i].p_memsz > UINT64_MAX - dst_addr) return -11;
+        dst_end = dst_addr + ph[i].p_memsz;
+        if (ph[i].p_memsz > 0 && !is_valid_ddr_addr(dst_end - 1)) return -11;
+        if (ranges_overlap_u64(dst_addr, dst_end,
+                               (uint64_t)(uintptr_t)__text_start,
+                               (uint64_t)(uintptr_t)__stack_top)) return -13;
+        if (ranges_overlap_u64(dst_addr, dst_end,
+                               EXT_PACK_ADDR,
+                               EXT_PACK_ADDR + EXT_PACK_MAX_BYTES)) return -14;
         if (g_runner_image.load_segment_count >= MAX_RUNNER_LOAD_SEGMENTS) return -12;
 
         if (g_runner_image.loaded_region_start == 0 || dst_addr < g_runner_image.loaded_region_start) {
             g_runner_image.loaded_region_start = dst_addr;
         }
-        if ((dst_addr + ph[i].p_memsz) > g_runner_image.loaded_region_end) {
-            g_runner_image.loaded_region_end = dst_addr + ph[i].p_memsz;
+        if (dst_end > g_runner_image.loaded_region_end) {
+            g_runner_image.loaded_region_end = dst_end;
         }
         g_runner_image.load_segments[g_runner_image.load_segment_count].start = dst_addr;
-        g_runner_image.load_segments[g_runner_image.load_segment_count].end = dst_addr + ph[i].p_memsz;
+        g_runner_image.load_segments[g_runner_image.load_segment_count].end = dst_end;
         g_runner_image.load_segments[g_runner_image.load_segment_count].flags = ph[i].p_flags;
         g_runner_image.load_segment_count++;
 

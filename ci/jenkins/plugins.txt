@@ -6,3 +6,5 @@ timestamper
 build-timeout
 pipeline-stage-view
 htmlpublisher
+junit
+lockable-resources

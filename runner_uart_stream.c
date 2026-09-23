@@ -23,26 +23,33 @@ void uart_stream_emit_done(const char *name, const char *status, uint64_t tohost
     uart_puts("\n");
 }
 
-static uint8_t uart_getc_blocking(void)
+static int uart_getc_timeout(uint8_t *out)
 {
+    uint64_t deadline = *mtime_ptr() + RUNNER_UART_RX_TIMEOUT_TICKS;
 #if BOARD_UART_REG_IO_WIDTH == 4
     while ((mmio_read32(UART_BASE + UART_LSR) & UART_LSR_DR) == 0u) {
+        if ((int64_t)(*mtime_ptr() - deadline) >= 0) return -1;
         cpu_relax();
     }
-    return (uint8_t)mmio_read32(UART_BASE + UART_RBR);
+    *out = (uint8_t)mmio_read32(UART_BASE + UART_RBR);
 #elif BOARD_UART_REG_IO_WIDTH == 1
     while ((mmio_read8(UART_BASE + UART_LSR) & UART_LSR_DR) == 0u) {
+        if ((int64_t)(*mtime_ptr() - deadline) >= 0) return -1;
         cpu_relax();
     }
-    return mmio_read8(UART_BASE + UART_RBR);
+    *out = mmio_read8(UART_BASE + UART_RBR);
 #else
 #error "Unsupported BOARD_UART_REG_IO_WIDTH"
 #endif
+    return 0;
 }
 
-static void uart_receive_exact(uint8_t *dst, size_t size)
+static int uart_receive_exact(uint8_t *dst, size_t size)
 {
-    for (size_t i = 0; i < size; i++) dst[i] = uart_getc_blocking();
+    for (size_t i = 0; i < size; i++) {
+        if (uart_getc_timeout(&dst[i]) != 0) return -1;
+    }
+    return 0;
 }
 
 static uint32_t crc32_update_byte(uint32_t crc, uint8_t byte)
@@ -57,7 +64,10 @@ static uint32_t crc32_update_byte(uint32_t crc, uint8_t byte)
 
 static int receive_header(UartStreamHeader *header)
 {
-    uart_receive_exact((uint8_t *)(void *)header, sizeof(*header));
+    if (uart_receive_exact((uint8_t *)(void *)header, sizeof(*header)) != 0) {
+        uart_puts("[UART_STREAM] ERROR reason=rx_timeout phase=header\n");
+        return -5;
+    }
 
     if (header->magic != UART_STREAM_MAGIC) {
         uart_puts("[UART_STREAM] ERROR reason=bad_magic value=");
@@ -112,6 +122,8 @@ int run_uart_stream_once(uint64_t *total, uint64_t *pass, uint64_t *fail)
     uart_put_dec_u64(EXT_PACK_MAX_BYTES);
     uart_puts(" buffer=");
     uart_put_hex(EXT_PACK_ADDR);
+    uart_puts(" runner_build=");
+    uart_puts(RUNNER_BUILD_ID);
     uart_puts("\n");
 
     rc = receive_header(&header);
@@ -126,7 +138,13 @@ int run_uart_stream_once(uint64_t *total, uint64_t *pass, uint64_t *fail)
     uart_puts("\n");
 
     for (uint64_t i = 0; i < header.elf_size; i++) {
-        uint8_t byte = uart_getc_blocking();
+        uint8_t byte;
+        if (uart_getc_timeout(&byte) != 0) {
+            uart_puts("[UART_STREAM] ERROR reason=rx_timeout phase=payload offset=");
+            uart_put_dec_u64(i);
+            uart_puts("\n");
+            return -6;
+        }
         dst[i] = byte;
         crc = crc32_update_byte(crc, byte);
     }
