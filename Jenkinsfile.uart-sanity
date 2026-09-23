@@ -33,7 +33,7 @@ pipeline {
             description: 'Build ID advertised by the UART runner currently flashed on the VF2 SD card.')
         booleanParam(name: 'PUBLISH_RESULTS', defaultValue: true,
             description: 'Publish the normalized run and artifact links to the Apollo results portal.')
-        string(name: 'PORTAL_CREDENTIAL_ID', defaultValue: 'results-portal-ingest-token',
+        string(name: 'PORTAL_CREDENTIAL_ID', defaultValue: 'riscv-portal-ingest-token',
             description: 'Apollo Jenkins secret-text credential containing the results portal ingest token.')
     }
 

@@ -20,6 +20,6 @@ uses the agent's `publish_jenkins_results.py` helper to post the run to the
 Apollo results portal.
 
 The controller must provide a secret-text credential named
-`results-portal-ingest-token` (or the build parameter must name an equivalent
+`riscv-portal-ingest-token` (or the build parameter must name an equivalent
 credential). The agent requires `/dev/ttyUSB0`, its existing `devices.json`,
 the portal CA certificate, and the portal publishing helper.
