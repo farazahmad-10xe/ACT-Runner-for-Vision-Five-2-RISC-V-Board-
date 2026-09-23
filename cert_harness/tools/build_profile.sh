@@ -72,6 +72,7 @@ source "$board_file"
 source "$profile_file"
 
 payload_transport="${payload_transport_override:-${BOARD_PAYLOAD_TRANSPORT:-sd_tail_pack}}"
+RUNNER_UART_STREAM=0
 case "$payload_transport" in
   sd_tail_pack)
     BOARD_SD_ENABLE=1
@@ -80,7 +81,12 @@ case "$payload_transport" in
     EXTERNAL_ONLY=0
     BOARD_SD_ENABLE=0
     ;;
-  uart_stream|jtag_load|bootloader_ram)
+  uart_stream)
+    EXTERNAL_ONLY=1
+    BOARD_SD_ENABLE=0
+    RUNNER_UART_STREAM=1
+    ;;
+  jtag_load|bootloader_ram)
     EXTERNAL_ONLY=1
     BOARD_SD_ENABLE=0
     ;;
@@ -141,7 +147,8 @@ fi
 
 board_cflags=()
 for var in \
-  BOARD_UART_BASE BOARD_UART_SIZE BOARD_PLIC_BASE BOARD_UART_PLIC_SOURCE \
+  BOARD_UART_BASE BOARD_UART_SIZE BOARD_UART_REG_IO_WIDTH \
+  BOARD_PLIC_BASE BOARD_UART_PLIC_SOURCE \
   BOARD_RUNNER_M_PLIC_CONTEXT BOARD_RUNNER_S_PLIC_CONTEXT BOARD_CLINT_MSIP_BASE \
   BOARD_CLINT_MTIMECMP_BASE BOARD_CLINT_MTIME_ADDR \
   BOARD_RUNNER_HART_ID BOARD_MONITOR_HART_ID \
@@ -187,6 +194,7 @@ do
     make_args+=("$var=${!var}")
   fi
 done
+make_args+=("RUNNER_UART_STREAM=$RUNNER_UART_STREAM")
 
 if [[ -n "${RIESCUE_ELF+x}" ]]; then
   make_args+=("RIESCUE_ELF=$RIESCUE_ELF")
@@ -269,6 +277,7 @@ cat > "$out_dir/manifest.json" <<EOF2
   "board_sd_backend": "${BOARD_SD_BACKEND:-}",
   "board_ext_pack_addr": "${BOARD_EXT_PACK_ADDR:-}",
   "payload_transport": "$payload_transport",
+  "runner_uart_stream": "$RUNNER_UART_STREAM",
   "profile": "$profile",
   "profile_status": "${PROFILE_STATUS:-}",
   "profile_notes": "${PROFILE_NOTES:-}",

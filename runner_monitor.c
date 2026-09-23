@@ -483,6 +483,8 @@ void handle_fatal_test_trap(const TrapFrame *tf, uint64_t mcause, uint64_t mepc,
     g_runner_exec.test_deadline_mtime = 0;
 
     emit_trap_failure_report(mcause, mepc);
+    uart_stream_emit_done(safe_case_name((const char *)g_runner_exec.active_case_name),
+                          "FAIL", TOHOST_TRAP);
 
     persist_external_progress_if_needed("trap persist");
 
@@ -617,7 +619,7 @@ void monitor_hart_loop(void)
                 *mtimecmp_ptr(RUNNER_HART_ID) = now;
                 asm volatile ("fence rw, rw" ::: "memory");
 
-#if RUNNER_TIMEOUT_FAST_RESET
+#if RUNNER_TIMEOUT_FAST_RESET && !RUNNER_UART_STREAM
                 g_runner_exec.runner_active = 0;
                 persist_external_progress_quiet();
                 g_runner_exec.case_report_ready = 1;
@@ -680,9 +682,10 @@ void monitor_hart_loop(void)
 #endif
 
                 persist_external_progress_if_needed("timeout persist");
+                uart_stream_emit_done(name, "TIMEOUT", TOHOST_TIMEOUT);
                 g_runner_exec.case_report_ready = 1;
                 g_runner_exec.monitor_report_done = 1;
-#if RUNNER_TIMEOUT_FAST_RESET
+#if RUNNER_TIMEOUT_FAST_RESET && !RUNNER_UART_STREAM
                 uart_puts("[RST] timeout fast reset\n");
                 uart_puts("[RST] trigger watchdog reset\n");
                 uart_log_unlock();
@@ -789,6 +792,7 @@ void monitor_hart_loop(void)
                     g_runner_exec.sig_dump_in_progress = 0;
 #endif
                 }
+                uart_stream_emit_done(name, st, v);
                 persist_external_progress_if_needed("monitor persist");
                 g_runner_exec.case_report_ready = 1;
                 g_runner_exec.monitor_report_done = 1;

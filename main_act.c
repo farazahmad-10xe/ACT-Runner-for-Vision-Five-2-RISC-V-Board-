@@ -69,7 +69,7 @@ void main(void)
     uart_puts("[SUITE] ACT profile: pack or single embedded ELF\n");
 #endif
 
-#if RUNNER_SD_ENABLE
+#if RUNNER_SD_ENABLE && !RUNNER_UART_STREAM
     for (int attempt = 1; attempt <= 3; attempt++) {
         load_ext_rc = load_pack_from_sd_tail();
         if (load_ext_rc == 0) {
@@ -85,10 +85,17 @@ void main(void)
             for (volatile uint64_t i = 0; i < 10000000; i++) { }
         }
     }
-#else
+#elif !RUNNER_UART_STREAM
     uart_puts("[SUITE] SD transport disabled by board configuration\n");
 #endif
 
+#if RUNNER_UART_STREAM
+    uart_puts("[SUITE] UART stream transport: one host-supplied ELF\n");
+    if (run_uart_stream_once(&total, &pass, &fail) != 0) {
+        uart_puts("[SUITE] ERROR: UART stream did not produce a runnable ELF\n");
+        fail += 1;
+    }
+#else
     if (run_pack_external(&total, &pass, &fail) != 0) {
         if (run_pack_embedded(&total, &pass, &fail) != 0) {
 #if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_RIESCUE
@@ -106,6 +113,7 @@ void main(void)
             }
         }
     }
+#endif
 
     uart_puts("[SUITE] SUMMARY total="); uart_put_dec_u64(total);
     uart_puts(" pass="); uart_put_dec_u64(pass);

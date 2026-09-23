@@ -10,6 +10,9 @@
 #ifndef BOARD_UART_SIZE
 #define BOARD_UART_SIZE 0x1000UL
 #endif
+#ifndef BOARD_UART_REG_IO_WIDTH
+#define BOARD_UART_REG_IO_WIDTH 1
+#endif
 #ifndef BOARD_PLIC_BASE
 #define BOARD_PLIC_BASE 0x0c000000UL
 #endif
@@ -102,6 +105,9 @@
 #ifndef BOARD_K1_HART_WAKEUP_ENABLE
 #define BOARD_K1_HART_WAKEUP_ENABLE 0
 #endif
+#ifndef RUNNER_UART_STREAM
+#define RUNNER_UART_STREAM 0
+#endif
 
 #define UART_BASE       BOARD_UART_BASE
 #define UART_SIZE       BOARD_UART_SIZE
@@ -148,6 +154,22 @@
 #define TRAP_STACK_BYTES BOARD_TRAP_STACK_BYTES
 #define STRAP_STACK_BYTES BOARD_STRAP_STACK_BYTES
 #define FOOTER_IDX_NONE 0xffffffffu
+
+#define UART_STREAM_MAGIC        0x31534655u /* little-endian "UFS1" */
+#define UART_STREAM_VERSION      1u
+#define UART_STREAM_NAME_BYTES   64u
+
+typedef struct __attribute__((packed)) {
+    uint32_t magic;
+    uint32_t version;
+    uint64_t elf_size;
+    uint32_t crc32;
+    uint32_t name_len;
+    char name[UART_STREAM_NAME_BYTES];
+} UartStreamHeader;
+
+_Static_assert(sizeof(UartStreamHeader) == 88u,
+               "UART stream header layout changed");
 
 #define SDIO0_BASE      BOARD_SDIO0_BASE
 #define SDIO1_BASE      BOARD_SDIO1_BASE
@@ -773,5 +795,7 @@ int run_one_blob(const char *name, const uint8_t *blob, size_t blob_size, TestRe
 int run_single_embedded(uint64_t *total, uint64_t *pass, uint64_t *fail);
 int run_pack_embedded(uint64_t *total, uint64_t *pass, uint64_t *fail);
 int run_pack_external(uint64_t *total, uint64_t *pass, uint64_t *fail);
+int run_uart_stream_once(uint64_t *total, uint64_t *pass, uint64_t *fail);
+void uart_stream_emit_done(const char *name, const char *status, uint64_t tohost);
 
 #endif
