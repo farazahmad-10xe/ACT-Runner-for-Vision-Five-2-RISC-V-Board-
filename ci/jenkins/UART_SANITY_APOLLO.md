@@ -23,3 +23,13 @@ The controller must provide a secret-text credential named
 `riscv-portal-ingest-token` (or the build parameter must name an equivalent
 credential). The agent requires `/dev/ttyUSB0`, its existing `devices.json`,
 the portal CA certificate, and the portal publishing helper.
+
+Install or update only this job without placing an administrator token in the
+shell history:
+
+```sh
+python3 ci/jenkins/install_apollo_uart_job.py --user YOUR_APOLLO_USERNAME
+```
+
+The installer prompts for an Apollo Jenkins API token, renders the committed
+Pipeline into the job XML, and creates or updates only `vf2-uart-sanity`.
