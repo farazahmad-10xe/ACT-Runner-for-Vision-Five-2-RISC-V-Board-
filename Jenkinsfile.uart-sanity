@@ -60,13 +60,44 @@ pipeline {
                     git check-ref-format --branch "$runner_branch" >/dev/null
                     git init .
                     git remote add origin "$RUNNER_REMOTE_URL"
-                    git fetch --force --prune origin \
-                      "+refs/heads/$runner_branch:refs/remotes/origin/$runner_branch"
-                    fetched="$(git rev-parse --verify "refs/remotes/origin/$runner_branch^{commit}")"
+                    runner_ref="refs/remotes/origin/$runner_branch"
+                    fetch_ok=false
+                    for attempt in 1 2 3 4; do
+                      echo "Runner fetch attempt ${attempt}/4"
+                      if timeout 180 git -c http.lowSpeedLimit=1 \
+                        -c http.lowSpeedTime=30 fetch --force --prune origin \
+                        "+refs/heads/$runner_branch:$runner_ref"; then
+                        fetch_ok=true
+                        break
+                      fi
+                      if [[ "$attempt" -lt 4 ]]; then
+                        sleep "$((attempt * 15))"
+                      fi
+                    done
+                    [[ "$fetch_ok" == true ]] || {
+                      echo "Unable to fetch runner branch after 4 attempts: $runner_branch" >&2
+                      exit 1
+                    }
+                    fetched="$(git rev-parse --verify "${runner_ref}^{commit}")"
                     selected="${runner_revision_override:-$fetched}"
                     selected="$(git rev-parse --verify "$selected^{commit}")"
                     git checkout --detach "$selected"
-                    git submodule update --init external/riscv-arch-test
+                    submodule_ok=false
+                    for attempt in 1 2 3 4; do
+                      echo "ACT submodule update attempt ${attempt}/4"
+                      if timeout 300 git -c http.lowSpeedLimit=1 \
+                        -c http.lowSpeedTime=30 submodule update --init external/riscv-arch-test; then
+                        submodule_ok=true
+                        break
+                      fi
+                      if [[ "$attempt" -lt 4 ]]; then
+                        sleep "$((attempt * 15))"
+                      fi
+                    done
+                    [[ "$submodule_ok" == true ]] || {
+                      echo "Unable to initialize ACT submodule after 4 attempts" >&2
+                      exit 1
+                    }
                     mkdir -p tools
                     cp -a "$LOCAL_TOOLS_SOURCE/." tools/
                     install -m 0600 "$LOCAL_TUYA_DEVICES_SOURCE" devices.json
