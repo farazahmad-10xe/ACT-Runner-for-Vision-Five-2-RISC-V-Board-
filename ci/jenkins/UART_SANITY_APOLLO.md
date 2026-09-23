@@ -33,3 +33,19 @@ python3 ci/jenkins/install_apollo_uart_job.py --user YOUR_APOLLO_USERNAME
 
 The installer prompts for an Apollo Jenkins API token, renders the committed
 Pipeline into the job XML, and creates or updates only `vf2-uart-sanity`.
+
+## Weekly UART regression
+
+`vf2-uart-weekly` regenerates all registered privileged generators plus the
+tracked static privileged suites. It runs Sail, optionally runs Spike, and
+streams every runnable ELF to the same persistent SD runner. The two UART jobs
+share the `vf2-hardware` lock, so they cannot operate the board concurrently.
+The weekly job is scheduled once each Sunday and can also be started manually.
+
+Install or update it with:
+
+```sh
+python3 ci/jenkins/install_apollo_uart_job.py \
+  --user YOUR_APOLLO_USERNAME \
+  --job vf2-uart-weekly
+```

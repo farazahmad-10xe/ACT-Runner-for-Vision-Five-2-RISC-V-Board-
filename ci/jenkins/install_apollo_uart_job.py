@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create or update the VF2 UART sanity job on the Apollo Jenkins controller."""
+"""Create or update a VF2 UART job on the Apollo Jenkins controller."""
 
 from __future__ import annotations
 
@@ -15,6 +15,18 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+
+JOB_CONFIGS = {
+    "vf2-uart-sanity": (
+        "Jenkinsfile.uart-sanity",
+        "ci/jenkins/job-config-uart-sanity.xml",
+    ),
+    "vf2-uart-weekly": (
+        "Jenkinsfile.uart-weekly",
+        "ci/jenkins/job-config-uart-weekly.xml",
+    ),
+}
 
 
 def request(
@@ -49,14 +61,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--url", default="https://192.168.100.150/")
     parser.add_argument("--user", required=True)
-    parser.add_argument("--job", default="vf2-uart-sanity")
+    parser.add_argument("--job", choices=sorted(JOB_CONFIGS), default="vf2-uart-sanity")
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument(
         "--ca-file", type=Path, default=Path("/home/lpt-10xe/jenkins-agent/jenkins-internal-ca.crt")
     )
     args = parser.parse_args()
 
-    token = getpass.getpass("Apollo Jenkins API token: ")
+    token = getpass.getpass("Apollo Jenkins API token: ").strip()
     if not token:
         raise ValueError("An API token is required")
     encoded = base64.b64encode(f"{args.user}:{token}".encode()).decode("ascii")
@@ -78,8 +90,9 @@ def main() -> int:
     crumb = (str(crumb_payload["crumbRequestField"]), str(crumb_payload["crumb"]))
 
     repo_root = args.repo_root.resolve()
-    pipeline = (repo_root / "Jenkinsfile.uart-sanity").read_text(encoding="utf-8")
-    template = (repo_root / "ci/jenkins/job-config-uart-sanity.xml").read_text(encoding="utf-8")
+    pipeline_path, template_path = JOB_CONFIGS[args.job]
+    pipeline = (repo_root / pipeline_path).read_text(encoding="utf-8")
+    template = (repo_root / template_path).read_text(encoding="utf-8")
     rendered = template.replace("__JENKINSFILE__", html.escape(pipeline))
     ET.fromstring(rendered)
     config = rendered.encode("utf-8")
