@@ -26,9 +26,14 @@ case "$stage" in
     ;;
 
   verify-runner-image)
-    expected_build="$(git -C "$repo_root" rev-parse --short=12 HEAD)"
+    expected_build="${RUNNER_BUILD_ID_OVERRIDE:-$(git -C "$repo_root" rev-parse --short=12 HEAD)}"
+    if [[ ! "$expected_build" =~ ^[0-9A-Za-z._-]{1,63}$ ]]; then
+      echo "Invalid runner build ID: $expected_build" >&2
+      exit 2
+    fi
     image="$repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/uart_stream/boot_image.bin"
-    PATH="/home/lpt-10xe/riscv64/bin:$PATH" \
+    RUNNER_BUILD_ID_OVERRIDE="$expected_build" \
+      PATH="/home/lpt-10xe/riscv64/bin:$PATH" \
       bash "$repo_root/cert_harness/tools/build_profile.sh" \
         --board vf2_jh7110 \
         --profile ACT_PRIV_M_OWN_ENV \
@@ -62,14 +67,20 @@ case "$stage" in
 
   finalize)
     mkdir -p "$state_root"
+    runner_commit="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || true)"
     {
       echo "run_id=$run_id"
       echo "completed_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-      echo "runner_commit=$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || true)"
+      echo "runner_commit=$runner_commit"
+      echo "git_head=$runner_commit"
+      echo "sail_version=${SAIL_EXPECTED_VERSION:-unknown}"
       echo "transport=uart_stream"
       echo "sd_flash_per_run=no"
     } > "$state_root/jenkins_manifest.txt"
     if [[ -d "$run_root" ]]; then
+      if [[ -f "$run_root/summary.json" ]]; then
+        python3 "$script_dir/prepare_uart_portal_results.py" --run-root "$run_root"
+      fi
       cp -f "$run_root/summary.json" "$state_root/summary.json" 2>/dev/null || true
       cp -f "$run_root/junit.xml" "$state_root/junit.xml" 2>/dev/null || true
     fi

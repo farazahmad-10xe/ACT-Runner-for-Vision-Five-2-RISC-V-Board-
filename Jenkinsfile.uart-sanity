@@ -1,8 +1,8 @@
 pipeline {
     agent {
         node {
-            label 'built-in'
-            customWorkspace '/home/lpt-10xe/jenkins-workspaces/vf2-uart-sanity'
+            label 'riscv-hw-agent'
+            customWorkspace '/home/lpt-10xe/jenkins-agent/workspace/vf2-uart-sanity'
         }
     }
 
@@ -15,7 +15,7 @@ pipeline {
     }
 
     parameters {
-        string(name: 'RUNNER_BRANCH', defaultValue: 'main',
+        string(name: 'RUNNER_BRANCH', defaultValue: 'vf2-uart-stream-jenkins',
             description: 'Runner branch resolved once at checkout.')
         string(name: 'RUNNER_REVISION_OVERRIDE', defaultValue: '',
             description: 'Optional exact runner commit.')
@@ -29,6 +29,12 @@ pipeline {
             description: 'Send the five ELFs to the persistent UART runner.')
         string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0',
             description: 'VF2 USB-UART device path; prefer a local /dev/serial/by-id path when available.')
+        string(name: 'INSTALLED_RUNNER_BUILD', defaultValue: '98af2bd5b187',
+            description: 'Build ID advertised by the UART runner currently flashed on the VF2 SD card.')
+        booleanParam(name: 'PUBLISH_RESULTS', defaultValue: true,
+            description: 'Publish the normalized run and artifact links to the Apollo results portal.')
+        string(name: 'PORTAL_CREDENTIAL_ID', defaultValue: 'results-portal-ingest-token',
+            description: 'Apollo Jenkins secret-text credential containing the results portal ingest token.')
     }
 
     environment {
@@ -37,9 +43,10 @@ pipeline {
         LOCAL_TOOLS_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/tools'
         LOCAL_TUYA_DEVICES_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/devices.json'
         REGENERATE_TESTS = 'true'
-        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim'
-        SAIL_EXPECTED_VERSION = '0.13'
-        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.13/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/bin:/usr/bin:/bin'
+        SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.14/bin/sail_riscv_sim'
+        SAIL_EXPECTED_VERSION = '0.14'
+        RUNNER_BUILD_ID_OVERRIDE = "${params.INSTALLED_RUNNER_BUILD ?: '98af2bd5b187'}"
+        PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.14/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/bin:/usr/bin:/bin'
     }
 
     stages {
@@ -48,13 +55,15 @@ pipeline {
                 deleteDir()
                 sh '''#!/usr/bin/env bash
                     set -euo pipefail
-                    git check-ref-format --branch "$RUNNER_BRANCH" >/dev/null
+                    runner_branch="${RUNNER_BRANCH:-vf2-uart-stream-jenkins}"
+                    runner_revision_override="${RUNNER_REVISION_OVERRIDE:-}"
+                    git check-ref-format --branch "$runner_branch" >/dev/null
                     git init .
                     git remote add origin "$RUNNER_REMOTE_URL"
                     git fetch --force --prune origin \
-                      "+refs/heads/$RUNNER_BRANCH:refs/remotes/origin/$RUNNER_BRANCH"
-                    fetched="$(git rev-parse --verify "refs/remotes/origin/$RUNNER_BRANCH^{commit}")"
-                    selected="${RUNNER_REVISION_OVERRIDE:-$fetched}"
+                      "+refs/heads/$runner_branch:refs/remotes/origin/$runner_branch"
+                    fetched="$(git rev-parse --verify "refs/remotes/origin/$runner_branch^{commit}")"
+                    selected="${runner_revision_override:-$fetched}"
                     selected="$(git rev-parse --verify "$selected^{commit}")"
                     git checkout --detach "$selected"
                     git submodule update --init external/riscv-arch-test
@@ -62,7 +71,7 @@ pipeline {
                     cp -a "$LOCAL_TOOLS_SOURCE/." tools/
                     install -m 0600 "$LOCAL_TUYA_DEVICES_SOURCE" devices.json
                     {
-                      echo "Runner branch: $RUNNER_BRANCH"
+                      echo "Runner branch: $runner_branch"
                       echo "Runner SHA:    $selected"
                       echo "Checkout:      detached"
                     } | tee .jenkins_runner_resolution.txt
@@ -104,6 +113,34 @@ pipeline {
             junit testResults: "logs/runs/jenkins_uart_sanity_${env.BUILD_NUMBER}/junit.xml",
                   allowEmptyResults: true,
                   keepLongStdio: true
+            script {
+                if (params.PUBLISH_RESULTS) {
+                    withCredentials([string(credentialsId: params.PORTAL_CREDENTIAL_ID,
+                                            variable: 'PORTAL_INGEST_TOKEN')]) {
+                        withEnv(["PORTAL_BUILD_STATUS=${currentBuild.currentResult}"]) {
+                            sh '''#!/usr/bin/env bash
+                                set -euo pipefail
+                                state_root="logs/jenkins/uart_sanity/jenkins_uart_sanity_${BUILD_NUMBER}"
+                                run_root="logs/runs/jenkins_uart_sanity_${BUILD_NUMBER}"
+                                python3 /home/lpt-10xe/jenkins-agent/tools/publish_jenkins_results.py \
+                                  --state-root "$state_root" \
+                                  --run-root "$run_root" \
+                                  --board-slug visionfive2 \
+                                  --board-name 'StarFive VisionFive 2' \
+                                  --core-profile 'SiFive U74-MC' \
+                                  --job-name "$JOB_NAME" \
+                                  --build-number "$BUILD_NUMBER" \
+                                  --build-url "$BUILD_URL" \
+                                  --status "$PORTAL_BUILD_STATUS" \
+                                  --portal-url 'https://192.168.100.150/portal/' \
+                                  --ca-file /home/lpt-10xe/jenkins-agent/jenkins-internal-ca.crt \
+                                  --artifact-store /home/lpt-10xe/jenkins-agent/results-artifacts \
+                                  --output "$state_root/portal_payload.json"
+                            '''
+                        }
+                    }
+                }
+            }
             archiveArtifacts artifacts: "logs/jenkins/uart_sanity/jenkins_uart_sanity_${env.BUILD_NUMBER}/**, logs/runs/jenkins_uart_sanity_${env.BUILD_NUMBER}/**, logs/reference-model-runs/jenkins_uart_sanity_${env.BUILD_NUMBER}/**, cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/uart_stream/manifest.json",
                              allowEmptyArchive: true,
                              fingerprint: true

@@ -72,7 +72,7 @@ source "$board_file"
 source "$profile_file"
 
 payload_transport="${payload_transport_override:-${BOARD_PAYLOAD_TRANSPORT:-sd_tail_pack}}"
-runner_build_id="$(git rev-parse --short=12 HEAD 2>/dev/null || printf unknown)"
+runner_build_id="${RUNNER_BUILD_ID_OVERRIDE:-$(git rev-parse --short=12 HEAD 2>/dev/null || printf unknown)}"
 RUNNER_UART_STREAM=0
 case "$payload_transport" in
   sd_tail_pack)
