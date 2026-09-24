@@ -26,7 +26,7 @@ pipeline {
         booleanParam(name: 'RUN_SPIKE', defaultValue: true,
             description: 'Run the generated ELFs on Spike before BPI-F3.')
         booleanParam(name: 'RUN_HARDWARE', defaultValue: true,
-            description: 'Power-cycle BPI-F3 and stream the five sanity ELFs over UART.')
+            description: 'Power-cycle BPI-F3 and stream the focused sanity ELF set over UART.')
         string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0',
             description: 'BPI-F3 USB-UART device path.')
         string(name: 'POWER_DEVICE_NAME', defaultValue: 'SCW1050',
@@ -110,7 +110,7 @@ pipeline {
             steps { sh 'ci/jenkins/uart_sanity_bpif3.sh preflight' }
         }
 
-        stage('Generate Five + Sail') {
+        stage('Generate Focused Set + Sail') {
             steps { sh 'ci/jenkins/uart_sanity_bpif3.sh prepare' }
         }
 

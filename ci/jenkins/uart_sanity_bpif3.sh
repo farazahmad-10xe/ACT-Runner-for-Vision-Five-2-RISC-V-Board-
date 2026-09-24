@@ -21,6 +21,6 @@ export UART_EXPECT_BOARD="bpif3_k1"
 export UART_DEVICE_NAME="${UART_DEVICE_NAME:-SCW1050}"
 export PRIV_GENERATOR_EXTENSIONS="${PRIV_GENERATOR_EXTENSIONS-ExceptionsF,ExceptionsS,ExceptionsSm,ExceptionsU,ExceptionsZc}"
 export INCLUDE_STATIC_PRIV_SUITES="${INCLUDE_STATIC_PRIV_SUITES:-false}"
-export EXPECTED_TEST_NAMES="${EXPECTED_TEST_NAMES-ExceptionsF-00,ExceptionsS-00,ExceptionsSm-00,ExceptionsU-00,ExceptionsZc-00}"
+export EXPECTED_TEST_NAMES="${EXPECTED_TEST_NAMES-ExceptionsF-00,ExceptionsS-00,ExceptionsSm-00,ExceptionsSm_medeleg_m-00,ExceptionsSm_medeleg_s-00,ExceptionsSm_medeleg_u-00,ExceptionsU-00,ExceptionsZc-00}"
 
 exec "$script_dir/uart_sanity_vf2.sh" "$@"
