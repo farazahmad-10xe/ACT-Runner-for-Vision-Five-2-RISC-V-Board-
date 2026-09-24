@@ -166,9 +166,18 @@ pipeline {
                                   --portal-url 'https://192.168.100.150/portal/' \
                                   --ca-file /home/lpt-10xe/jenkins-agent/jenkins-internal-ca.crt \
                                   --artifact-store /home/lpt-10xe/jenkins-agent/results-artifacts \
-                                  --output "$state_root/portal_payload.json"
+                                  --output "$state_root/portal_payload.json" \
+                                  | tee "$state_root/portal_response.json"
+                                python3 -c 'import json, pathlib, sys, urllib.parse; response=json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")); relative_url=response.get("url"); relative_url or sys.exit("Portal response did not contain a run URL"); pathlib.Path(sys.argv[2]).write_text(urllib.parse.urljoin("https://192.168.100.150", relative_url) + "\n", encoding="utf-8")' \
+                                  "$state_root/portal_response.json" \
+                                  "$state_root/portal_url.txt"
                             '''
                         }
+                    }
+                    def portalUrlFile = "logs/jenkins/uart_sanity/jenkins_uart_sanity_${env.BUILD_NUMBER}/portal_url.txt"
+                    if (fileExists(portalUrlFile)) {
+                        def portalUrl = readFile(portalUrlFile).trim()
+                        currentBuild.description = "<a href=\"${portalUrl}\">Portal results</a>"
                     }
                 }
             }
