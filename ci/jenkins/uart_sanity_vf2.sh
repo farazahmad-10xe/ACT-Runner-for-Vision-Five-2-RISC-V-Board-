@@ -13,6 +13,11 @@ export PRIV_GENERATOR_EXTENSIONS="${PRIV_GENERATOR_EXTENSIONS-ExceptionsF,Except
 export INCLUDE_STATIC_PRIV_SUITES="${INCLUDE_STATIC_PRIV_SUITES:-false}"
 export EXPECTED_TEST_NAMES="${EXPECTED_TEST_NAMES-ExceptionsF-00,ExceptionsS-00,ExceptionsSm-00,ExceptionsU-00,ExceptionsZc-00}"
 
+uart_board="${UART_RUNNER_BOARD:-vf2_jh7110}"
+uart_profile="${UART_RUNNER_PROFILE:-ACT_PRIV_M_OWN_ENV}"
+uart_expected_board="${UART_EXPECT_BOARD:-$uart_board}"
+uart_device_name="${UART_DEVICE_NAME:-}"
+
 stage="${1:-}"
 build_number="${BUILD_NUMBER:-manual}"
 run_id="${VF2_RUN_ID_PREFIX}_${build_number}"
@@ -31,12 +36,12 @@ case "$stage" in
       echo "Invalid runner build ID: $expected_build" >&2
       exit 2
     fi
-    image="$repo_root/cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/uart_stream/boot_image.bin"
+    image="$repo_root/cert_harness/build/$uart_board/$uart_profile/uart_stream/boot_image.bin"
     RUNNER_BUILD_ID_OVERRIDE="$expected_build" \
       PATH="/home/lpt-10xe/riscv64/bin:$PATH" \
       bash "$repo_root/cert_harness/tools/build_profile.sh" \
-        --board vf2_jh7110 \
-        --profile ACT_PRIV_M_OWN_ENV \
+        --board "$uart_board" \
+        --profile "$uart_profile" \
         --payload-transport uart_stream
     test -f "$image"
     mkdir -p "$state_root"
@@ -55,14 +60,20 @@ case "$stage" in
     fi
     expected_build="$(tr -d '[:space:]' < "$state_root/expected_runner_build.txt")"
     serial_dev="${SERIAL_DEV:-/dev/ttyUSB0}"
-    python3 "$repo_root/cert_harness/uart_stream/run_elf_batch.py" \
-      "${elfs[@]}" \
-      --serial-dev "$serial_dev" \
-      --run-dir "$run_root" \
-      --ready-timeout "${UART_READY_TIMEOUT:-180}" \
-      --result-timeout "${UART_RESULT_TIMEOUT:-600}" \
-      --expect-runner-build "$expected_build" \
+    batch_args=(
+      "${elfs[@]}"
+      --serial-dev "$serial_dev"
+      --run-dir "$run_root"
+      --ready-timeout "${UART_READY_TIMEOUT:-180}"
+      --result-timeout "${UART_RESULT_TIMEOUT:-600}"
+      --expect-board "$uart_expected_board"
+      --expect-runner-build "$expected_build"
       --keep-going
+    )
+    if [[ -n "$uart_device_name" ]]; then
+      batch_args+=(--device-name "$uart_device_name")
+    fi
+    python3 "$repo_root/cert_harness/uart_stream/run_elf_batch.py" "${batch_args[@]}"
     ;;
 
   finalize)
@@ -75,6 +86,8 @@ case "$stage" in
       echo "git_head=$runner_commit"
       echo "sail_version=${SAIL_EXPECTED_VERSION:-unknown}"
       echo "transport=uart_stream"
+      echo "board=$uart_board"
+      echo "runner_board_identity=$uart_expected_board"
       echo "sd_flash_per_run=no"
     } > "$state_root/jenkins_manifest.txt"
     if [[ -d "$run_root" ]]; then

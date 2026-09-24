@@ -54,3 +54,32 @@ python3 ci/jenkins/install_apollo_uart_job.py \
   --user YOUR_APOLLO_USERNAME \
   --job vf2-uart-weekly
 ```
+
+## BPI-F3 UART jobs
+
+`bpif3-uart-sanity` and `bpif3-uart-weekly` select the `bpif3_k1` runner and
+the `bpif3-rva22s64` ACT configuration. They require the target to advertise
+`board=bpif3_k1`, power-cycle the outlet selected by `POWER_DEVICE_NAME`, and
+serialize hardware access with the independent `bpif3-hardware` lock. The SD
+runner is flashed once; neither job writes the card per ELF.
+
+Both jobs publish under the portal board slug `bananapi-f3`. After ingest, the
+Jenkins build description contains a direct `BPI-F3 portal results` link. The
+weekly job provides the same `all` or `priv` test-scope parameter as VF2.
+
+Install sanity first:
+
+```sh
+python3 ci/jenkins/install_apollo_uart_job.py \
+  --user YOUR_APOLLO_USERNAME \
+  --job bpif3-uart-sanity
+```
+
+After sanity hardware execution and portal publication are confirmed, install
+the weekly job:
+
+```sh
+python3 ci/jenkins/install_apollo_uart_job.py \
+  --user YOUR_APOLLO_USERNAME \
+  --job bpif3-uart-weekly
+```

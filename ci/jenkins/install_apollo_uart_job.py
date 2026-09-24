@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create or update a VF2 UART job on the Apollo Jenkins controller."""
+"""Create or update a VF2 or BPI-F3 UART job on Apollo Jenkins."""
 
 from __future__ import annotations
 
@@ -25,6 +25,14 @@ JOB_CONFIGS = {
     "vf2-uart-weekly": (
         "Jenkinsfile.uart-weekly",
         "ci/jenkins/job-config-uart-weekly.xml",
+    ),
+    "bpif3-uart-sanity": (
+        "Jenkinsfile.bpif3-uart-sanity",
+        "ci/jenkins/job-config-bpif3-uart-sanity.xml",
+    ),
+    "bpif3-uart-weekly": (
+        "Jenkinsfile.bpif3-uart-weekly",
+        "ci/jenkins/job-config-bpif3-uart-weekly.xml",
     ),
 }
 
