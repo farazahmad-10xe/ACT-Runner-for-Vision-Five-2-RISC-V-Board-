@@ -321,6 +321,17 @@ uint64_t trap_c(uint64_t mcause, uint64_t mepc, uint64_t mtval, uint64_t mstatus
 #endif
 
     if (g_runner_exec.runner_active && g_runner_exec.test_done) {
+        /*
+         * The monitor wakes the runner with MSIP after observing tohost.  A
+         * completed test can reach this fast path before the normal MSI
+         * handler, so acknowledge the level-triggered interrupt here.  If it
+         * remains asserted, mret immediately traps again and floods UART with
+         * repeated "already_done" records.
+         */
+        if (mcause == MCAUSE_MSI) {
+            *msip_ptr(RUNNER_HART_ID) = 0;
+            asm volatile ("fence rw, rw" ::: "memory");
+        }
         return emit_trap_return_log(mcause, mepc, mtval, mstatus,
                                     g_runner_exec.test_resume_pc, "already_done");
     }
