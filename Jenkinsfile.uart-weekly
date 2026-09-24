@@ -123,7 +123,7 @@ pipeline {
             steps { sh 'ci/jenkins/uart_weekly_vf2.sh preflight' }
         }
 
-        stage('Generate Full Privileged Suite + Sail') {
+        stage('Generate Full ACT Suite + Sail') {
             steps { sh 'ci/jenkins/uart_weekly_vf2.sh prepare' }
         }
 
