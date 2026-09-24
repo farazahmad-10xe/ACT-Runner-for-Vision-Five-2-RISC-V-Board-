@@ -17,7 +17,9 @@ After execution, `prepare_uart_portal_results.py` converts the batch
 `summary.json` into the shared `cases.json`, `cases.csv`, `summary.md`, and
 per-case UART-log layout. Jenkins archives those files, publishes JUnit, and
 uses the agent's `publish_jenkins_results.py` helper to post the run to the
-Apollo results portal.
+Apollo results portal. Each successfully published Jenkins build displays a
+`Portal results` link in its build description and prints the same URL in the
+console log.
 
 The controller must provide a secret-text credential named
 `riscv-portal-ingest-token` (or the build parameter must name an equivalent
@@ -36,11 +38,14 @@ Pipeline into the job XML, and creates or updates only `vf2-uart-sanity`.
 
 ## Weekly UART regression
 
-`vf2-uart-weekly` regenerates all registered privileged generators plus the
-tracked static privileged suites. It runs Sail, optionally runs Spike, and
-streams every runnable ELF to the same persistent SD runner. The two UART jobs
-share the `vf2-hardware` lock, so they cannot operate the board concurrently.
-The weekly job is scheduled once each Sunday and can also be started manually.
+`vf2-uart-weekly` provides a `TEST_SCOPE` build parameter. Its default `all`
+value generates privileged, non-privileged, and vector tests; `priv` generates
+only the privileged suite. It runs Sail, optionally runs Spike, and streams
+every Sail-runnable ELF from the selected scope to the same persistent SD
+runner. The selected scope is recorded in the portal payload. The two UART
+jobs share the `vf2-hardware` lock, so they cannot operate the board
+concurrently. The weekly job is scheduled once each Sunday with the default
+`all` scope and can also be started manually with either selection.
 
 Install or update it with:
 

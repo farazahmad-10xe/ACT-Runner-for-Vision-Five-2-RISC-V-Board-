@@ -178,6 +178,7 @@ pipeline {
                     if (fileExists(portalUrlFile)) {
                         def portalUrl = readFile(portalUrlFile).trim()
                         currentBuild.description = "<a href=\"${portalUrl}\">Portal results</a>"
+                        echo "Portal results: ${portalUrl}"
                     }
                 }
             }

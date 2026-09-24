@@ -27,6 +27,8 @@ pipeline {
             description: 'ACT branch resolved once at preflight.')
         string(name: 'ACT_REVISION_OVERRIDE', defaultValue: '',
             description: 'Optional exact ACT commit.')
+        choice(name: 'TEST_SCOPE', choices: ['all', 'priv'],
+            description: 'all: privileged + non-privileged + vector tests; priv: privileged tests only.')
         booleanParam(name: 'RUN_SPIKE', defaultValue: true,
             description: 'Run every Sail-runnable ELF on Spike before VF2.')
         booleanParam(name: 'RUN_HARDWARE', defaultValue: true,
@@ -123,7 +125,7 @@ pipeline {
             steps { sh 'ci/jenkins/uart_weekly_vf2.sh preflight' }
         }
 
-        stage('Generate Full ACT Suite + Sail') {
+        stage('Generate Selected ACT Scope + Sail') {
             steps { sh 'ci/jenkins/uart_weekly_vf2.sh prepare' }
         }
 
@@ -197,7 +199,8 @@ pipeline {
                     def portalUrlFile = "logs/jenkins/uart_weekly/jenkins_uart_weekly_${env.BUILD_NUMBER}/portal_url.txt"
                     if (fileExists(portalUrlFile)) {
                         def portalUrl = readFile(portalUrlFile).trim()
-                        currentBuild.description = "<a href=\"${portalUrl}\">Portal results</a>"
+                        currentBuild.description = "${params.TEST_SCOPE}: <a href=\"${portalUrl}\">Portal results</a>"
+                        echo "Portal results: ${portalUrl}"
                     }
                 }
             }
