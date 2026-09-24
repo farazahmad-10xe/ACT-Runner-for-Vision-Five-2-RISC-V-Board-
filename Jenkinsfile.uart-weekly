@@ -35,8 +35,8 @@ pipeline {
             description: 'Stream every Sail-runnable ELF to the persistent VF2 runner.')
         string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0',
             description: 'VF2 USB-UART device path.')
-        string(name: 'INSTALLED_RUNNER_BUILD', defaultValue: '98af2bd5b187',
-            description: 'Build ID advertised by the UART runner currently flashed on the VF2 SD card.')
+        string(name: 'INSTALLED_RUNNER_BUILD', defaultValue: '',
+            description: 'Optional override; blank uses ci/runner_inventory.json.')
         string(name: 'UART_READY_TIMEOUT', defaultValue: '180',
             description: 'Seconds allowed for each power-cycled board to advertise READY.')
         string(name: 'UART_RESULT_TIMEOUT', defaultValue: '600',
@@ -55,7 +55,7 @@ pipeline {
         REGENERATE_TESTS = 'true'
         SAIL_BIN = '/home/lpt-10xe/riscv-sail-0.14/bin/sail_riscv_sim'
         SAIL_EXPECTED_VERSION = '0.14'
-        RUNNER_BUILD_ID_OVERRIDE = "${params.INSTALLED_RUNNER_BUILD ?: '98af2bd5b187'}"
+        INSTALLED_RUNNER_BUILD = "${params.INSTALLED_RUNNER_BUILD ?: ''}"
         PATH = '/home/lpt-10xe/.local/bin:/home/lpt-10xe/riscv64/bin:/home/lpt-10xe/riscv-sail-0.14/bin:/home/lpt-10xe/.rbenv/shims:/home/lpt-10xe/.rbenv/bin:/usr/local/bin:/usr/bin:/bin'
     }
 
@@ -138,7 +138,7 @@ pipeline {
             }
         }
 
-        stage('Build Expected UART Runner') {
+        stage('Build Candidate UART Runner') {
             steps { sh 'ci/jenkins/uart_weekly_vf2.sh verify-runner-image' }
         }
 
@@ -204,7 +204,7 @@ pipeline {
                     }
                 }
             }
-            archiveArtifacts artifacts: "logs/jenkins/uart_weekly/jenkins_uart_weekly_${env.BUILD_NUMBER}/**, logs/runs/jenkins_uart_weekly_${env.BUILD_NUMBER}/**, logs/reference-model-runs/jenkins_uart_weekly_${env.BUILD_NUMBER}/**, cert_harness/build/vf2_jh7110/ACT_PRIV_M_OWN_ENV/uart_stream/manifest.json",
+            archiveArtifacts artifacts: "logs/jenkins/uart_weekly/jenkins_uart_weekly_${env.BUILD_NUMBER}/**, logs/runs/jenkins_uart_weekly_${env.BUILD_NUMBER}/**, logs/reference-model-runs/jenkins_uart_weekly_${env.BUILD_NUMBER}/**, cert_harness/build/vf2_jh7110/UART_M_MODE/manifest.json",
                              allowEmptyArchive: true,
                              fingerprint: true
         }

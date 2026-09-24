@@ -1,7 +1,7 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job">
   <actions/>
-  <description>VF2 weekly UART-stream regression: regenerate the full privileged suite, reference it, and stream each runnable ELF to the persistent SD runner without reflashing.</description>
+  <description>VF2 weekly UART-stream regression using the shared minimal M-mode runner.</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps">

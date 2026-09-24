@@ -1,4 +1,4 @@
-/* link.ld - board-parameterized M-mode firmware + embedded payload(s) */
+/* link.ld - board-parameterized minimal M-mode UART runner */
 OUTPUT_ARCH(riscv)
 ENTRY(_start)
 
@@ -13,20 +13,6 @@ SECTIONS
   __rodata_start = .;
   .rodata : ALIGN(16) { *(.rodata .rodata.*) *(.srodata .srodata.*) }
   __rodata_end = .;
-
-  .act_elf : ALIGN(16) {
-    _act_elf_start = .;
-    KEEP(*(.act_elf))
-    KEEP(*(.act_elf.*))
-    _act_elf_end = .;
-  }
-
-  .act_pack : ALIGN(16) {
-    _act_pack_start = .;
-    KEEP(*(.act_pack))
-    KEEP(*(.act_pack.*))
-    _act_pack_end = .;
-  }
 
   __data_start = .;
   .data : ALIGN(16) { *(.data .data.*) *(.sdata .sdata.*) }

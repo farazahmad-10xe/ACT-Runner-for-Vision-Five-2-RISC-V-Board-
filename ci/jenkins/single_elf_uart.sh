@@ -11,12 +11,10 @@ board_settings() {
   case "${TARGET_BOARD:-}" in
     visionfive2)
       board_id="vf2_jh7110"
-      runner_build="98af2bd5b187"
       power_device="${POWER_DEVICE_NAME:-SCW1050}"
       ;;
     bananapi-f3)
       board_id="bpif3_k1"
-      runner_build="aea2a34"
       power_device="${POWER_DEVICE_NAME:-SCW1050}"
       ;;
     *)
@@ -24,6 +22,7 @@ board_settings() {
       return 2
       ;;
   esac
+  runner_build="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["boards"][sys.argv[2]]["installed_build_id"])' ci/runner_inventory.json "$TARGET_BOARD")"
 }
 
 prepare() {

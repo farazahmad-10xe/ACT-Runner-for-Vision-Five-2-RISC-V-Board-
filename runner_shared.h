@@ -49,40 +49,17 @@
 #ifndef BOARD_RAM_LIMIT
 #define BOARD_RAM_LIMIT 0x100000000ULL
 #endif
-#ifndef BOARD_EXT_PACK_ADDR
-#define BOARD_EXT_PACK_ADDR 0x88000000ULL
+#ifndef BOARD_UART_ELF_BUFFER_ADDR
+#define BOARD_UART_ELF_BUFFER_ADDR 0x88000000ULL
 #endif
-#ifndef BOARD_EXT_PACK_MAX_BYTES
-#define BOARD_EXT_PACK_MAX_BYTES (128ULL * 1024ULL * 1024ULL)
+#ifndef BOARD_UART_ELF_MAX_BYTES
+#define BOARD_UART_ELF_MAX_BYTES (128ULL * 1024ULL * 1024ULL)
 #endif
 #ifndef BOARD_TEST_STACK_BYTES
 #define BOARD_TEST_STACK_BYTES (256u * 1024u)
 #endif
-#ifndef BOARD_SMODE_RUNTIME_STACK_BYTES
-#define BOARD_SMODE_RUNTIME_STACK_BYTES (16u * 1024u)
-#endif
 #ifndef BOARD_TRAP_STACK_BYTES
 #define BOARD_TRAP_STACK_BYTES 1024u
-#endif
-#ifndef BOARD_STRAP_STACK_BYTES
-#define BOARD_STRAP_STACK_BYTES 1024u
-#endif
-#ifndef BOARD_SDIO0_BASE
-#define BOARD_SDIO0_BASE 0x16010000UL
-#endif
-#ifndef BOARD_SDIO1_BASE
-#define BOARD_SDIO1_BASE 0x16020000UL
-#endif
-#ifndef BOARD_SD_BLOCK_SIZE
-#define BOARD_SD_BLOCK_SIZE 512u
-#endif
-#ifndef BOARD_SD_ENABLE
-#define BOARD_SD_ENABLE 1
-#endif
-#define RUNNER_SD_BACKEND_DWMCI       1
-#define RUNNER_SD_BACKEND_K1_SDHCI    2
-#ifndef BOARD_SD_BACKEND
-#define BOARD_SD_BACKEND RUNNER_SD_BACKEND_DWMCI
 #endif
 #ifndef BOARD_WDT_ENABLE
 #define BOARD_WDT_ENABLE 1
@@ -162,17 +139,10 @@
 #define SHT_SYMTAB      2u
 #define SHT_DYNSYM      11u
 
-#define PACK_MAGIC      0x4b504341u
-#define PACK_VERSION    1u
-#define MAX_PACK_TESTS  4095u
-#define EXT_PACK_ADDR   BOARD_EXT_PACK_ADDR
-#define EXT_PACK_MAX_BYTES BOARD_EXT_PACK_MAX_BYTES
-#define PACK_FOOTER_MAGIC 0x464b5041u
+#define UART_ELF_BUFFER_ADDR BOARD_UART_ELF_BUFFER_ADDR
+#define UART_ELF_MAX_BYTES BOARD_UART_ELF_MAX_BYTES
 #define TEST_STACK_BYTES BOARD_TEST_STACK_BYTES
-#define SMODE_RUNTIME_STACK_BYTES BOARD_SMODE_RUNTIME_STACK_BYTES
 #define TRAP_STACK_BYTES BOARD_TRAP_STACK_BYTES
-#define STRAP_STACK_BYTES BOARD_STRAP_STACK_BYTES
-#define FOOTER_IDX_NONE 0xffffffffu
 
 #define UART_STREAM_MAGIC        0x31534655u /* little-endian "UFS1" */
 #define UART_STREAM_VERSION      1u
@@ -190,11 +160,6 @@ typedef struct __attribute__((packed)) {
 _Static_assert(sizeof(UartStreamHeader) == 88u,
                "UART stream header layout changed");
 
-#define SDIO0_BASE      BOARD_SDIO0_BASE
-#define SDIO1_BASE      BOARD_SDIO1_BASE
-#define SD_BLOCK_SIZE   BOARD_SD_BLOCK_SIZE
-#define RUNNER_SD_ENABLE BOARD_SD_ENABLE
-#define RUNNER_SD_BACKEND BOARD_SD_BACKEND
 #define RUNNER_WDT_ENABLE BOARD_WDT_ENABLE
 #define RUNNER_WDT_BASE BOARD_WDT_BASE
 #define RUNNER_WDT_LOAD BOARD_WDT_LOAD
@@ -253,25 +218,7 @@ _Static_assert(sizeof(UartStreamHeader) == 88u,
 #define COUNTEREN_BASE  (MCOUNTEREN_CY | MCOUNTEREN_TM | MCOUNTEREN_IR)
 #define COUNTEREN_ALL   0xffffffffULL
 #define SV39_L0_TABLE_COUNT 64u
-#define PAYLOAD_KIND_ACT 0u
-#define PAYLOAD_KIND_RIESCUE 1u
-#define RUNNER_RIESCUE_COUNTER_POLICY_NONE 0u
-#define RUNNER_RIESCUE_COUNTER_POLICY_BASE 1u
-#define RUNNER_RIESCUE_COUNTER_POLICY_ALL  2u
-
-#ifndef RUNNER_PAYLOAD_KIND
-#define RUNNER_PAYLOAD_KIND PAYLOAD_KIND_ACT
-#endif
-
-#ifndef RUNNER_RIESCUE_COUNTER_POLICY
-#define RUNNER_RIESCUE_COUNTER_POLICY RUNNER_RIESCUE_COUNTER_POLICY_NONE
-#endif
-
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_RIESCUE
-#define MAX_RUNNER_LOAD_SEGMENTS 128u
-#else
 #define MAX_RUNNER_LOAD_SEGMENTS 16u
-#endif
 #define RUNNER_TEST_SBI_EXT 0x56524632ULL
 #define RUNNER_TEST_OP_ECALL_TEST 0ULL
 #define RUNNER_TEST_OP_GOTO_M_MODE 1ULL
@@ -305,10 +252,6 @@ _Static_assert(sizeof(UartStreamHeader) == 88u,
 #define RUNNER_SMODE_CSR_POLICY RUNNER_SMODE_CSR_POLICY_STRICT
 #endif
 
-extern uint8_t _act_elf_start[];
-extern uint8_t _act_elf_end[];
-extern uint8_t _act_pack_start[];
-extern uint8_t _act_pack_end[];
 extern uint8_t __text_start[];
 extern uint8_t __text_end[];
 extern uint8_t __rodata_start[];
@@ -333,7 +276,6 @@ typedef struct RunnerImageState {
     volatile uint64_t sig_end;
     volatile uint64_t fail_begin;
     volatile uint64_t fail_end;
-    volatile uint64_t riescue_hart_context_addr;
     const uint8_t *loaded_blob;
     size_t loaded_blob_size;
     uint64_t loaded_region_start;
@@ -385,20 +327,11 @@ extern RunnerImageState g_runner_image;
 extern RunnerExecState g_runner_exec;
 extern LowerModeState g_lower_state;
 extern struct MachineEnvConfig g_machine_env_config;
-extern uint32_t g_pack_footer_lba;
-extern uint32_t g_ext_next_index;
-extern uint32_t g_ext_inflight_index;
-extern uint32_t g_ext_active_index;
-extern uint32_t g_ext_progress_persisted;
-extern uint32_t g_ext_pack_count;
-extern int g_ext_pack_loaded;
 extern uint64_t g_sv39_root_page_table[512];
 extern uint64_t g_sv39_l1_page_tables[4][512];
 extern uint64_t g_sv39_l0_page_tables[SV39_L0_TABLE_COUNT][512];
 extern uint8_t g_test_stack[TEST_STACK_BYTES];
-extern uint8_t g_smode_runtime_stack[SMODE_RUNTIME_STACK_BYTES];
 extern uint8_t g_trap_stack[TRAP_STACK_BYTES];
-extern uint8_t g_strap_stack[STRAP_STACK_BYTES];
 typedef struct {
     uint64_t ra;
     uint64_t gp;
@@ -610,27 +543,6 @@ typedef struct {
     uint64_t st_size;
 } Elf64_Sym;
 
-typedef struct __attribute__((packed)) {
-    uint32_t magic;
-    uint32_t version;
-    uint32_t count;
-    uint32_t reserved;
-} ActPackHeader;
-
-typedef struct __attribute__((packed)) {
-    char name[64];
-    uint64_t offset;
-    uint64_t size;
-} ActPackEntry;
-
-typedef struct __attribute__((packed)) {
-    uint32_t magic;
-    uint32_t version;
-    uint64_t start_lba;
-    uint32_t num_blocks;
-    uint32_t reserved;
-} ActPackFooter;
-
 typedef struct {
     const char *name;
     uint64_t value;
@@ -755,10 +667,8 @@ void build_machine_env_config(uint64_t mode, MachineEnvConfig *cfg);
 void apply_machine_env_config(const MachineEnvConfig *cfg);
 void emit_machine_env_config(const MachineEnvConfig *cfg);
 void platform_prepare_exec_env(uint64_t mode);
-void platform_prepare_riescue_payload_env(void);
 void reset_lower_mode_state(void);
 void run_test_in_requested_mode(uint64_t entry, uintptr_t test_sp);
-void enter_smode_from_m(uint64_t entry, uintptr_t smode_sp);
 void runner_reset_sbi_state(void);
 void runner_prepare_smode_return_bridge(TrapFrame *tf);
 int runner_prepare_smode_request_bridge(uint64_t sepc, TrapFrame *tf);
@@ -789,9 +699,6 @@ void dump_act_failure_context(void);
 void dump_act_irq_timeout_context(void);
 void dump_act_irq_section_trace(void);
 int load_elf_blob(const uint8_t *blob, size_t blob_size, uint64_t *entry_out);
-int load_pack_from_sd_tail(void);
-int persist_footer_progress(uint32_t next_index, uint32_t inflight_index_or_none);
-void sd_quiesce_for_reset(void);
 void emit_execution_context(const char *reason);
 uint64_t get_case_exit_pc(void);
 void emit_trap_failure_report(uint64_t mcause, uint64_t mepc);
@@ -811,9 +718,6 @@ int case_is_pass(const TestResult *tr);
 void emit_case_report(const TestResult *tr);
 uint64_t run_loaded_entry(uint64_t entry);
 int run_one_blob(const char *name, const uint8_t *blob, size_t blob_size, TestResult *out);
-int run_single_embedded(uint64_t *total, uint64_t *pass, uint64_t *fail);
-int run_pack_embedded(uint64_t *total, uint64_t *pass, uint64_t *fail);
-int run_pack_external(uint64_t *total, uint64_t *pass, uint64_t *fail);
 int run_uart_stream_once(uint64_t *total, uint64_t *pass, uint64_t *fail);
 void uart_stream_emit_done(const char *name, const char *status, uint64_t tohost);
 

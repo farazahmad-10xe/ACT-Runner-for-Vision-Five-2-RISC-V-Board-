@@ -1649,16 +1649,9 @@ int load_elf_blob(const uint8_t *blob, size_t blob_size, uint64_t *entry_out)
     g_runner_image.loaded_region_start = 0;
     g_runner_image.loaded_region_end = 0;
     g_runner_image.load_segment_count = 0;
-    g_runner_image.riescue_hart_context_addr = 0;
     if (find_symbol_by_name(blob, blob_size, eh, "tohost", (uint64_t *)&g_runner_image.tohost_addr) != 0) {
         g_runner_image.tohost_addr = FIXED_TOHOST_ADDR;
     }
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_RIESCUE
-    if (find_symbol_by_name(blob, blob_size, eh, "hart_context_pa", (uint64_t *)&g_runner_image.riescue_hart_context_addr) != 0 &&
-        find_symbol_by_name(blob, blob_size, eh, "__section_hart_context", (uint64_t *)&g_runner_image.riescue_hart_context_addr) != 0) {
-        (void)find_symbol_by_name(blob, blob_size, eh, "hart_context", (uint64_t *)&g_runner_image.riescue_hart_context_addr);
-    }
-#endif
     find_signature_range(blob, blob_size, eh, (uint64_t *)&g_runner_image.sig_begin, (uint64_t *)&g_runner_image.sig_end);
     find_failure_scratch_range(blob, blob_size, eh, (uint64_t *)&g_runner_image.fail_begin, (uint64_t *)&g_runner_image.fail_end);
 
@@ -1682,8 +1675,8 @@ int load_elf_blob(const uint8_t *blob, size_t blob_size, uint64_t *entry_out)
                                (uint64_t)(uintptr_t)__text_start,
                                (uint64_t)(uintptr_t)__stack_top)) return -13;
         if (ranges_overlap_u64(dst_addr, dst_end,
-                               EXT_PACK_ADDR,
-                               EXT_PACK_ADDR + EXT_PACK_MAX_BYTES)) return -14;
+                               UART_ELF_BUFFER_ADDR,
+                               UART_ELF_BUFFER_ADDR + UART_ELF_MAX_BYTES)) return -14;
         if (g_runner_image.load_segment_count >= MAX_RUNNER_LOAD_SEGMENTS) return -12;
 
         if (g_runner_image.loaded_region_start == 0 || dst_addr < g_runner_image.loaded_region_start) {

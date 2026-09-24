@@ -24,6 +24,8 @@ pipeline {
         string(name: 'ELF_NAME', defaultValue: 'uploaded.elf', description: 'Original ELF display name.')
         string(name: 'RUNNER_BRANCH', defaultValue: 'vf2-uart-stream-jenkins',
                description: 'Runner repository branch.')
+        string(name: 'RUNNER_REVISION_OVERRIDE', defaultValue: '',
+               description: 'Optional exact runner commit for reproducible reruns.')
         string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0', description: 'USB-UART device.')
         string(name: 'UART_READY_TIMEOUT', defaultValue: '240', description: 'Runner READY timeout.')
         string(name: 'UART_RESULT_TIMEOUT', defaultValue: '600', description: 'ELF completion timeout.')
@@ -44,6 +46,7 @@ pipeline {
                 sh '''#!/usr/bin/env bash
                     set -euo pipefail
                     branch="${RUNNER_BRANCH:-vf2-uart-stream-jenkins}"
+                    revision_override="${RUNNER_REVISION_OVERRIDE:-}"
                     git check-ref-format --branch "$branch" >/dev/null
                     git init .
                     git remote add origin "$RUNNER_REMOTE_URL"
@@ -58,9 +61,14 @@ pipeline {
                       [[ "$attempt" -eq 4 ]] || sleep "$((attempt * 15))"
                     done
                     [[ "$fetched" == true ]] || { echo "Runner fetch failed" >&2; exit 1; }
-                    git checkout --detach "$(git rev-parse --verify "$ref^{commit}")"
+                    selected="$(git rev-parse --verify "$ref^{commit}")"
+                    if [[ -n "$revision_override" ]]; then
+                      selected="$(git rev-parse --verify "$revision_override^{commit}")"
+                    fi
+                    git checkout --detach "$selected"
                     install -m 0600 "$LOCAL_TUYA_DEVICES_SOURCE" devices.json
                     test -x ci/jenkins/single_elf_uart.sh
+                    python3 ci/check_minimal_uart_repo.py
                 '''
             }
         }

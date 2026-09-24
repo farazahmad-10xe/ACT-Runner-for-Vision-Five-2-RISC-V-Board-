@@ -14,7 +14,6 @@ export INCLUDE_STATIC_PRIV_SUITES="${INCLUDE_STATIC_PRIV_SUITES:-false}"
 export EXPECTED_TEST_NAMES="${EXPECTED_TEST_NAMES-ExceptionsF-00,ExceptionsS-00,ExceptionsSm-00,ExceptionsU-00,ExceptionsZc-00}"
 
 uart_board="${UART_RUNNER_BOARD:-vf2_jh7110}"
-uart_profile="${UART_RUNNER_PROFILE:-ACT_PRIV_M_OWN_ENV}"
 uart_expected_board="${UART_EXPECT_BOARD:-$uart_board}"
 uart_device_name="${UART_DEVICE_NAME:-}"
 
@@ -31,18 +30,17 @@ case "$stage" in
     ;;
 
   verify-runner-image)
-    expected_build="${RUNNER_BUILD_ID_OVERRIDE:-$(git -C "$repo_root" rev-parse --short=12 HEAD)}"
+    portal_board="visionfive2"
+    [[ "$uart_board" != "bpif3_k1" ]] || portal_board="bananapi-f3"
+    inventory_build="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["boards"][sys.argv[2]]["installed_build_id"])' "$repo_root/ci/runner_inventory.json" "$portal_board")"
+    expected_build="${INSTALLED_RUNNER_BUILD:-$inventory_build}"
     if [[ ! "$expected_build" =~ ^[0-9A-Za-z._-]{1,63}$ ]]; then
       echo "Invalid runner build ID: $expected_build" >&2
       exit 2
     fi
-    image="$repo_root/cert_harness/build/$uart_board/$uart_profile/uart_stream/boot_image.bin"
-    RUNNER_BUILD_ID_OVERRIDE="$expected_build" \
-      PATH="/home/lpt-10xe/riscv64/bin:$PATH" \
-      bash "$repo_root/cert_harness/tools/build_profile.sh" \
-        --board "$uart_board" \
-        --profile "$uart_profile" \
-        --payload-transport uart_stream
+    image="$repo_root/cert_harness/build/$uart_board/UART_M_MODE/boot_image.bin"
+    PATH="/home/lpt-10xe/riscv64/bin:$PATH" \
+      bash "$repo_root/cert_harness/tools/build_runner.sh" --board "$uart_board"
     test -f "$image"
     mkdir -p "$state_root"
     sha256sum "$image" > "$state_root/uart_runner_image.sha256"
@@ -88,7 +86,8 @@ case "$stage" in
       echo "transport=uart_stream"
       echo "board=$uart_board"
       echo "runner_board_identity=$uart_expected_board"
-      echo "sd_flash_per_run=no"
+      echo "installed_runner_build=$(cat "$state_root/expected_runner_build.txt" 2>/dev/null || true)"
+      echo "runner_inventory=ci/runner_inventory.json"
     } > "$state_root/jenkins_manifest.txt"
     if [[ -d "$run_root" ]]; then
       if [[ -f "$run_root/summary.json" ]]; then

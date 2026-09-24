@@ -5,11 +5,11 @@
 
 #if RUNNER_UART_STREAM
 
-_Static_assert(EXT_PACK_ADDR >= BOARD_RAM_BASE,
+_Static_assert(UART_ELF_BUFFER_ADDR >= BOARD_RAM_BASE,
                "UART receive buffer starts below board RAM");
-_Static_assert(EXT_PACK_ADDR < BOARD_RAM_LIMIT,
+_Static_assert(UART_ELF_BUFFER_ADDR < BOARD_RAM_LIMIT,
                "UART receive buffer starts beyond board RAM");
-_Static_assert(EXT_PACK_MAX_BYTES <= BOARD_RAM_LIMIT - EXT_PACK_ADDR,
+_Static_assert(UART_ELF_MAX_BYTES <= BOARD_RAM_LIMIT - UART_ELF_BUFFER_ADDR,
                "UART receive buffer exceeds board RAM");
 
 static char g_uart_stream_name[UART_STREAM_NAME_BYTES + 1u];
@@ -88,11 +88,11 @@ static int receive_header(UartStreamHeader *header)
         uart_puts("\n");
         return -2;
     }
-    if (header->elf_size < sizeof(Elf64_Ehdr) || header->elf_size > EXT_PACK_MAX_BYTES) {
+    if (header->elf_size < sizeof(Elf64_Ehdr) || header->elf_size > UART_ELF_MAX_BYTES) {
         uart_puts("[UART_STREAM] ERROR reason=bad_size value=");
         uart_put_hex(header->elf_size);
         uart_puts(" max=");
-        uart_put_hex(EXT_PACK_MAX_BYTES);
+        uart_put_hex(UART_ELF_MAX_BYTES);
         uart_puts("\n");
         return -3;
     }
@@ -114,7 +114,7 @@ static int receive_header(UartStreamHeader *header)
 int run_uart_stream_once(uint64_t *total, uint64_t *pass, uint64_t *fail)
 {
     UartStreamHeader header;
-    uint8_t *dst = (uint8_t *)(uintptr_t)EXT_PACK_ADDR;
+    uint8_t *dst = (uint8_t *)(uintptr_t)UART_ELF_BUFFER_ADDR;
     uint32_t crc = 0xffffffffu;
     int rc;
     TestResult tr;
@@ -126,9 +126,9 @@ int run_uart_stream_once(uint64_t *total, uint64_t *pass, uint64_t *fail)
     uart_puts(" header_bytes=");
     uart_put_dec_u64(sizeof(UartStreamHeader));
     uart_puts(" max_elf_bytes=");
-    uart_put_dec_u64(EXT_PACK_MAX_BYTES);
+    uart_put_dec_u64(UART_ELF_MAX_BYTES);
     uart_puts(" buffer=");
-    uart_put_hex(EXT_PACK_ADDR);
+    uart_put_hex(UART_ELF_BUFFER_ADDR);
     uart_puts(" board=");
     uart_puts(RUNNER_PLATFORM_NAME);
     uart_puts(" runner_build=");

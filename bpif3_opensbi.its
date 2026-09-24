@@ -1,13 +1,13 @@
 /dts-v1/;
 
 / {
-  description = "ACT4 runner firmware for BPI-F3 (SpacemiT K1), replaces the opensbi FIT slot";
+  description = "Minimal UART ELF runner for BPI-F3 (SpacemiT K1)";
   #address-cells = <2>;
 
   images {
     opensbi {
-      description = "bpif3-act4-runner";
-      data = /incbin/("firmware_act.bin");
+      description = "bpif3-uart-elf-runner";
+      data = /incbin/("firmware.bin");
       type = "firmware";
       arch = "riscv";
       os = "opensbi";
@@ -23,7 +23,7 @@
   configurations {
     default = "config_1";
     config_1 {
-      description = "ACT4 runner config";
+      description = "Minimal UART runner config";
       firmware = "opensbi";
     };
   };

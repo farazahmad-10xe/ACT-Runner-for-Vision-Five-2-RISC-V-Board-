@@ -87,46 +87,6 @@ static void monitor_uart_grace_delay(void)
     }
 }
 
-static uint32_t current_external_progress_index(void)
-{
-    if (g_ext_active_index != FOOTER_IDX_NONE) return g_ext_active_index;
-    if (g_ext_inflight_index != FOOTER_IDX_NONE) return g_ext_inflight_index;
-    return FOOTER_IDX_NONE;
-}
-
-static void persist_external_progress_if_needed(const char *tag)
-{
-    uint32_t idx = current_external_progress_index();
-    if (g_ext_pack_loaded &&
-        idx != FOOTER_IDX_NONE &&
-        g_ext_progress_persisted == 0u) {
-        int prc = persist_footer_progress(idx + 1u, FOOTER_IDX_NONE);
-        g_ext_next_index = idx + 1u;
-        g_ext_inflight_index = FOOTER_IDX_NONE;
-        if (prc == 0) g_ext_progress_persisted = 1u;
-        uart_puts("[SD] ");
-        uart_puts(tag ? tag : "progress");
-        uart_puts(" next_index=");
-        uart_put_dec_u64(idx + 1u);
-        uart_puts(" clear_in_progress rc=");
-        uart_put_hex((uint64_t)(int64_t)prc);
-        uart_puts("\n");
-    }
-}
-
-static void persist_external_progress_quiet(void)
-{
-    uint32_t idx = current_external_progress_index();
-    if (g_ext_pack_loaded &&
-        idx != FOOTER_IDX_NONE &&
-        g_ext_progress_persisted == 0u) {
-        int prc = persist_footer_progress(idx + 1u, FOOTER_IDX_NONE);
-        g_ext_next_index = idx + 1u;
-        g_ext_inflight_index = FOOTER_IDX_NONE;
-        if (prc == 0) g_ext_progress_persisted = 1u;
-    }
-}
-
 static int monitor_tohost_is_sane(void)
 {
     uint64_t addr = g_runner_image.tohost_addr;
@@ -203,48 +163,6 @@ static void wait_for_hart1_csr_snapshot(void)
         cpu_relax();
     }
 }
-
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_RIESCUE
-static uint64_t riescue_read_u64(uint64_t addr, int *valid_out)
-{
-    if (valid_out) *valid_out = 0;
-    if (!is_valid_ddr_addr(addr) || !is_valid_ddr_addr(addr + 7ULL)) return 0;
-    if (valid_out) *valid_out = 1;
-    return *(volatile const uint64_t *)(uintptr_t)addr;
-}
-
-static void riescue_emit_context_field(const char *name, uint64_t addr)
-{
-    int valid = 0;
-    uint64_t value = riescue_read_u64(addr, &valid);
-
-    uart_puts(" ");
-    uart_puts(name);
-    uart_puts("=");
-    if (valid) uart_put_hex(value);
-    else uart_puts("unavailable");
-}
-
-static void riescue_emit_failure_context(void)
-{
-    uint64_t hart_context_base = g_runner_image.riescue_hart_context_addr;
-    if (!is_valid_ddr_addr(hart_context_base)) {
-        hart_context_base = 0x41890000ULL;
-    }
-
-    uart_puts("[RIESCUE] fail_context hart_context=");
-    uart_put_hex(hart_context_base);
-    riescue_emit_context_field("mepc", hart_context_base + 0x28ULL);
-    riescue_emit_context_field("return_pc", hart_context_base + 0x30ULL);
-    riescue_emit_context_field("expected_mepc", hart_context_base + 0x20ULL);
-    riescue_emit_context_field("expected_mcause", hart_context_base + 0x50ULL);
-    riescue_emit_context_field("actual_mcause", hart_context_base + 0x58ULL);
-    riescue_emit_context_field("expected_mode", hart_context_base + 0x68ULL);
-    riescue_emit_context_field("scheduler_index", hart_context_base + 0x188ULL);
-    riescue_emit_context_field("num_runs_left", hart_context_base + 0x190ULL);
-    uart_puts("\n");
-}
-#endif
 
 static void emit_mode_value(uint64_t mode)
 {
@@ -468,9 +386,7 @@ void emit_trap_failure_report(uint64_t mcause, uint64_t mepc)
     emit_execution_context("TRAP");
 
     dump_failure_scratch_region(g_runner_image.fail_begin, g_runner_image.fail_end);
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
     dump_act_failure_context();
-#endif
 }
 
 void handle_fatal_test_trap(const TrapFrame *tf, uint64_t mcause, uint64_t mepc,
@@ -485,8 +401,6 @@ void handle_fatal_test_trap(const TrapFrame *tf, uint64_t mcause, uint64_t mepc,
     emit_trap_failure_report(mcause, mepc);
     uart_stream_emit_done(safe_case_name((const char *)g_runner_exec.active_case_name),
                           "FAIL", TOHOST_TRAP);
-
-    persist_external_progress_if_needed("trap persist");
 
     g_runner_exec.case_report_ready = 1;
     g_runner_exec.monitor_report_done = 1;
@@ -567,7 +481,6 @@ void monitor_hart_loop(void)
         if (!g_runner_exec.reset_armed && g_runner_exec.reset_request_mtime != 0 && g_runner_exec.sig_dump_in_progress == 0) {
             uint64_t now = *mtime_ptr();
             if (now >= g_runner_exec.reset_request_mtime) {
-                sd_quiesce_for_reset();
                 uart_log_lock();
                 uart_puts("[RST] trigger watchdog reset\n");
                 uart_log_unlock();
@@ -594,18 +507,7 @@ void monitor_hart_loop(void)
                     uart_puts(" shared_deadline=");
                     uart_put_hex(shared_deadline);
                     uart_puts("\n");
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
                     dump_act_irq_timeout_context();
-#endif
-                    if (g_ext_pack_loaded) {
-                        uint32_t idx = current_external_progress_index();
-                        if (idx != FOOTER_IDX_NONE && (idx + 1u) < g_ext_pack_count) {
-                            persist_external_progress_if_needed("timeout disabled skip persist");
-                            uart_puts("[RST] timeout disabled; advancing to next external case via watchdog reset\n");
-                            g_runner_exec.runner_active = 0;
-                            g_runner_exec.reset_request_mtime = now + RESET_DELAY_TICKS;
-                        }
-                    }
                     uart_log_unlock();
                     timeout_disabled_notice = 1;
                 }
@@ -621,7 +523,6 @@ void monitor_hart_loop(void)
 
 #if RUNNER_TIMEOUT_FAST_RESET && !RUNNER_UART_STREAM
                 g_runner_exec.runner_active = 0;
-                persist_external_progress_quiet();
                 g_runner_exec.case_report_ready = 1;
                 g_runner_exec.monitor_report_done = 1;
                 trigger_watchdog_reset();
@@ -672,16 +573,13 @@ void monitor_hart_loop(void)
                 uart_puts("\n");
                 emit_execution_context("TIMEOUT");
 
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
                 g_runner_exec.sig_dump_in_progress = 1;
                 asm volatile ("fence rw, rw" ::: "memory");
                 dump_failure_scratch_region(g_runner_image.fail_begin, g_runner_image.fail_end);
                 dump_act_failure_context();
                 asm volatile ("fence rw, rw" ::: "memory");
                 g_runner_exec.sig_dump_in_progress = 0;
-#endif
 
-                persist_external_progress_if_needed("timeout persist");
                 uart_stream_emit_done(name, "TIMEOUT", TOHOST_TIMEOUT);
                 g_runner_exec.case_report_ready = 1;
                 g_runner_exec.monitor_report_done = 1;
@@ -760,18 +658,9 @@ void monitor_hart_loop(void)
                 else emit_execution_context("FAIL");
                 emit_hart1_csr_snapshot();
 
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
                 if (v == 1) dump_act_irq_section_trace();
-#endif
-
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_RIESCUE
-                if (v != 1 && v != TOHOST_TIMEOUT) {
-                    riescue_emit_failure_context();
-                }
-#endif
 #if RUNNER_FAST_FAIL_RESET
                 if (v != 1 && v != TOHOST_TIMEOUT) {
-                    persist_external_progress_if_needed("fast-fail persist");
                     g_runner_exec.case_report_ready = 1;
                     g_runner_exec.monitor_report_done = 1;
                     uart_puts("[RST] fast fail reset\n");
@@ -782,7 +671,6 @@ void monitor_hart_loop(void)
                 }
 #endif
                 if (v != 1) {
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
                     g_runner_exec.sig_dump_in_progress = 1;
                     asm volatile ("fence rw, rw" ::: "memory");
                     dump_failure_scratch_region(g_runner_image.fail_begin, g_runner_image.fail_end);
@@ -790,10 +678,8 @@ void monitor_hart_loop(void)
                     dump_signature_region(g_runner_image.sig_begin, g_runner_image.sig_end);
                     asm volatile ("fence rw, rw" ::: "memory");
                     g_runner_exec.sig_dump_in_progress = 0;
-#endif
                 }
                 uart_stream_emit_done(name, st, v);
-                persist_external_progress_if_needed("monitor persist");
                 g_runner_exec.case_report_ready = 1;
                 g_runner_exec.monitor_report_done = 1;
                 g_runner_exec.reset_request_mtime = *mtime_ptr() + RESET_DELAY_TICKS;

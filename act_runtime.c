@@ -62,9 +62,6 @@ uint64_t run_loaded_entry(uint64_t entry)
     uart_log_unlock();
 #endif
     platform_prepare_exec_env(g_lower_state.requested_exec_mode);
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_RIESCUE
-    platform_prepare_riescue_payload_env();
-#endif
 #if RUNNER_VERBOSE_FLOW
     uart_log_lock();
     emit_machine_env_config(&g_machine_env_config);
@@ -221,10 +218,8 @@ int run_one_blob(const char *name, const uint8_t *blob, size_t blob_size, TestRe
     dbg_puts(" tohost=0x"); dbg_hex_u64(g_runner_image.tohost_addr);
     dbg_puts(" load_segments=0x"); dbg_hex_u64(g_runner_image.load_segment_count);
     dbg_nl();
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
     dbg_puts("[ACT] sig_begin=0x"); dbg_hex_u64(g_runner_image.sig_begin); dbg_nl();
     dbg_puts("[ACT] sig_end=0x"); dbg_hex_u64(g_runner_image.sig_end); dbg_nl();
-#endif
 
     g_runner_exec.active_case_name = name;
     out->tohost = run_loaded_entry(entry);
@@ -261,11 +256,8 @@ int run_one_blob(const char *name, const uint8_t *blob, size_t blob_size, TestRe
     if (out->status == CASE_STATUS_PASS) emit_execution_context("PASS");
     else if (out->status == CASE_STATUS_TIMEOUT) emit_execution_context("TIMEOUT");
     else emit_execution_context("FAIL");
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
     if (out->status == CASE_STATUS_PASS) dump_act_irq_section_trace();
-#endif
     if (out->status != CASE_STATUS_PASS) {
-#if RUNNER_PAYLOAD_KIND == PAYLOAD_KIND_ACT
         g_runner_exec.sig_dump_in_progress = 1;
         asm volatile ("fence rw, rw" ::: "memory");
         dump_failure_scratch_region(g_runner_image.fail_begin, g_runner_image.fail_end);
@@ -273,72 +265,7 @@ int run_one_blob(const char *name, const uint8_t *blob, size_t blob_size, TestRe
         dump_signature_region(g_runner_image.sig_begin, g_runner_image.sig_end);
         asm volatile ("fence rw, rw" ::: "memory");
         g_runner_exec.sig_dump_in_progress = 0;
-#endif
     }
     g_runner_exec.case_report_ready = 1;
-    return 0;
-}
-
-int run_single_embedded(uint64_t *total, uint64_t *pass, uint64_t *fail)
-{
-    size_t blob_size = (size_t)(_act_elf_end - _act_elf_start);
-    TestResult tr;
-    if (blob_size < sizeof(Elf64_Ehdr)) return -1;
-
-    (void)run_one_blob("embedded", _act_elf_start, blob_size, &tr);
-    *total += 1;
-    if (case_is_pass(&tr)) *pass += 1;
-    else *fail += 1;
-
-    return 0;
-}
-
-int run_pack_embedded(uint64_t *total, uint64_t *pass, uint64_t *fail)
-{
-    const uint8_t *pack = _act_pack_start;
-    size_t pack_size = (size_t)(_act_pack_end - _act_pack_start);
-    if (pack_size < sizeof(ActPackHeader)) return -1;
-
-    {
-        const ActPackHeader *hdr = (const ActPackHeader *)(const void *)pack;
-        if (hdr->magic != PACK_MAGIC || hdr->version != PACK_VERSION) return -2;
-        if (hdr->count == 0 || hdr->count > MAX_PACK_TESTS) return -3;
-
-        {
-            size_t entries_size = (size_t)hdr->count * sizeof(ActPackEntry);
-            size_t table_end = sizeof(ActPackHeader) + entries_size;
-            if (table_end > pack_size) return -4;
-        }
-
-        {
-            const ActPackEntry *entries = (const ActPackEntry *)(const void *)(pack + sizeof(ActPackHeader));
-            uart_puts("[SUITE] detected packed tests count=");
-            uart_put_dec_u64(hdr->count);
-            uart_puts("\n");
-
-            for (uint32_t i = 0; i < hdr->count; i++) {
-                const ActPackEntry *e = &entries[i];
-                const char *name;
-                TestResult tr;
-
-                if (e->offset > pack_size || e->size > pack_size || (e->offset + e->size) > pack_size || (e->offset + e->size) < e->offset) {
-                    uart_puts("[CASE] RESULT name=");
-                    uart_puts(e->name[0] ? e->name : "unnamed");
-                    uart_puts(" status=ERROR reason=bad_pack_range\n");
-                    *total += 1;
-                    *fail += 1;
-                    continue;
-                }
-
-                name = e->name[0] ? e->name : "unnamed";
-                (void)run_one_blob(name, pack + e->offset, (size_t)e->size, &tr);
-
-                *total += 1;
-                if (case_is_pass(&tr)) *pass += 1;
-                else *fail += 1;
-            }
-        }
-    }
-
     return 0;
 }

@@ -1,7 +1,7 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <flow-definition plugin="workflow-job">
   <actions/>
-  <description>BPI-F3 weekly UART-stream regression: select all or privileged ACT tests, then power-cycle the K1 board for each ELF without reflashing its persistent runner.</description>
+  <description>BPI-F3 weekly UART-stream regression using the shared minimal M-mode runner.</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps">

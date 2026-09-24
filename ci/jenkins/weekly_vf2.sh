@@ -32,11 +32,6 @@ generated_test_root="$state_root/generated_tests"
 missing_report="$state_root/reference_failed_no_hardware_elf.txt"
 reference_status="$state_root/sail_reference_status.tsv"
 priv_source_roots="$state_root/priv_source_roots.txt"
-sd_dev="${SD_DEV:-/dev/sda}"
-serial_dev="${SERIAL_DEV:-/dev/ttyUSB0}"
-capture_timeout="${CAPTURE_TIMEOUT:-10800}"
-sd_flash_attempts="${SD_FLASH_ATTEMPTS:-3}"
-sd_flash_retry_delay="${SD_FLASH_RETRY_DELAY:-10}"
 sail_bin="${SAIL_BIN:-/home/lpt-10xe/riscv-sail-0.13/bin/sail_riscv_sim}"
 sail_expected_version="${SAIL_EXPECTED_VERSION:-0.13}"
 act_remote_url="${ACT_REMOTE_URL:-https://github.com/Arshia2564/riscv-arch-test.git}"
@@ -66,24 +61,11 @@ fi
 reference_root="$repo_root/logs/reference-model-runs/$run_id"
 pack_list="$repo_root/logs/runs/$run_id/act_elfs.list"
 hardware_board="${HARDWARE_BOARD:-vf2_jh7110}"
-hardware_profile="${HARDWARE_PROFILE:-ACT_PRIV_M_OWN_ENV}"
-hardware_artifacts="${HARDWARE_ARTIFACTS:-$repo_root/cert_harness/build/$hardware_board/$hardware_profile/sd_tail_pack}"
 platform_label="${HARDWARE_PLATFORM_LABEL:-VF2/U74}"
-hardware_collector="${HARDWARE_COLLECTOR:-vf2_agent}"
-privileged_helper_root="${VF2_PRIVILEGED_HELPER_ROOT:-$repo_root}"
-flash_helper="${PRIVILEGED_FLASH_HELPER:-$privileged_helper_root/vf2_act_flash.sh}"
-flash_staging_root="${VF2_FLASH_STAGING_ROOT:-}"
 requested_generator_extensions="${PRIV_GENERATOR_EXTENSIONS:-}"
 include_static_priv_suites="${INCLUDE_STATIC_PRIV_SUITES:-true}"
 expected_test_names="${EXPECTED_TEST_NAMES:-}"
 runner_resolution_file="${RUNNER_RESOLUTION_FILE:-$repo_root/.jenkins_runner_resolution.txt}"
-html_report_slug="${HTML_REPORT_SLUG:-Result_20Summary}"
-
-if [[ ! "$sd_flash_attempts" =~ ^[1-9][0-9]*$ ]] ||
-   [[ ! "$sd_flash_retry_delay" =~ ^[0-9]+$ ]]; then
-  echo "SD_FLASH_ATTEMPTS must be positive and SD_FLASH_RETRY_DELAY must be non-negative." >&2
-  exit 2
-fi
 
 mkdir -p "$state_root"
 
@@ -105,7 +87,6 @@ write_state() {
     printf 'ARTIFACT_ROOT=%q\n' "$artifact_root"
     printf 'REFERENCE_ROOT=%q\n' "$reference_root"
     printf 'PACK_LIST=%q\n' "$pack_list"
-    printf 'HARDWARE_ARTIFACTS=%q\n' "$hardware_artifacts"
     printf 'TEST_SCOPE=%q\n' "$test_scope"
     printf 'TEST_DIR=%q\n' "$test_dir"
     # Retained for compatibility with older report/tooling consumers.
@@ -129,7 +110,8 @@ load_state() {
 
 case "$stage" in
   preflight)
-    test -f Jenkinsfile
+    test -f Jenkinsfile.uart-sanity
+    python3 ci/check_minimal_uart_repo.py
     git check-ref-format --branch "$act_branch" >/dev/null
     if ! git -C "$act_root" diff --quiet --ignore-submodules -- ||
        ! git -C "$act_root" diff --cached --quiet --ignore-submodules --; then
@@ -205,7 +187,7 @@ case "$stage" in
     test -f "$sail_json"
     test -x tools/act_agent/run_vf2_pack.py
     test -f tools/act_agent/run_reference_elf.py
-    test -x cert_harness/tools/run_profile.sh
+    test -x cert_harness/tools/build_runner.sh
     command -v uv
     command -v make
     command -v mkimage
@@ -254,16 +236,6 @@ case "$stage" in
       exit 1
     fi
     python3 -m py_compile tools/act_agent/run_vf2_pack.py tools/act_agent/run_reference_elf.py
-    python3 ci/jenkins/capture_provenance.py \
-      --repo-root "$repo_root" \
-      --act-root "$act_root" \
-      --state-root "$state_root" \
-      --phase preflight \
-      --expected-act-revision "$resolved_act_revision" \
-      --act-input "$act_config" \
-      --act-input "$dut_yaml_relative" \
-      --act-input "$sail_json_relative" \
-      --act-input "$dut_macros_relative"
     if [[ -n "$runner_resolution_file" && -f "$runner_resolution_file" ]]; then
       cp -f "$runner_resolution_file" "$state_root/runner_resolution.txt"
     fi
@@ -407,21 +379,6 @@ if missing:
         print(f"  {name}")
 PY
 
-    bash cert_harness/tools/build_profile.sh \
-      --board "$hardware_board" \
-      --profile "$hardware_profile" \
-      --act-list "$pack_list" \
-      --keep-make-outputs
-
-    python3 ci/jenkins/capture_provenance.py \
-      --repo-root "$repo_root" \
-      --act-root "$act_root" \
-      --state-root "$state_root" \
-      --phase prepared \
-      --expected-act-revision "$act_expected_revision" \
-      --test-root "$test_dir" \
-      --pack-list "$pack_list" \
-      --hardware-artifacts "$hardware_artifacts"
     write_state
     ;;
 
@@ -448,182 +405,8 @@ PY
     [[ "$failed" -eq 0 ]]
     ;;
 
-  flash)
-    load_state
-    test -f "$HARDWARE_ARTIFACTS/boot_image.bin"
-    test -f "$HARDWARE_ARTIFACTS/act_pack.bin"
-    test -x "$flash_helper"
-    test -x "$privileged_helper_root/write_pack_to_sd_tail.sh"
-    flash_boot_image="$HARDWARE_ARTIFACTS/boot_image.bin"
-    flash_act_pack="$HARDWARE_ARTIFACTS/act_pack.bin"
-    if [[ -n "$flash_staging_root" ]]; then
-      if [[ "$flash_staging_root" != /* ]]; then
-        echo "VF2_FLASH_STAGING_ROOT must be an absolute path." >&2
-        exit 2
-      fi
-      mkdir -p "$flash_staging_root"
-      install -m 0644 "$flash_boot_image" "$flash_staging_root/boot_image.bin"
-      install -m 0644 "$flash_act_pack" "$flash_staging_root/act_pack.bin"
-      cmp -s "$flash_boot_image" "$flash_staging_root/boot_image.bin"
-      cmp -s "$flash_act_pack" "$flash_staging_root/act_pack.bin"
-      flash_boot_image="$flash_staging_root/boot_image.bin"
-      flash_act_pack="$flash_staging_root/act_pack.bin"
-      echo "[FLASH] staged verified artifacts in $flash_staging_root"
-    fi
-    flash_complete=false
-    for ((attempt = 1; attempt <= sd_flash_attempts; attempt++)); do
-      if [[ ! -b "$sd_dev" ]]; then
-        echo "[FLASH] attempt $attempt/$sd_flash_attempts: $sd_dev is not available as a block device." >&2
-      else
-        echo "[FLASH] attempt $attempt/$sd_flash_attempts: found $sd_dev; writing boot image and ACT pack."
-        # These two fixed helpers are the only passwordless hardware operations
-        # granted to the Jenkins service account by the installer.
-        if sudo "$flash_helper" \
-             --image "$flash_boot_image" \
-             --sd-dev "$sd_dev" &&
-           sudo "$privileged_helper_root/write_pack_to_sd_tail.sh" \
-             "$flash_act_pack" "$sd_dev"; then
-          flash_complete=true
-          echo "[FLASH] completed successfully on attempt $attempt/$sd_flash_attempts."
-          break
-        fi
-        if [[ -b "$sd_dev" ]]; then
-          echo "[FLASH] write failed while $sd_dev is still present; refusing to hide a real flash error." >&2
-          exit 1
-        fi
-        echo "[FLASH] $sd_dev disappeared during the write; it may be retried." >&2
-      fi
-      if (( attempt < sd_flash_attempts )); then
-        echo "[FLASH] waiting ${sd_flash_retry_delay}s before the next availability check."
-        sleep "$sd_flash_retry_delay"
-      fi
-    done
-    if [[ "$flash_complete" != true ]]; then
-      echo "[FLASH] giving up after $sd_flash_attempts attempts: $sd_dev is unavailable." >&2
-      exit 1
-    fi
-    ;;
-
-  run)
-    load_state
-    test -e "$serial_dev"
-    if [[ "$hardware_collector" == "generic_uart" ]]; then
-      uart_log="$repo_root/logs/runs/$RUN_ID/uart_capture.log"
-      mkdir -p "$(dirname "$uart_log")"
-      serial_cmd=(
-        "$repo_root/serial_auto_rebooter.sh"
-        --serial-dev "$serial_dev"
-        --log "$uart_log"
-        --start-cycle
-        --stop-on-suite-complete
-      )
-      if [[ "$EXPECTED_CASES" != "0" ]]; then
-        serial_cmd+=(--stop-after-cases "$EXPECTED_CASES")
-      fi
-      set +e
-      if [[ "$capture_timeout" == "0" ]]; then
-        "${serial_cmd[@]}"
-      else
-        timeout "$capture_timeout" "${serial_cmd[@]}"
-      fi
-      serial_rc=$?
-      set -e
-      if [[ "$serial_rc" -ne 0 && "$serial_rc" -ne 124 ]]; then
-        exit "$serial_rc"
-      fi
-      python3 ci/jenkins/collect_board_uart.py \
-        --uart "$uart_log" \
-        --run-id "$RUN_ID" \
-        --platform "$platform_label" \
-        --sail-status "$REFERENCE_STATUS" \
-        --expected-cases "$EXPECTED_CASES"
-    else
-      python3 tools/act_agent/run_vf2_pack.py \
-        --run-id "$RUN_ID" \
-        --act-workdir "$ACT_WORKDIR" \
-        --artifact-root "$ARTIFACT_ROOT" \
-        --reference-root "$REFERENCE_ROOT" \
-        --extensions "$all_extensions" \
-        --test-dir "$TEST_DIR" \
-        --pack-list "$PACK_LIST" \
-        --pack-file "$HARDWARE_ARTIFACTS/act_pack.bin" \
-        --pack-elf-kind elf \
-        --skip-build \
-        --skip-sd-write \
-        --serial-dev "$serial_dev" \
-        --serial-timeout "$capture_timeout" \
-        --expected-cases "$EXPECTED_CASES" \
-        --yes
-    fi
-    if [[ -s "$MISSING_REPORT" ]]; then
-      echo "$platform_label run completed, but some selected tests were not runnable because their Sail reference failed:" >&2
-      sed 's/^/  /' "$MISSING_REPORT" >&2
-      exit 3
-    fi
-    ;;
-
-  finalize)
-    write_state
-    {
-      echo "run_id=$run_id"
-      echo "completed_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-      echo "git_head=$(git rev-parse HEAD 2>/dev/null || true)"
-      echo "git_dirty_count=$(git status --short | wc -l | tr -d ' ')"
-      echo "act_git_head=$(git -C "$act_root" rev-parse HEAD 2>/dev/null || true)"
-      echo "act_expected_revision=$act_expected_revision"
-      echo "act_revision_match=$([[ "$(git -C "$act_root" rev-parse HEAD 2>/dev/null || true)" == "$(git -C "$act_root" rev-parse "${act_expected_revision}^{commit}" 2>/dev/null || true)" ]] && echo yes || echo no)"
-      echo "act_git_dirty_count=$(git -C "$act_root" status --short | wc -l | tr -d ' ')"
-      echo "act_git_tracked_dirty_count=$(git -C "$act_root" status --short --untracked-files=no | wc -l | tr -d ' ')"
-      echo "sail_bin=$sail_bin"
-      echo "sail_version=$("$sail_bin" --version 2>/dev/null | head -n 1 || true)"
-    } > "$state_root/jenkins_manifest.txt"
-    tracking_sheet_csv="$state_root/tracking_sheet_snapshot.csv"
-    tracking_sheet_url="https://docs.google.com/spreadsheets/d/1BFZ4SnrCr6xdMNws5hIqELPz0wAP_lZDRgim_itaPZo/export?format=csv&gid=1043525459"
-    if curl -fL --retry 2 --connect-timeout 15 --max-time 60 \
-        -o "$tracking_sheet_csv.tmp" "$tracking_sheet_url"; then
-      mv "$tracking_sheet_csv.tmp" "$tracking_sheet_csv"
-      python3 ci/jenkins/compare_tracking_sheet.py \
-        --sheet-csv "$tracking_sheet_csv" \
-        --state-root "$state_root" \
-        --run-root "$repo_root/logs/runs/$run_id" \
-        --issue-catalog ci/jenkins/test_issue_links.json \
-        --output "$state_root/tracking_sheet_comparison.csv"
-    else
-      rm -f "$tracking_sheet_csv.tmp"
-      echo "WARNING: tracking-sheet refresh failed; continuing without a comparison artifact." >&2
-    fi
-    history_args=()
-    if [[ -n "${JENKINS_HOME:-}" && -n "${JOB_NAME:-}" ]]; then
-      history_args+=(
-        --jenkins-home "$JENKINS_HOME"
-        --jenkins-job "$JOB_NAME"
-        --history-run-kind "$run_kind"
-        --history-run-prefix "${run_id_prefix}_"
-      )
-    fi
-    python3 ci/jenkins/build_results_site.py \
-      --workspace "$repo_root" \
-      --state-root "$state_root" \
-      --run-root "$repo_root/logs/runs/$run_id" \
-      --artifact-root "$artifact_root" \
-      --build-url "${BUILD_URL:-}" \
-      --report-url-name "$html_report_slug" \
-      "${history_args[@]}"
-    zip_inputs=("logs/jenkins/$run_kind/$run_id")
-    if [[ -d "$repo_root/logs/runs/$run_id" ]]; then
-      zip_inputs+=("logs/runs/$run_id")
-    fi
-    (
-      cd "$repo_root"
-      zip -rq "logs/jenkins/$run_kind/${run_id}-complete.zip" "${zip_inputs[@]}"
-    )
-    mkdir -p "$state_root/site/downloads"
-    cp -f "$repo_root/logs/jenkins/$run_kind/${run_id}-complete.zip" \
-      "$state_root/site/downloads/${run_id}-complete.zip"
-    ;;
-
   *)
-    echo "Usage: $0 {preflight|prepare|spike|flash|run|finalize}" >&2
+    echo "Usage: $0 {preflight|prepare|spike}" >&2
     exit 2
     ;;
 esac

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "boards": {
+    "visionfive2": {
+      "runner_board_id": "vf2_jh7110",
+      "installed_build_id": "98af2bd5b187",
+      "source_revision": "98af2bd5b187968c92e0a57f336d79249b260c00"
+    },
+    "bananapi-f3": {
+      "runner_board_id": "bpif3_k1",
+      "installed_build_id": "aea2a34",
+      "source_revision": "aea2a34990b9c265049c65e6d071a8f5ee1061cc"
+    }
+  }
+}

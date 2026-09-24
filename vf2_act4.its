@@ -1,13 +1,13 @@
 /dts-v1/;
 
 / {
-  description = "U-boot-spl FIT image for JH7110 VisionFive2 (ACT4 runner)";
+  description = "Minimal UART ELF runner for JH7110 VisionFive2";
   #address-cells = <1>;
 
   images {
     firmware {
-      description = "act4-runner";
-      data = /incbin/("firmware_act.bin");
+      description = "vf2-uart-elf-runner";
+      data = /incbin/("firmware.bin");
       type = "firmware";
       arch = "riscv";
       os = "u-boot";
@@ -20,7 +20,7 @@
   configurations {
     default = "config-1";
     config-1 {
-      description = "ACT4 runner config";
+      description = "Minimal UART runner config";
       firmware = "firmware";
     };
   };
