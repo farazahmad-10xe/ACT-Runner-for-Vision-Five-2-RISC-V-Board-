@@ -319,8 +319,6 @@ case "$stage" in
       --extensions "$all_extensions" \
       --test-dir "$test_dir" \
       --build-act-artifacts \
-      --build-pack \
-      --pack-elf-kind elf \
       --no-act-debug \
       "${act_build_args[@]}" \
       --skip-build \
@@ -329,6 +327,38 @@ case "$stage" in
       --skip-triage \
       --skip-final-snapshot \
       --expected-cases 0
+
+    # UART streams individual self-checking ELFs.  Generate its input list
+    # directly instead of invoking the removed SD/embedded act_pack.bin path.
+    python3 - "$artifact_root" "$pack_list" <<'PY'
+from pathlib import Path
+import sys
+
+artifact_root = Path(sys.argv[1]).resolve()
+pack_list = Path(sys.argv[2]).resolve()
+parts = artifact_root.parts
+if "build" not in parts:
+    raise SystemExit(f"ACT artifact root has no build component: {artifact_root}")
+index = parts.index("build")
+elf_root = Path(*parts[:index], "elfs", *parts[index + 1 :])
+candidates = sorted(
+    path.resolve()
+    for path in elf_root.rglob("*.elf")
+    if not path.name.endswith(".sig.elf")
+)
+if not candidates:
+    raise SystemExit(f"No UART hardware ELFs found under {elf_root}")
+
+# Work directories are recreated for every run, but de-duplicate by test name
+# defensively so a test can never be executed twice through two nested paths.
+by_name = {}
+for path in candidates:
+    by_name.setdefault(path.stem, path)
+selected = [by_name[name] for name in sorted(by_name)]
+pack_list.parent.mkdir(parents=True, exist_ok=True)
+pack_list.write_text("".join(f"{path}\n" for path in selected))
+print(f"UART ELF list: {len(selected)} files from {elf_root}")
+PY
 
     if [[ -n "$expected_test_names" ]]; then
       python3 - "$pack_list" "$expected_test_names" <<'PY'
