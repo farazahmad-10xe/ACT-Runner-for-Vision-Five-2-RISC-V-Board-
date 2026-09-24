@@ -127,7 +127,11 @@ if [[ "${PAYLOAD_PROFILE}" == "RIESCUE" ]]; then
 fi
 
 run_id="$(date -u +%Y%m%dT%H%M%SZ)"
-out_dir="$repo_root/$out_root/$board/$profile/$payload_transport"
+if [[ "$out_root" = /* ]]; then
+  out_dir="$out_root/$board/$profile/$payload_transport"
+else
+  out_dir="$repo_root/$out_root/$board/$profile/$payload_transport"
+fi
 mkdir -p "$out_dir"
 
 if [[ "$make_clean" -eq 1 ]]; then
@@ -148,6 +152,7 @@ fi
 
 board_cflags=()
 for var in \
+  BOARD_PLATFORM_ID \
   BOARD_UART_BASE BOARD_UART_SIZE BOARD_UART_REG_IO_WIDTH \
   BOARD_PLIC_BASE BOARD_UART_PLIC_SOURCE \
   BOARD_RUNNER_M_PLIC_CONTEXT BOARD_RUNNER_S_PLIC_CONTEXT BOARD_CLINT_MSIP_BASE \
@@ -219,10 +224,12 @@ boot_image="${BOARD_BOOT_IMAGE:-${BOOT_IMAGE:-uboot_part2_new.bin}}"
 fit_source="${BOARD_FIT_SOURCE:-${FIT_SOURCE:-}}"
 boot_image_pad_bytes="${BOARD_BOOT_IMAGE_PAD_BYTES:-${BOOT_IMAGE_PAD_BYTES:-}}"
 
+packaged_boot_image=""
 if [[ "$package_image" -eq 1 && -n "$fit_source" ]]; then
-  mkimage -f "$fit_source" "$boot_image"
+  packaged_boot_image="$out_dir/$boot_image"
+  mkimage -f "$fit_source" "$packaged_boot_image"
   if [[ -n "$boot_image_pad_bytes" ]]; then
-    truncate -s "$boot_image_pad_bytes" "$boot_image"
+    truncate -s "$boot_image_pad_bytes" "$packaged_boot_image"
   fi
 fi
 
@@ -232,9 +239,10 @@ cp -f "${fw_prefix}.dis" "$out_dir/firmware.dis"
 if [[ -f act_pack.bin ]]; then
   cp -f act_pack.bin "$out_dir/act_pack.bin"
 fi
-if [[ "$package_image" -eq 1 && -f "$boot_image" ]]; then
-  cp -f "$boot_image" "$out_dir/$boot_image"
-  cp -f "$boot_image" "$out_dir/boot_image.bin"
+if [[ -n "$packaged_boot_image" && -f "$packaged_boot_image" ]]; then
+  if [[ "$packaged_boot_image" != "$out_dir/boot_image.bin" ]]; then
+    cp -f "$packaged_boot_image" "$out_dir/boot_image.bin"
+  fi
 fi
 
 "$SIZE_BIN" "$out_dir/firmware.elf" > "$out_dir/size.txt"
@@ -262,6 +270,7 @@ cat > "$out_dir/manifest.json" <<EOF2
 {
   "run_id": "$run_id",
   "board": "$board",
+  "board_platform_id": "${BOARD_PLATFORM_ID:-0}",
   "board_description": "${BOARD_DESCRIPTION:-${PLATFORM_DESCRIPTION:-}}",
   "board_linker_script": "${BOARD_LINKER_SCRIPT:-link.ld}",
   "board_fw_load_addr": "${BOARD_FW_LOAD_ADDR:-}",

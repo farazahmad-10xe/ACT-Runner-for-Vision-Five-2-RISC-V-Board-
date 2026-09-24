@@ -32,6 +32,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-dir", type=Path)
     parser.add_argument("--tuya-config", type=Path, default=Path("devices.json"))
     parser.add_argument("--device-name", help="Select a named devices.json entry")
+    parser.add_argument(
+        "--expect-board",
+        help="Require every boot to report this board identity",
+    )
     parser.add_argument("--cycle-delay", type=float, default=3.0)
     parser.add_argument("--ready-timeout", type=float, default=180.0)
     parser.add_argument("--result-timeout", type=float, default=300.0)
@@ -109,11 +113,16 @@ def parse_done(log_path: Path) -> tuple[str, str, str] | None:
     return tuple(part.decode("ascii", errors="replace") for part in match.groups())
 
 
-def write_junit(path: Path, results: list[dict[str, object]], elapsed: float) -> None:
+def write_junit(
+    path: Path,
+    results: list[dict[str, object]],
+    elapsed: float,
+    board_id: str,
+) -> None:
     failures = sum(result["status"] != "PASS" for result in results)
     suite = ET.Element(
         "testsuite",
-        name="vf2-uart-stream",
+        name=f"{board_id}-uart-stream",
         tests=str(len(results)),
         failures=str(failures),
         errors="0",
@@ -123,7 +132,7 @@ def write_junit(path: Path, results: list[dict[str, object]], elapsed: float) ->
         case = ET.SubElement(
             suite,
             "testcase",
-            classname="vf2.uart_stream",
+            classname=f"{board_id}.uart_stream",
             name=str(result["name"]),
             time=f'{float(result["elapsed_seconds"]):.3f}',
         )
@@ -132,7 +141,7 @@ def write_junit(path: Path, results: list[dict[str, object]], elapsed: float) ->
                 case,
                 "failure",
                 message=f'target status {result["status"]}',
-                type="VF2TargetFailure",
+                type="UARTTargetFailure",
             )
             failure.text = f'UART log: {result["uart_log"]}'
         ET.SubElement(case, "system-out").text = f'UART log: {result["uart_log"]}'
@@ -219,6 +228,8 @@ def main() -> int:
         ]
         if args.expect_runner_build:
             command.extend(["--expect-runner-build", args.expect_runner_build])
+        if args.expect_board:
+            command.extend(["--expect-board", args.expect_board])
         process = subprocess.run(command, cwd=repo_root, check=False)
         elapsed = round(time.monotonic() - started, 3)
         done = parse_done(log_path) if log_path.exists() else None
@@ -250,6 +261,7 @@ def main() -> int:
         status = str(result["status"])
         counts[status] = counts.get(status, 0) + 1
     summary = {
+        "board": args.expect_board or "unspecified",
         "planned": len(elfs),
         "completed": len(results),
         "counts": counts,
@@ -258,7 +270,12 @@ def main() -> int:
     summary_path = run_dir / "summary.json"
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     junit_path = run_dir / "junit.xml"
-    write_junit(junit_path, results, time.monotonic() - batch_started)
+    write_junit(
+        junit_path,
+        results,
+        time.monotonic() - batch_started,
+        args.expect_board or "riscv",
+    )
     print(f"\n[UART_BATCH] SUMMARY {json.dumps(counts, sort_keys=True)}")
     print(f"[UART_BATCH] summary_file={summary_path}")
     print(f"[UART_BATCH] junit_file={junit_path}")

@@ -26,8 +26,10 @@ DONE_MARKER = b"[UART_STREAM] DONE"
 ERROR_MARKER = b"[UART_STREAM] ERROR"
 READY_RE = re.compile(
     rb"\[UART_STREAM\] READY version=(\d+)[^\r\n]* "
+    rb"max_elf_bytes=(\d+)[^\r\n]* "
     rb"runner_build=([^\r\n ]+)"
 )
+READY_BOARD_RE = re.compile(rb"(?:^| )board=([^\r\n ]+)(?: |$)")
 DONE_RE = re.compile(
     rb"\[UART_STREAM\] DONE name=([^\r\n ]+) "
     rb"status=(PASS|FAIL|TIMEOUT|ERROR) tohost=(0x[0-9a-fA-F]+)"
@@ -146,6 +148,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--result-timeout", type=float, default=300.0)
     parser.add_argument("--chunk-size", type=int, default=4096)
     parser.add_argument(
+        "--expect-board",
+        help="Require the READY line to report this board identity",
+    )
+    parser.add_argument(
         "--expect-runner-build",
         help="Require the READY line to report this runner build ID",
     )
@@ -194,10 +200,26 @@ def main() -> int:
             if ready_match is None:
                 raise RuntimeError("target READY line lacks protocol/build identity")
             protocol = int(ready_match.group(1))
-            runner_build = ready_match.group(2).decode("ascii", errors="replace")
+            max_elf_bytes = int(ready_match.group(2))
+            board_match = READY_BOARD_RE.search(ready_line)
+            runner_board = (
+                board_match.group(1).decode("ascii", errors="replace")
+                if board_match
+                else "unknown"
+            )
+            runner_build = ready_match.group(3).decode("ascii", errors="replace")
             if protocol != VERSION:
                 raise RuntimeError(
                     f"runner protocol mismatch: expected {VERSION}, got {protocol}"
+                )
+            if len(payload) > max_elf_bytes:
+                raise RuntimeError(
+                    f"ELF is too large for target: {len(payload)} > {max_elf_bytes}"
+                )
+            if args.expect_board and runner_board != args.expect_board:
+                raise RuntimeError(
+                    "runner board mismatch: "
+                    f"expected {args.expect_board!r}, got {runner_board!r}"
                 )
             if args.expect_runner_build and runner_build != args.expect_runner_build:
                 raise RuntimeError(
@@ -206,7 +228,8 @@ def main() -> int:
                 )
             print(
                 f"\n[HOST_UART_STREAM] runner_protocol={protocol} "
-                f"runner_build={runner_build}",
+                f"runner_board={runner_board} runner_build={runner_build} "
+                f"max_elf_bytes={max_elf_bytes}",
                 flush=True,
             )
             written = port.write(header)

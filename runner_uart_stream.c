@@ -5,6 +5,13 @@
 
 #if RUNNER_UART_STREAM
 
+_Static_assert(EXT_PACK_ADDR >= BOARD_RAM_BASE,
+               "UART receive buffer starts below board RAM");
+_Static_assert(EXT_PACK_ADDR < BOARD_RAM_LIMIT,
+               "UART receive buffer starts beyond board RAM");
+_Static_assert(EXT_PACK_MAX_BYTES <= BOARD_RAM_LIMIT - EXT_PACK_ADDR,
+               "UART receive buffer exceeds board RAM");
+
 static char g_uart_stream_name[UART_STREAM_NAME_BYTES + 1u];
 static volatile uint32_t g_uart_stream_done_emitted;
 
@@ -122,6 +129,8 @@ int run_uart_stream_once(uint64_t *total, uint64_t *pass, uint64_t *fail)
     uart_put_dec_u64(EXT_PACK_MAX_BYTES);
     uart_puts(" buffer=");
     uart_put_hex(EXT_PACK_ADDR);
+    uart_puts(" board=");
+    uart_puts(RUNNER_PLATFORM_NAME);
     uart_puts(" runner_build=");
     uart_puts(RUNNER_BUILD_ID);
     uart_puts("\n");
