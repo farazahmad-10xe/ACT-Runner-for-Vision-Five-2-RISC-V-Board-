@@ -1,0 +1,132 @@
+pipeline {
+    agent {
+        node {
+            label 'riscv-hw-agent'
+            customWorkspace '/home/lpt-10xe/jenkins-agent/workspace/riscv-uart-single-elf'
+        }
+    }
+
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '30'))
+        timeout(time: 30, unit: 'MINUTES')
+        timestamps()
+        skipDefaultCheckout(true)
+    }
+
+    parameters {
+        string(name: 'SUBMISSION_ID', defaultValue: '', description: 'Portal submission UUID.')
+        choice(name: 'TARGET_BOARD', choices: ['visionfive2', 'bananapi-f3'],
+               description: 'Physical board selected on the portal.')
+        string(name: 'ELF_DOWNLOAD_URL', defaultValue: '', description: 'Token-protected portal ELF URL.')
+        password(name: 'ELF_DOWNLOAD_TOKEN', defaultValue: '', description: 'Per-submission ELF token.')
+        string(name: 'ELF_SHA256', defaultValue: '', description: 'Expected uploaded ELF SHA-256.')
+        string(name: 'ELF_NAME', defaultValue: 'uploaded.elf', description: 'Original ELF display name.')
+        string(name: 'RUNNER_BRANCH', defaultValue: 'vf2-uart-stream-jenkins',
+               description: 'Runner repository branch.')
+        string(name: 'SERIAL_DEV', defaultValue: '/dev/ttyUSB0', description: 'USB-UART device.')
+        string(name: 'UART_READY_TIMEOUT', defaultValue: '240', description: 'Runner READY timeout.')
+        string(name: 'UART_RESULT_TIMEOUT', defaultValue: '600', description: 'ELF completion timeout.')
+    }
+
+    environment {
+        RUNNER_REMOTE_URL = 'https://github.com/farazahmad-10xe/ACT-Runner-for-Vision-Five-2-RISC-V-Board-.git'
+        LOCAL_TUYA_DEVICES_SOURCE = '/home/lpt-10xe/vf2_mmode_fw_Final_version_Verified/devices.json'
+        PORTAL_URL = 'https://192.168.100.150/portal/'
+        INTERNAL_CA_FILE = '/home/lpt-10xe/jenkins-agent/jenkins-internal-ca.crt'
+        PATH = '/home/lpt-10xe/.local/bin:/usr/local/bin:/usr/bin:/bin'
+    }
+
+    stages {
+        stage('Clean Checkout') {
+            steps {
+                deleteDir()
+                sh '''#!/usr/bin/env bash
+                    set -euo pipefail
+                    branch="${RUNNER_BRANCH:-vf2-uart-stream-jenkins}"
+                    git check-ref-format --branch "$branch" >/dev/null
+                    git init .
+                    git remote add origin "$RUNNER_REMOTE_URL"
+                    ref="refs/remotes/origin/$branch"
+                    fetched=false
+                    for attempt in 1 2 3 4; do
+                      if timeout 180 git -c http.lowSpeedLimit=1 -c http.lowSpeedTime=30 \
+                        fetch --force origin "+refs/heads/$branch:$ref"; then
+                        fetched=true
+                        break
+                      fi
+                      [[ "$attempt" -eq 4 ]] || sleep "$((attempt * 15))"
+                    done
+                    [[ "$fetched" == true ]] || { echo "Runner fetch failed" >&2; exit 1; }
+                    git checkout --detach "$(git rev-parse --verify "$ref^{commit}")"
+                    install -m 0600 "$LOCAL_TUYA_DEVICES_SOURCE" devices.json
+                    test -x ci/jenkins/single_elf_uart.sh
+                '''
+            }
+        }
+
+        stage('Verify Uploaded ELF') {
+            steps { sh 'ci/jenkins/single_elf_uart.sh prepare' }
+        }
+
+        stage('UART Execute') {
+            steps {
+                script {
+                    def hardwareLock = params.TARGET_BOARD == 'bananapi-f3' ?
+                        'bpif3-hardware' : 'vf2-hardware'
+                    lock(resource: hardwareLock) {
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                            sh 'ci/jenkins/single_elf_uart.sh run'
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            junit testResults: "logs/runs/jenkins_single_elf_${env.BUILD_NUMBER}/junit.xml",
+                  allowEmptyResults: true,
+                  keepLongStdio: true
+            script {
+                if (fileExists('ci/jenkins/publish_single_elf_result.py')) {
+                    withCredentials([string(credentialsId: 'riscv-portal-ingest-token',
+                                            variable: 'PORTAL_INGEST_TOKEN')]) {
+                        sh '''#!/usr/bin/env bash
+                            set -euo pipefail
+                            state_root="logs/jenkins/single_elf/${BUILD_NUMBER}"
+                            run_root="logs/runs/jenkins_single_elf_${BUILD_NUMBER}"
+                            mkdir -p "$state_root"
+                            python3 ci/jenkins/publish_single_elf_result.py \
+                              --run-root "$run_root" \
+                              --board "$TARGET_BOARD" \
+                              --submission-id "$SUBMISSION_ID" \
+                              --elf-name "$ELF_NAME" \
+                              --elf-sha256 "$ELF_SHA256" \
+                              --job-name "$JOB_NAME" \
+                              --build-number "$BUILD_NUMBER" \
+                              --build-url "$BUILD_URL" \
+                              --portal-url "$PORTAL_URL" \
+                              --ca-file "$INTERNAL_CA_FILE" \
+                              --git-revision "$(git rev-parse HEAD 2>/dev/null || true)" \
+                              --output "$state_root/portal_payload.json" \
+                              | tee "$state_root/portal_response.json"
+                            python3 -c 'import json,pathlib,sys,urllib.parse; r=json.loads(pathlib.Path(sys.argv[1]).read_text()); u=r.get("url"); u or sys.exit("missing portal URL"); pathlib.Path(sys.argv[2]).write_text(urllib.parse.urljoin("https://192.168.100.150",u)+"\\n")' \
+                              "$state_root/portal_response.json" "$state_root/portal_url.txt"
+                        '''
+                    }
+                    def portalFile = "logs/jenkins/single_elf/${env.BUILD_NUMBER}/portal_url.txt"
+                    if (fileExists(portalFile)) {
+                        def portalUrl = readFile(portalFile).trim()
+                        currentBuild.description = "<a href=\"${portalUrl}\">Portal UART result</a>"
+                        echo "Portal result: ${portalUrl}"
+                    }
+                }
+            }
+            archiveArtifacts artifacts: "logs/jenkins/single_elf/${env.BUILD_NUMBER}/state.env, logs/jenkins/single_elf/${env.BUILD_NUMBER}/portal_*.json, logs/jenkins/single_elf/${env.BUILD_NUMBER}/portal_url.txt, logs/runs/jenkins_single_elf_${env.BUILD_NUMBER}/**",
+                             allowEmptyArchive: true,
+                             fingerprint: true
+        }
+    }
+}

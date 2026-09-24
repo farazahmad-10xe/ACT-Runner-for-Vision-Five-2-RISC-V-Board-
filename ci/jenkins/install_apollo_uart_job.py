@@ -34,6 +34,10 @@ JOB_CONFIGS = {
         "Jenkinsfile.bpif3-uart-weekly",
         "ci/jenkins/job-config-bpif3-uart-weekly.xml",
     ),
+    "riscv-uart-single-elf": (
+        "Jenkinsfile.uart-single-elf",
+        "ci/jenkins/job-config-uart-single-elf.xml",
+    ),
 }
 
 
