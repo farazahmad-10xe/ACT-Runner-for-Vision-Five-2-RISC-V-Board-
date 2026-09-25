@@ -64,6 +64,7 @@ case "$stage" in
       --run-dir "$run_root"
       --ready-timeout "${UART_READY_TIMEOUT:-180}"
       --result-timeout "${UART_RESULT_TIMEOUT:-600}"
+      --transport-retries "${UART_TRANSPORT_RETRIES:-2}"
       --expect-board "$uart_expected_board"
       --expect-runner-build "$expected_build"
       --keep-going

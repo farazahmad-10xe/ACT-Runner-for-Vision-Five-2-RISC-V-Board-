@@ -40,6 +40,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--ready-timeout", type=float, default=180.0)
     parser.add_argument("--result-timeout", type=float, default=300.0)
     parser.add_argument(
+        "--transport-retries",
+        type=int,
+        default=2,
+        help="Additional power-cycle/send attempts after a transport failure",
+    )
+    parser.add_argument(
         "--expect-runner-build",
         help="Require every boot to report this runner build ID",
     )
@@ -150,6 +156,8 @@ def write_junit(
 
 def main() -> int:
     args = parse_args()
+    if args.transport_retries < 0:
+        raise SystemExit("--transport-retries must be non-negative")
     repo_root = Path(__file__).resolve().parents[2]
     sender = repo_root / "cert_harness/uart_stream/send_elf.py"
     power_ctl = repo_root / "tuya_plug_ctl.py"
@@ -190,49 +198,69 @@ def main() -> int:
     batch_started = time.monotonic()
     for index, elf in enumerate(elfs, 1):
         case_name = safe_name(elf)
-        log_path = run_dir / f"{index:04d}_{case_name}.uart.log"
         print(f"\n[UART_BATCH] START index={index}/{len(elfs)} name={case_name}")
+        case_started = time.monotonic()
+        max_attempts = args.transport_retries + 1
+        done = None
+        process_returncode = 1
+        log_path = run_dir / f"{index:04d}_{case_name}.uart.log"
+        attempt = 0
 
-        if args.no_power_cycle:
-            input("Power-cycle/reset the board, then press Enter to continue: ")
-        else:
-            print(f"[UART_BATCH] power_cycle delay={args.cycle_delay}s")
-            subprocess.run(
-                [
-                    sys.executable,
-                    str(power_ctl),
-                    "cycle",
-                    "--delay",
-                    str(args.cycle_delay),
-                ],
-                cwd=repo_root,
-                env=power_env,
-                check=True,
+        for attempt in range(1, max_attempts + 1):
+            if attempt > 1:
+                log_path = run_dir / f"{index:04d}_{case_name}.attempt{attempt}.uart.log"
+            print(
+                f"[UART_BATCH] ATTEMPT index={index} attempt={attempt}/{max_attempts}"
             )
+            if args.no_power_cycle:
+                input("Power-cycle/reset the board, then press Enter to continue: ")
+            else:
+                print(f"[UART_BATCH] power_cycle delay={args.cycle_delay}s")
+                subprocess.run(
+                    [
+                        sys.executable,
+                        str(power_ctl),
+                        "cycle",
+                        "--delay",
+                        str(args.cycle_delay),
+                    ],
+                    cwd=repo_root,
+                    env=power_env,
+                    check=True,
+                )
 
-        started = time.monotonic()
-        command = [
-            sys.executable,
-            str(sender),
-            str(elf),
-            "--serial-dev",
-            args.serial_dev,
-            "--baud",
-            str(args.baud),
-            "--log",
-            str(log_path),
-            "--ready-timeout",
-            str(args.ready_timeout),
-            "--result-timeout",
-            str(args.result_timeout),
-        ]
-        if args.expect_runner_build:
-            command.extend(["--expect-runner-build", args.expect_runner_build])
-        if args.expect_board:
-            command.extend(["--expect-board", args.expect_board])
-        process = subprocess.run(command, cwd=repo_root, check=False)
-        elapsed = round(time.monotonic() - started, 3)
-        done = parse_done(log_path) if log_path.exists() else None
+            command = [
+                sys.executable,
+                str(sender),
+                str(elf),
+                "--serial-dev",
+                args.serial_dev,
+                "--baud",
+                str(args.baud),
+                "--log",
+                str(log_path),
+                "--ready-timeout",
+                str(args.ready_timeout),
+                "--result-timeout",
+                str(args.result_timeout),
+            ]
+            if args.expect_runner_build:
+                command.extend(["--expect-runner-build", args.expect_runner_build])
+            if args.expect_board:
+                command.extend(["--expect-board", args.expect_board])
+            process = subprocess.run(command, cwd=repo_root, check=False)
+            process_returncode = process.returncode
+            done = parse_done(log_path) if log_path.exists() else None
+            if done is not None:
+                break
+            if attempt < max_attempts:
+                print(
+                    f"[UART_BATCH] RETRY index={index} name={case_name} "
+                    "reason=transport_error",
+                    file=sys.stderr,
+                )
+
+        elapsed = round(time.monotonic() - case_started, 3)
         if done:
             target_name, status, tohost = done
         else:
@@ -243,7 +271,8 @@ def main() -> int:
             "name": target_name,
             "status": status,
             "tohost": tohost,
-            "sender_returncode": process.returncode,
+            "sender_returncode": process_returncode,
+            "attempts": attempt,
             "elapsed_seconds": elapsed,
             "uart_log": str(log_path),
         }
