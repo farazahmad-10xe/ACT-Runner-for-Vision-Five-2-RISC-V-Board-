@@ -8,8 +8,8 @@
     },
     "bananapi-f3": {
       "runner_board_id": "bpif3_k1",
-      "installed_build_id": "aea2a34",
-      "source_revision": "aea2a34990b9c265049c65e6d071a8f5ee1061cc"
+      "installed_build_id": "5924c2a11c9f",
+      "source_revision": "5924c2a11c9f6f6d44a6548d8b1cd936eb8c2897"
     }
   }
 }
