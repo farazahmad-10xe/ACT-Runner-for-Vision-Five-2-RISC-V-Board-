@@ -3,8 +3,8 @@
   "boards": {
     "visionfive2": {
       "runner_board_id": "vf2_jh7110",
-      "installed_build_id": "98af2bd5b187",
-      "source_revision": "98af2bd5b187968c92e0a57f336d79249b260c00"
+      "installed_build_id": "0f94712f957f",
+      "source_revision": "0f94712f957f19ef60f8337d1077a97ab3a06bd6"
     },
     "bananapi-f3": {
       "runner_board_id": "bpif3_k1",
